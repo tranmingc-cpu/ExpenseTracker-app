@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#1E1E2C"
+    android:padding="24dp">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="📝"
+                android:textSize="80sp"
+                android:layout_marginTop="40dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Đăng ký tài khoản"
+                android:textColor="#FFFFFF"
+                android:textSize="26sp"
+                android:textStyle="bold"
+                android:layout_marginTop="8dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tạo tài khoản để theo dõi chi tiêu"
+                android:textColor="#A0A0B0"
+                android:textSize="14sp"
+                android:layout_marginTop="4dp" />
+
+            <!-- Input fields -->
+            <EditText
+                android:id="@+id/etFullName"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:background="#2A2A3E"
+                android:hint="Họ và tên"
+                android:textColorHint="#808090"
+                android:textColor="#FFFFFF"
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp"
+                android:inputType="textPersonName"
+                android:layout_marginTop="32dp" />
+
+            <EditText
+                android:id="@+id/etEmail"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:background="#2A2A3E"
+                android:hint="Email"
+                android:textColorHint="#808090"
+                android:textColor="#FFFFFF"
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp"
+                android:inputType="textEmailAddress"
+                android:layout_marginTop="12dp" />
+
+            <EditText
+                android:id="@+id/etPassword"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:background="#2A2A3E"
+                android:hint="Mật khẩu"
+                android:textColorHint="#808090"
+                android:textColor="#FFFFFF"
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp"
+                android:inputType="textPassword"
+                android:layout_marginTop="12dp" />
+
+            <EditText
+                android:id="@+id/etPhoneNumber"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:background="#2A2A3E"
+                android:hint="Số điện thoại"
+                android:textColorHint="#808090"
+                android:textColor="#FFFFFF"
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp"
+                android:inputType="phone"
+                android:layout_marginTop="12dp" />
+
+            <!-- Register Button -->
+            <Button
+                android:id="@+id/btnRegister"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="Đăng ký"
+                android:textColor="#FFFFFF"
+                android:backgroundTint="#00FF66"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginTop="24dp" />
+
+            <!-- Login Link -->
+            <TextView
+                android:id="@+id/tvLoginLink"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Đã có tài khoản? Đăng nhập"
+                android:textColor="#A0A0B0"
+                android:textSize="14sp"
+                android:layout_marginTop="20dp"
+                android:clickable="true"
+                android:focusable="true" />
+
+        </LinearLayout>
+    </ScrollView>
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:visibility="gone"
+        android:indeterminateTint="#00FF66"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
