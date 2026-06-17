@@ -33,7 +33,7 @@ public class AuthService {
     private final WalletRepository walletRepository;
 
     public AuthResponse register(RegisterRequest request) {
-
+        validateStrongPassword(request.getPassword());
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already exists");
         }
@@ -253,6 +253,42 @@ public class AuthService {
             wallet.setDescription("Ví tiền mặt mặc định");
             wallet.setUser(user);
             walletRepository.save(wallet);
+        }
+    }
+    private void validateStrongPassword(String password) {
+        if (password == null || password.isBlank()) {
+            throw new RuntimeException("Mật khẩu không được để trống");
+        }
+
+        if (password.length() < 8) {
+            throw new RuntimeException("Mật khẩu phải có ít nhất 8 ký tự");
+        }
+
+        if (!password.matches(".*[a-z].*")) {
+            throw new RuntimeException("Mật khẩu phải có ít nhất 1 chữ thường");
+        }
+
+        if (!password.matches(".*[A-Z].*")) {
+            throw new RuntimeException("Mật khẩu phải có ít nhất 1 chữ hoa");
+        }
+
+        if (!password.matches(".*\\d.*")) {
+            throw new RuntimeException("Mật khẩu phải có ít nhất 1 số");
+        }
+
+        if (!password.matches(".*[^a-zA-Z0-9].*")) {
+            throw new RuntimeException("Mật khẩu phải có ít nhất 1 ký tự đặc biệt");
+        }
+
+        String lower = password.toLowerCase();
+
+        if (lower.equals("12345678")
+                || lower.equals("123456789")
+                || lower.equals("password")
+                || lower.equals("password123")
+                || lower.equals("admin123")
+                || lower.equals("qwerty123")) {
+            throw new RuntimeException("Mật khẩu quá phổ biến, vui lòng chọn mật khẩu khác");
         }
     }
 }
