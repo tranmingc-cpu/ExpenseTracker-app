@@ -87,7 +87,25 @@ public class RegisterActivity extends AppCompatActivity {
                                     .setCancelable(false)
                                     .show();
                         } else {
-                            Toast.makeText(RegisterActivity.this, "Đăng ký thất bại. Có thể email đã tồn tại.", Toast.LENGTH_LONG).show();
+                            String errorMessage = "Đăng ký thất bại. Vui lòng kiểm tra lại email, số điện thoại hoặc mật khẩu.";
+
+                            try {
+                                if (response.errorBody() != null) {
+                                    String errorBody = response.errorBody().string();
+
+                                    if (errorBody.contains("Email already exists")) {
+                                        errorMessage = "Email này đã được đăng ký.";
+                                    } else if (errorBody.toLowerCase().contains("phone")) {
+                                        errorMessage = "Số điện thoại này đã được đăng ký.";
+                                    } else if (errorBody.contains("Mật khẩu")) {
+                                        errorMessage = "Mật khẩu chưa đạt yêu cầu bảo mật.";
+                                    }
+                                }
+                            } catch (Exception e) {
+                                errorMessage = "Đăng ký thất bại. Vui lòng thử lại.";
+                            }
+
+                            Toast.makeText(RegisterActivity.this, errorMessage, Toast.LENGTH_LONG).show();
                         }
                     }
 
