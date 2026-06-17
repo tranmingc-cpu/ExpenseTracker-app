@@ -53,7 +53,13 @@ public class RegisterActivity extends AppCompatActivity {
             Toast.makeText(this, "Vui lòng nhập đầy đủ họ tên, email và mật khẩu", Toast.LENGTH_SHORT).show();
             return;
         }
-
+        String passwordError = getPasswordError(password);
+        if (passwordError != null) {
+            etPassword.setError("Mật khẩu chưa đủ mạnh");
+            etPassword.requestFocus();
+            showPasswordRequirementDialog(passwordError);
+            return;
+        }
         showLoading(true);
 
         RegisterRequest request = new RegisterRequest();
@@ -68,17 +74,18 @@ public class RegisterActivity extends AppCompatActivity {
                     public void onResponse(Call<AuthResponse> call, Response<AuthResponse> response) {
                         showLoading(false);
                         if (response.isSuccessful() && response.body() != null) {
-                            AuthResponse authResponse = response.body();
-                            TokenManager.getInstance(RegisterActivity.this).saveToken(authResponse.getJwtToken());
-                            TokenManager.getInstance(RegisterActivity.this).saveUserInfo(
-                                    authResponse.getUserId(),
-                                    authResponse.getEmail(),
-                                    authResponse.getFullName(),
-                                    authResponse.getAvatarUrl()
-                            );
-                            Toast.makeText(RegisterActivity.this, "Đăng ký thành công!", Toast.LENGTH_SHORT).show();
-                            startActivity(new Intent(RegisterActivity.this, HomeActivity.class));
-                            finishAffinity();
+                            new androidx.appcompat.app.AlertDialog.Builder(RegisterActivity.this)
+                                    .setTitle("Đăng ký thành công")
+                                    .setMessage("Tài khoản đã được tạo thành công.\n\nVui lòng đăng nhập bằng email và mật khẩu vừa đăng ký.")
+                                    .setPositiveButton("Đăng nhập ngay", (dialog, which) -> {
+                                        Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+                                        intent.putExtra("email", email);
+                                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                        startActivity(intent);
+                                        finish();
+                                    })
+                                    .setCancelable(false)
+                                    .show();
                         } else {
                             Toast.makeText(RegisterActivity.this, "Đăng ký thất bại. Có thể email đã tồn tại.", Toast.LENGTH_LONG).show();
                         }
@@ -91,7 +98,71 @@ public class RegisterActivity extends AppCompatActivity {
                     }
                 });
     }
+    private String getPasswordError(String password) {
+        if (password == null || password.trim().isEmpty()) {
+            return "Mật khẩu không được để trống.\n\n"
+                    + "Mật khẩu hợp lệ cần có:\n"
+                    + "• Tối thiểu 8 ký tự\n"
+                    + "• Ít nhất 1 chữ hoa: A-Z\n"
+                    + "• Ít nhất 1 chữ thường: a-z\n"
+                    + "• Ít nhất 1 chữ số: 0-9\n"
+                    + "• Ít nhất 1 ký tự đặc biệt: @ # $ % & * !\n"
+                    + "• Không dùng mật khẩu phổ biến như 123456, password\n\n"
+                    + "Ví dụ hợp lệ: Abc@12345";
+        }
 
+        boolean hasMinLength = password.length() >= 8;
+        boolean hasLowercase = password.matches(".*[a-z].*");
+        boolean hasUppercase = password.matches(".*[A-Z].*");
+        boolean hasNumber = password.matches(".*\\d.*");
+        boolean hasSpecial = password.matches(".*[^a-zA-Z0-9].*");
+
+        String lower = password.toLowerCase();
+        boolean isCommonPassword = lower.equals("123456")
+                || lower.equals("12345678")
+                || lower.equals("123456789")
+                || lower.equals("password")
+                || lower.equals("password123")
+                || lower.equals("admin123")
+                || lower.equals("qwerty123");
+
+        if (hasMinLength && hasLowercase && hasUppercase && hasNumber && hasSpecial && !isCommonPassword) {
+            return null;
+        }
+
+        StringBuilder message = new StringBuilder();
+        message.append("Mật khẩu chưa đủ mạnh.\n\n");
+        message.append("Mật khẩu hợp lệ cần có:\n");
+
+        message.append(hasMinLength ? "✓ " : "✗ ");
+        message.append("Tối thiểu 8 ký tự\n");
+
+        message.append(hasUppercase ? "✓ " : "✗ ");
+        message.append("Ít nhất 1 chữ hoa: A-Z\n");
+
+        message.append(hasLowercase ? "✓ " : "✗ ");
+        message.append("Ít nhất 1 chữ thường: a-z\n");
+
+        message.append(hasNumber ? "✓ " : "✗ ");
+        message.append("Ít nhất 1 chữ số: 0-9\n");
+
+        message.append(hasSpecial ? "✓ " : "✗ ");
+        message.append("Ít nhất 1 ký tự đặc biệt: @ # $ % & * !\n");
+
+        message.append(!isCommonPassword ? "✓ " : "✗ ");
+        message.append("Không dùng mật khẩu phổ biến như 123456, password\n\n");
+
+        message.append("Ví dụ hợp lệ: Abc@12345");
+
+        return message.toString();
+    }
+    private void showPasswordRequirementDialog(String message) {
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Yêu cầu mật khẩu")
+                .setMessage(message)
+                .setPositiveButton("Đã hiểu", null)
+                .show();
+    }
     private void showLoading(boolean loading) {
         progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
         btnRegister.setEnabled(!loading);
