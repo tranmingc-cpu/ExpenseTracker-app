@@ -27,6 +27,10 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import java.io.OutputStream;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 public class HomeActivity extends BaseActivity {
 
     private TextView tvDashboardUserName, tvNetBalance, tvTotalIncome, tvTotalExpense, tvHabitsWarning;
@@ -361,17 +365,35 @@ public class HomeActivity extends BaseActivity {
             item.setOrientation(LinearLayout.HORIZONTAL);
             item.setPadding(12, 12, 12, 12);
             item.setBackgroundColor(0xFF1F1F35);
+
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
             );
             params.setMargins(0, 0, 0, 8);
             item.setLayoutParams(params);
 
+            LinearLayout leftBox = new LinearLayout(this);
+            leftBox.setOrientation(LinearLayout.VERTICAL);
+            leftBox.setLayoutParams(new LinearLayout.LayoutParams(
+                    0,
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    1f
+            ));
+
             TextView tvDesc = new TextView(this);
             tvDesc.setText(tr.getDescription());
             tvDesc.setTextColor(0xFFFFFFFF);
-            tvDesc.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
-            item.addView(tvDesc);
+            tvDesc.setTextSize(14);
+            leftBox.addView(tvDesc);
+
+            TextView tvDate = new TextView(this);
+            tvDate.setText(formatTransactionDate(tr.getTransactionDate()));
+            tvDate.setTextColor(0xFFAAAAAA);
+            tvDate.setTextSize(12);
+            leftBox.addView(tvDate);
+
+            item.addView(leftBox);
 
             TextView tvValue = new TextView(this);
             boolean isIncome = "INCOME".equalsIgnoreCase(tr.getType());
@@ -381,6 +403,19 @@ public class HomeActivity extends BaseActivity {
             item.addView(tvValue);
 
             layoutTransactionsContainer.addView(item);
+        }
+    }
+    private String formatTransactionDate(String rawDate) {
+        if (rawDate == null || rawDate.trim().isEmpty()) {
+            return "Chưa có ngày giờ";
+        }
+
+        try {
+            LocalDateTime dateTime = LocalDateTime.parse(rawDate);
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+            return dateTime.format(formatter);
+        } catch (Exception e) {
+            return rawDate;
         }
     }
 
@@ -589,11 +624,12 @@ public class HomeActivity extends BaseActivity {
             }
 
             StringBuilder csv = new StringBuilder();
-            csv.append("ID,Description,Amount,Type\n");
+            csv.append("ID,Date,Description,Amount,Type\n");
 
             if (!transactionsList.isEmpty()) {
                 for (TransactionResponse tr : transactionsList) {
                     csv.append(tr.getId()).append(",")
+                            .append("\"").append(formatTransactionDate(tr.getTransactionDate())).append("\"").append(",")
                             .append("\"").append(tr.getDescription() == null ? "" : tr.getDescription().replace("\"", "\"\"")).append("\"").append(",")
                             .append(tr.getAmount()).append(",")
                             .append(tr.getType()).append("\n");
