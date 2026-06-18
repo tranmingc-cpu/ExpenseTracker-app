@@ -31,11 +31,17 @@ import java.io.OutputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import android.widget.NumberPicker;
+import java.util.Locale;
+
 public class HomeActivity extends BaseActivity {
 
     private TextView tvDashboardUserName, tvNetBalance, tvTotalIncome, tvTotalExpense, tvHabitsWarning;
     private ImageView btnProfile;
-    private Button btnNavAdd, btnNavBudgets, btnNavGoals, btnNavRecurring, btnNavSync, btnNavExport, btnSignOut;
+    private Button btnNavAdd, btnNavBudgets, btnNavGoals, btnNavRecurring, btnNavSync, btnNavExport, btnSignOut, btnMonthFilter;
+
+    private int selectedYear;
+    private int selectedMonth;
     private LinearLayout layoutTransactionsContainer;
 
     private androidx.cardview.widget.CardView cardBudgetWarning;
@@ -65,6 +71,12 @@ public class HomeActivity extends BaseActivity {
         btnNavSync = findViewById(R.id.btnNavSync);
         btnNavExport = findViewById(R.id.btnNavExport);
         btnSignOut = findViewById(R.id.btnSignOut);
+        btnMonthFilter = findViewById(R.id.btnMonthFilter);
+
+        Calendar now = Calendar.getInstance();
+        selectedYear = now.get(Calendar.YEAR);
+        selectedMonth = now.get(Calendar.MONTH) + 1;
+        updateMonthFilterText();
         layoutTransactionsContainer = findViewById(R.id.layoutTransactionsContainer);
         etQuickIncomeAmount = findViewById(R.id.etQuickIncomeAmount);
         btnSaveQuickIncome = findViewById(R.id.btnSaveQuickIncome);
@@ -93,6 +105,7 @@ public class HomeActivity extends BaseActivity {
 
         btnNavSync.setOnClickListener(v -> simulateBankSync());
         btnNavExport.setOnClickListener(v -> exportTransactionsToCSV());
+        btnMonthFilter.setOnClickListener(v -> showMonthFilterDialog());
 
         btnSaveQuickIncome.setOnClickListener(v -> saveQuickIncome());
 
@@ -184,6 +197,67 @@ public class HomeActivity extends BaseActivity {
                     }
                 });
     }
+    private void updateMonthFilterText() {
+        if (btnMonthFilter == null) {
+            return;
+        }
+
+        Calendar now = Calendar.getInstance();
+        int currentYear = now.get(Calendar.YEAR);
+        int currentMonth = now.get(Calendar.MONTH) + 1;
+
+        if (selectedYear == currentYear && selectedMonth == currentMonth) {
+            btnMonthFilter.setText("Tháng hiện tại");
+        } else {
+            btnMonthFilter.setText(String.format(Locale.US, "Tháng %02d/%d", selectedMonth, selectedYear));
+        }
+    }
+
+    private void showMonthFilterDialog() {
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.HORIZONTAL);
+        layout.setPadding(40, 20, 40, 20);
+
+        NumberPicker monthPicker = new NumberPicker(this);
+        monthPicker.setMinValue(1);
+        monthPicker.setMaxValue(12);
+        monthPicker.setValue(selectedMonth);
+        monthPicker.setDisplayedValues(new String[]{
+                "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4",
+                "Tháng 5", "Tháng 6", "Tháng 7", "Tháng 8",
+                "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"
+        });
+
+        NumberPicker yearPicker = new NumberPicker(this);
+        int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+        yearPicker.setMinValue(2020);
+        yearPicker.setMaxValue(currentYear + 1);
+        yearPicker.setValue(selectedYear);
+
+        layout.addView(monthPicker, new LinearLayout.LayoutParams(
+                0,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                1f
+        ));
+
+        layout.addView(yearPicker, new LinearLayout.LayoutParams(
+                0,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                1f
+        ));
+
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Chọn tháng báo cáo")
+                .setView(layout)
+                .setPositiveButton("Áp dụng", (dialog, which) -> {
+                    selectedMonth = monthPicker.getValue();
+                    selectedYear = yearPicker.getValue();
+                    updateMonthFilterText();
+                    loadDashboardData();
+                })
+                .setNegativeButton("Hủy", null)
+                .show();
+    }
 
     private void loadDashboardData() {
         Long userId = TokenManager.getInstance(this).getUserId();
@@ -199,7 +273,7 @@ public class HomeActivity extends BaseActivity {
             tvTotalExpense.setText(formatVND(summary.getTotalExpense()));
             tvHabitsWarning.setText("Offline Mode: Đang hiển thị dữ liệu lưu tạm.");
 
-            transactionsList = cache.getCachedTransactions();
+            transactionsList = filterTransactionsBySelectedMonth(cache.getCachedTransactions());
             renderTransactions();
 
             budgetList = cache.getCachedBudgets();
@@ -209,11 +283,15 @@ public class HomeActivity extends BaseActivity {
 
         // Fetch balance report
         Calendar cal = Calendar.getInstance();
-        int year = cal.get(Calendar.YEAR);
-        int month = cal.get(Calendar.MONTH) + 1;
-        String startDate = String.format(java.util.Locale.US, "%04d-%02d-01", year, month);
+        cal.set(Calendar.YEAR, selectedYear);
+        cal.set(Calendar.MONTH, selectedMonth - 1);
+
+        int year = selectedYear;
+        int month = selectedMonth;
+
+        String startDate = String.format(Locale.US, "%04d-%02d-01", year, month);
         int lastDay = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
-        String endDate = String.format(java.util.Locale.US, "%04d-%02d-%02d", year, month, lastDay);
+        String endDate = String.format(Locale.US, "%04d-%02d-%02d", year, month, lastDay);
 
         RetrofitClient.getInstance().getReportApi().getSummary(userId, startDate, endDate)
                 .enqueue(new Callback<ReportSummaryResponse>() {
@@ -256,8 +334,10 @@ public class HomeActivity extends BaseActivity {
                     @Override
                     public void onResponse(Call<List<TransactionResponse>> call, Response<List<TransactionResponse>> response) {
                         if (response.isSuccessful() && response.body() != null) {
-                            transactionsList = response.body();
-                            com.expensetracker_manager.utils.OfflineCacheManager.getInstance(HomeActivity.this).cacheTransactions(transactionsList);
+                            List<TransactionResponse> allTransactions = response.body();
+                            com.expensetracker_manager.utils.OfflineCacheManager.getInstance(HomeActivity.this).cacheTransactions(allTransactions);
+                            transactionsList = filterTransactionsBySelectedMonth(allTransactions);
+
                             renderTransactions();
                             checkBudgets();
                         }
@@ -265,7 +345,9 @@ public class HomeActivity extends BaseActivity {
 
                     @Override
                     public void onFailure(Call<List<TransactionResponse>> call, Throwable t) {
-                        transactionsList = com.expensetracker_manager.utils.OfflineCacheManager.getInstance(HomeActivity.this).getCachedTransactions();
+                        transactionsList = filterTransactionsBySelectedMonth(
+                                com.expensetracker_manager.utils.OfflineCacheManager.getInstance(HomeActivity.this).getCachedTransactions()
+                        );
                         renderTransactions();
                         checkBudgets();
                     }
@@ -309,10 +391,7 @@ public class HomeActivity extends BaseActivity {
         }
 
         // Filter for current month's expenses only
-        Calendar cal = Calendar.getInstance();
-        int curYear = cal.get(Calendar.YEAR);
-        int curMonth = cal.get(Calendar.MONTH) + 1;
-        String curYearMonthPrefix = String.format(java.util.Locale.US, "%04d-%02d", curYear, curMonth);
+        String curYearMonthPrefix = String.format(Locale.US, "%04d-%02d", selectedYear, selectedMonth);
 
         java.util.Map<String, Double> expensesByCategory = new java.util.HashMap<>();
         for (TransactionResponse tr : transactionsList) {
@@ -355,6 +434,23 @@ public class HomeActivity extends BaseActivity {
         } else {
             cardBudgetWarning.setVisibility(View.GONE);
         }
+    }
+    private List<TransactionResponse> filterTransactionsBySelectedMonth(List<TransactionResponse> source) {
+        List<TransactionResponse> result = new ArrayList<>();
+
+        if (source == null) {
+            return result;
+        }
+
+        String monthPrefix = String.format(Locale.US, "%04d-%02d", selectedYear, selectedMonth);
+
+        for (TransactionResponse tr : source) {
+            if (tr.getTransactionDate() != null && tr.getTransactionDate().startsWith(monthPrefix)) {
+                result.add(tr);
+            }
+        }
+
+        return result;
     }
 
     private void renderTransactions() {
