@@ -36,7 +36,7 @@ import java.util.Locale;
 
 public class HomeActivity extends BaseActivity {
 
-    private TextView tvDashboardUserName, tvNetBalance, tvTotalIncome, tvTotalExpense, tvHabitsWarning;
+    private TextView tvDashboardUserName, tvNetBalance, tvTotalIncome, tvTotalExpense, tvHabitsWarning, btnViewAllTransactions;
     private ImageView btnProfile;
     private Button btnNavAdd, btnNavBudgets, btnNavGoals, btnNavRecurring, btnNavSync, btnNavExport, btnSignOut, btnMonthFilter;
 
@@ -83,6 +83,8 @@ public class HomeActivity extends BaseActivity {
         cardBudgetWarning = findViewById(R.id.cardBudgetWarning);
         tvBudgetWarningMessage = findViewById(R.id.tvBudgetWarningMessage);
 
+        btnViewAllTransactions = findViewById(R.id.btnViewAllTransactions);
+
         TokenManager tokenManager = TokenManager.getInstance(this);
         tvDashboardUserName.setText(tokenManager.getUserName().isEmpty() ? "Người dùng" : tokenManager.getUserName());
 
@@ -115,6 +117,13 @@ public class HomeActivity extends BaseActivity {
             Toast.makeText(HomeActivity.this, "Đăng xuất thành công!", Toast.LENGTH_SHORT).show();
             startActivity(new Intent(HomeActivity.this, LoginActivity.class));
             finish();
+        });
+
+        btnViewAllTransactions.setOnClickListener(v -> {
+            Intent intent = new Intent(HomeActivity.this, TransactionHistoryActivity.class);
+            intent.putExtra("selectedYear", selectedYear);
+            intent.putExtra("selectedMonth", selectedMonth);
+            startActivity(intent);
         });
     }
 
@@ -456,7 +465,10 @@ public class HomeActivity extends BaseActivity {
     private void renderTransactions() {
         layoutTransactionsContainer.removeAllViews();
 
-        for (TransactionResponse tr : transactionsList) {
+        int maxItems = Math.min(transactionsList.size(), 3);
+
+        for (int i = 0; i < maxItems; i++) {
+            TransactionResponse tr = transactionsList.get(i);
             LinearLayout item = new LinearLayout(this);
             item.setOrientation(LinearLayout.HORIZONTAL);
             item.setPadding(12, 12, 12, 12);

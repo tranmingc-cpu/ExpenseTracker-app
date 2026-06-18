@@ -323,6 +323,20 @@
         app:layout_constraintTop_toBottomOf="@id/cardHabits"
         app:layout_constraintStart_toStartOf="parent" />
 
+    <TextView
+        android:id="@+id/btnViewAllTransactions"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Xem tất cả"
+        android:textColor="#00FF66"
+        android:textSize="13sp"
+        android:textStyle="bold"
+        android:padding="8dp"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintBaseline_toBaselineOf="@id/tvRecentLabel"
+        app:layout_constraintEnd_toEndOf="parent" />
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
