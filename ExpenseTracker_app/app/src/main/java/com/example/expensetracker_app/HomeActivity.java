@@ -26,7 +26,7 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-
+import java.io.OutputStream;
 public class HomeActivity extends BaseActivity {
 
     private TextView tvDashboardUserName, tvNetBalance, tvTotalIncome, tvTotalExpense, tvHabitsWarning;
@@ -564,26 +564,49 @@ public class HomeActivity extends BaseActivity {
 
     private void exportTransactionsToCSV() {
         try {
-            File folder = getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
-            if (folder != null && !folder.exists()) {
-                folder.mkdirs();
+            String fileName = "Report_Transactions_" + System.currentTimeMillis() + ".csv";
+
+            android.content.ContentValues values = new android.content.ContentValues();
+            values.put(android.provider.MediaStore.Downloads.DISPLAY_NAME, fileName);
+            values.put(android.provider.MediaStore.Downloads.MIME_TYPE, "text/csv");
+            values.put(android.provider.MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
+
+            android.net.Uri uri = getContentResolver().insert(
+                    android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI,
+                    values
+            );
+
+            if (uri == null) {
+                Toast.makeText(this, "Không thể tạo file CSV trong thư mục Tải về.", Toast.LENGTH_SHORT).show();
+                return;
             }
 
-            File file = new File(folder, "Report_Transactions.csv");
-            FileWriter writer = new FileWriter(file);
-            writer.append("ID,Description,Amount,Type\n");
+            OutputStream outputStream = getContentResolver().openOutputStream(uri);
+
+            if (outputStream == null) {
+                Toast.makeText(this, "Không thể ghi file CSV.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            StringBuilder csv = new StringBuilder();
+            csv.append("ID,Description,Amount,Type\n");
 
             if (!transactionsList.isEmpty()) {
                 for (TransactionResponse tr : transactionsList) {
-                    writer.append(String.format("%d,%s,%s,%s\n", tr.getId(), tr.getDescription(), String.valueOf(tr.getAmount()), tr.getType()));
+                    csv.append(tr.getId()).append(",")
+                            .append("\"").append(tr.getDescription() == null ? "" : tr.getDescription().replace("\"", "\"\"")).append("\"").append(",")
+                            .append(tr.getAmount()).append(",")
+                            .append(tr.getType()).append("\n");
                 }
             } else {
-                writer.append("1,Offline Transaction Sample,500000,EXPENSE\n");
+                csv.append("1,\"Offline Transaction Sample\",500000,EXPENSE\n");
             }
-            writer.flush();
-            writer.close();
 
-            Toast.makeText(this, "Xuất Excel/CSV thành công! File lưu tại: " + file.getAbsolutePath(), Toast.LENGTH_LONG).show();
+            outputStream.write(csv.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            outputStream.flush();
+            outputStream.close();
+
+            Toast.makeText(this, "Xuất CSV thành công! File nằm trong thư mục Tải về.", Toast.LENGTH_LONG).show();
         } catch (Exception e) {
             Toast.makeText(this, "Lỗi xuất file: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
