@@ -11,7 +11,7 @@ public class AuthResponse {
     private Long userId;
 
     @SerializedName("userid")
-    private Long userid; // for backward compatibility
+    private Long userid;
 
     @SerializedName("email")
     private String email;
