@@ -45,6 +45,22 @@
 
     </RelativeLayout>
 
+    <Button
+        android:id="@+id/btnMonthFilter"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:text="Tháng hiện tại"
+        android:textAllCaps="false"
+        android:textColor="#FFFFFF"
+        android:backgroundTint="#2D2D56"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/layoutHeader" />
+
     <!-- Budget Warning Banner -->
     <androidx.cardview.widget.CardView
         android:id="@+id/cardBudgetWarning"
@@ -55,7 +71,7 @@
         app:cardCornerRadius="12dp"
         app:cardBackgroundColor="#D32F2F"
         app:cardElevation="4dp"
-        app:layout_constraintTop_toBottomOf="@id/layoutHeader">
+        app:layout_constraintTop_toBottomOf="@id/btnMonthFilter">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -306,6 +322,20 @@
         android:layout_marginTop="16dp"
         app:layout_constraintTop_toBottomOf="@id/cardHabits"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/btnViewAllTransactions"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Xem tất cả"
+        android:textColor="#00FF66"
+        android:textSize="13sp"
+        android:textStyle="bold"
+        android:padding="8dp"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintBaseline_toBaselineOf="@id/tvRecentLabel"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <ScrollView
         android:layout_width="match_parent"
