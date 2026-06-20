@@ -27,12 +27,18 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import com.google.mlkit.vision.codescanner.GmsBarcodeScanner;
+import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions;
+import com.google.mlkit.vision.codescanner.GmsBarcodeScanning;
+import com.google.mlkit.vision.barcode.common.Barcode;
+
 public class HomeActivity extends BaseActivity {
 
     private TextView tvDashboardUserName, tvNetBalance, tvTotalIncome, tvTotalExpense, tvHabitsWarning;
     private ImageView btnProfile;
-    private Button btnNavAdd, btnNavBudgets, btnNavGoals, btnNavRecurring, btnNavSync, btnNavExport, btnSignOut;
+    private Button btnNavAdd, btnNavBudgets, btnNavGoals, btnNavRecurring, btnNavSync, btnNavExport;
     private LinearLayout layoutTransactionsContainer;
+    private LinearLayout btnBottomNavAdd, btnBottomNavGoals, btnBottomNavQr, btnBottomNavBudgets, btnBottomNavProfile;
 
     private androidx.cardview.widget.CardView cardBudgetWarning;
     private TextView tvBudgetWarningMessage;
@@ -60,12 +66,17 @@ public class HomeActivity extends BaseActivity {
         btnNavRecurring = findViewById(R.id.btnNavRecurring);
         btnNavSync = findViewById(R.id.btnNavSync);
         btnNavExport = findViewById(R.id.btnNavExport);
-        btnSignOut = findViewById(R.id.btnSignOut);
         layoutTransactionsContainer = findViewById(R.id.layoutTransactionsContainer);
         etQuickIncomeAmount = findViewById(R.id.etQuickIncomeAmount);
         btnSaveQuickIncome = findViewById(R.id.btnSaveQuickIncome);
         cardBudgetWarning = findViewById(R.id.cardBudgetWarning);
         tvBudgetWarningMessage = findViewById(R.id.tvBudgetWarningMessage);
+
+        btnBottomNavAdd = findViewById(R.id.btnBottomNavAdd);
+        btnBottomNavGoals = findViewById(R.id.btnBottomNavGoals);
+        btnBottomNavQr = findViewById(R.id.btnBottomNavQr);
+        btnBottomNavBudgets = findViewById(R.id.btnBottomNavBudgets);
+        btnBottomNavProfile = findViewById(R.id.btnBottomNavProfile);
 
         TokenManager tokenManager = TokenManager.getInstance(this);
         tvDashboardUserName.setText(tokenManager.getUserName().isEmpty() ? "Người dùng" : tokenManager.getUserName());
@@ -92,13 +103,58 @@ public class HomeActivity extends BaseActivity {
 
         btnSaveQuickIncome.setOnClickListener(v -> saveQuickIncome());
 
-        btnSignOut.setOnClickListener(v -> {
-            FirebaseAuth.getInstance().signOut();
-            TokenManager.getInstance(HomeActivity.this).clear();
-            Toast.makeText(HomeActivity.this, "Đăng xuất thành công!", Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(HomeActivity.this, LoginActivity.class));
-            finish();
-        });
+        btnBottomNavAdd.setOnClickListener(v -> startActivity(new Intent(HomeActivity.this, AddTransactionActivity.class)));
+        btnBottomNavGoals.setOnClickListener(v -> startActivity(new Intent(HomeActivity.this, SavingsGoalsActivity.class)));
+        btnBottomNavBudgets.setOnClickListener(v -> startActivity(new Intent(HomeActivity.this, BudgetsActivity.class)));
+        btnBottomNavProfile.setOnClickListener(v -> startActivity(new Intent(HomeActivity.this, ProfileActivity.class)));
+        btnBottomNavQr.setOnClickListener(v -> startQRScanner());
+    }
+
+    private void startQRScanner() {
+        GmsBarcodeScannerOptions options = new GmsBarcodeScannerOptions.Builder()
+                .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
+                .enableAutoZoom()
+                .build();
+
+        GmsBarcodeScanner scanner = GmsBarcodeScanning.getClient(this, options);
+
+        scanner.startScan()
+                .addOnSuccessListener(barcode -> {
+                    String qrContent = barcode.getRawValue();
+                    if (qrContent == null || qrContent.trim().isEmpty()) {
+                        Toast.makeText(this, "Không đọc được dữ liệu từ QR.", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    VietQrParser.QrData data = VietQrParser.parse(qrContent);
+                    Intent addTxIntent = new Intent(HomeActivity.this, AddTransactionActivity.class);
+
+                    if (data.isValid) {
+                        addTxIntent.putExtra("extra_amount", data.amount);
+
+                        StringBuilder descBuilder = new StringBuilder();
+                        descBuilder.append("Chuyển khoản đến ");
+                        if (data.bankName != null && !data.bankName.isEmpty()) {
+                            descBuilder.append(data.bankName).append(" ");
+                        }
+                        if (data.accountNumber != null && !data.accountNumber.isEmpty()) {
+                            descBuilder.append("(").append(data.accountNumber).append(") ");
+                        }
+                        if (data.recipientName != null && !data.recipientName.isEmpty()) {
+                            descBuilder.append("- ").append(data.recipientName);
+                        }
+                        if (data.memo != null && !data.memo.isEmpty()) {
+                            descBuilder.append("\nNội dung: ").append(data.memo);
+                        }
+                        addTxIntent.putExtra("extra_desc", descBuilder.toString().trim());
+                    } else {
+                        addTxIntent.putExtra("extra_desc", qrContent);
+                    }
+                    startActivity(addTxIntent);
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Quét mã thất bại: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
     }
 
     private void saveQuickIncome() {
