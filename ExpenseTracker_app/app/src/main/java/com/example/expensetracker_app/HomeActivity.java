@@ -2,6 +2,7 @@ package com.example.expensetracker_app;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Build;
 import android.os.Environment;
 import android.view.View;
 import android.widget.Button;
@@ -14,8 +15,6 @@ import com.expensetracker_manager.model.response.ReportSummaryResponse;
 import com.expensetracker_manager.model.response.TransactionResponse;
 import com.expensetracker_manager.network.RetrofitClient;
 import com.expensetracker_manager.utils.TokenManager;
-import com.google.firebase.auth.FirebaseAuth;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.math.BigDecimal;
@@ -43,12 +42,11 @@ public class HomeActivity extends BaseActivity {
 
     private TextView tvDashboardUserName, tvNetBalance, tvTotalIncome, tvTotalExpense, tvHabitsWarning, btnViewAllTransactions;
     private ImageView btnProfile;
-    private Button btnNavAdd, btnNavBudgets, btnNavGoals, btnNavRecurring, btnNavSync, btnNavExport, btnSignOut, btnMonthFilter;
+    private Button btnNavAdd, btnNavBudgets, btnNavGoals, btnNavRecurring, btnNavSync, btnNavExport, btnMonthFilter;
 
     private int selectedYear;
     private int selectedMonth;
 
-    private Button btnNavAdd, btnNavBudgets, btnNavGoals, btnNavRecurring, btnNavSync, btnNavExport;
     private LinearLayout layoutTransactionsContainer;
     private LinearLayout btnBottomNavAdd, btnBottomNavGoals, btnBottomNavQr, btnBottomNavBudgets, btnBottomNavProfile;
 
@@ -78,7 +76,6 @@ public class HomeActivity extends BaseActivity {
         btnNavRecurring = findViewById(R.id.btnNavRecurring);
         btnNavSync = findViewById(R.id.btnNavSync);
         btnNavExport = findViewById(R.id.btnNavExport);
-        btnSignOut = findViewById(R.id.btnSignOut);
         btnMonthFilter = findViewById(R.id.btnMonthFilter);
 
         Calendar now = Calendar.getInstance();
@@ -124,14 +121,6 @@ public class HomeActivity extends BaseActivity {
         btnMonthFilter.setOnClickListener(v -> showMonthFilterDialog());
 
         btnSaveQuickIncome.setOnClickListener(v -> saveQuickIncome());
-
-        btnSignOut.setOnClickListener(v -> {
-            FirebaseAuth.getInstance().signOut();
-            TokenManager.getInstance(HomeActivity.this).clear();
-            Toast.makeText(HomeActivity.this, "Đăng xuất thành công!", Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(HomeActivity.this, LoginActivity.class));
-            finish();
-        });
 
         btnViewAllTransactions.setOnClickListener(v -> {
             Intent intent = new Intent(HomeActivity.this, TransactionHistoryActivity.class);
@@ -218,7 +207,7 @@ public class HomeActivity extends BaseActivity {
                 .enqueue(new Callback<List<com.expensetracker_manager.model.response.CategoryResponse>>() {
                     @Override
                     public void onResponse(Call<List<com.expensetracker_manager.model.response.CategoryResponse>> call,
-                            Response<List<com.expensetracker_manager.model.response.CategoryResponse>> response) {
+                                           Response<List<com.expensetracker_manager.model.response.CategoryResponse>> response) {
                         long categoryId = -1;
                         if (response.isSuccessful() && response.body() != null) {
                             for (com.expensetracker_manager.model.response.CategoryResponse cat : response.body()) {
@@ -246,7 +235,7 @@ public class HomeActivity extends BaseActivity {
                                 .enqueue(new Callback<com.expensetracker_manager.model.response.TransactionResponse>() {
                                     @Override
                                     public void onResponse(Call<com.expensetracker_manager.model.response.TransactionResponse> call,
-                                            Response<com.expensetracker_manager.model.response.TransactionResponse> response) {
+                                                           Response<com.expensetracker_manager.model.response.TransactionResponse> response) {
                                         btnSaveQuickIncome.setEnabled(true);
                                         if (response.isSuccessful()) {
                                             Toast.makeText(HomeActivity.this, "Đã bổ sung thu nhập thành công!", Toast.LENGTH_SHORT).show();
@@ -443,7 +432,7 @@ public class HomeActivity extends BaseActivity {
                 .enqueue(new Callback<List<com.expensetracker_manager.model.response.BudgetResponse>>() {
                     @Override
                     public void onResponse(Call<List<com.expensetracker_manager.model.response.BudgetResponse>> call,
-                            Response<List<com.expensetracker_manager.model.response.BudgetResponse>> response) {
+                                           Response<List<com.expensetracker_manager.model.response.BudgetResponse>> response) {
                         if (response.isSuccessful() && response.body() != null) {
                             budgetList = response.body();
                             com.expensetracker_manager.utils.OfflineCacheManager.getInstance(HomeActivity.this).cacheBudgets(budgetList);
@@ -717,7 +706,7 @@ public class HomeActivity extends BaseActivity {
                 .enqueue(new Callback<List<com.expensetracker_manager.model.response.CategoryResponse>>() {
                     @Override
                     public void onResponse(Call<List<com.expensetracker_manager.model.response.CategoryResponse>> call,
-                            Response<List<com.expensetracker_manager.model.response.CategoryResponse>> response) {
+                                           Response<List<com.expensetracker_manager.model.response.CategoryResponse>> response) {
                         long incomeCatId = 1;
                         long expenseCatId = 1;
                         if (response.isSuccessful() && response.body() != null) {
@@ -774,29 +763,6 @@ public class HomeActivity extends BaseActivity {
     private void exportTransactionsToCSV() {
         try {
             String fileName = "Report_Transactions_" + System.currentTimeMillis() + ".csv";
-
-            android.content.ContentValues values = new android.content.ContentValues();
-            values.put(android.provider.MediaStore.Downloads.DISPLAY_NAME, fileName);
-            values.put(android.provider.MediaStore.Downloads.MIME_TYPE, "text/csv");
-            values.put(android.provider.MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
-
-            android.net.Uri uri = getContentResolver().insert(
-                    android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI,
-                    values
-            );
-
-            if (uri == null) {
-                Toast.makeText(this, "Không thể tạo file CSV trong thư mục Tải về.", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            OutputStream outputStream = getContentResolver().openOutputStream(uri);
-
-            if (outputStream == null) {
-                Toast.makeText(this, "Không thể ghi file CSV.", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
             StringBuilder csv = new StringBuilder();
             csv.append("ID,Date,Description,Amount,Type\n");
 
@@ -812,11 +778,53 @@ public class HomeActivity extends BaseActivity {
                 csv.append("1,\"Offline Transaction Sample\",500000,EXPENSE\n");
             }
 
-            outputStream.write(csv.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
-            outputStream.flush();
-            outputStream.close();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                android.content.ContentValues values = new android.content.ContentValues();
+                values.put(android.provider.MediaStore.Downloads.DISPLAY_NAME, fileName);
+                values.put(android.provider.MediaStore.Downloads.MIME_TYPE, "text/csv");
+                values.put(android.provider.MediaStore.Downloads.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS);
 
-            Toast.makeText(this, "Xuất CSV thành công! File nằm trong thư mục Tải về.", Toast.LENGTH_LONG).show();
+                android.net.Uri uri = getContentResolver().insert(
+                        android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI,
+                        values
+                );
+
+                if (uri == null) {
+                    Toast.makeText(this, "Không thể tạo file CSV trong thư mục Tải về.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                OutputStream outputStream = getContentResolver().openOutputStream(uri);
+
+                if (outputStream == null) {
+                    Toast.makeText(this, "Không thể ghi file CSV.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                outputStream.write(csv.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                outputStream.flush();
+                outputStream.close();
+
+                Toast.makeText(this, "Xuất CSV thành công! File nằm trong thư mục Tải về.", Toast.LENGTH_LONG).show();
+            } else {
+                File dir = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
+                if (dir == null) {
+                    Toast.makeText(this, "Không thể mở thư mục lưu file.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                if (!dir.exists()) {
+                    dir.mkdirs();
+                }
+
+                File file = new File(dir, fileName);
+                FileWriter writer = new FileWriter(file);
+                writer.write(csv.toString());
+                writer.flush();
+                writer.close();
+
+                Toast.makeText(this, "Xuất CSV thành công! File: " + file.getAbsolutePath(), Toast.LENGTH_LONG).show();
+            }
         } catch (Exception e) {
             Toast.makeText(this, "Lỗi xuất file: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
