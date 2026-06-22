@@ -1,13 +1,11 @@
 spring:
   application:
     name: ExpenseTracker_api
-
   datasource:
     url: jdbc:postgresql://db.uujzrwioggprwhntxsag.supabase.co:5432/postgres
     username: postgres
     password: expensetracker2026
     driver-class-name: org.postgresql.Driver
-
   jpa:
     hibernate:
       ddl-auto: update
@@ -15,6 +13,11 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+ocr:
+  space:
+    api-key: "K88857534688957"
+    url: "https://api.ocr.space/parse/image"
 
 server:
   port: 8080
