@@ -1,5 +1,7 @@
 package com.example.expensetracker_app;
 
+import static android.content.Intent.getIntent;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -94,7 +96,7 @@ public class AddTransactionActivity extends BaseActivity {
             }
         }
 
-        btnOcrScan.setOnClickListener(v -> runMockOcrScan());
+        btnOcrScan.setOnClickListener(v -> startActivity(new Intent(AddTransactionActivity.this, BillOcrActivity.class)));
         btnSaveTransaction.setOnClickListener(v -> saveTransaction());
     }
 
@@ -147,6 +149,11 @@ public class AddTransactionActivity extends BaseActivity {
                     }
 
                     @Override
+                    public void onFailure(Call<List<CategoryResponse>> call, Throwable throwable) {
+
+                    }
+
+                  /* @Override
                     public void onFailure(Call<List<CategoryResponse>> call, Throwable t) {
                         // Offline fallbacks
                         List<String> names = new ArrayList<>();
@@ -159,7 +166,7 @@ public class AddTransactionActivity extends BaseActivity {
                         ArrayAdapter<String> catAdapter = new ArrayAdapter<>(AddTransactionActivity.this,
                                 android.R.layout.simple_spinner_dropdown_item, names);
                         spinnerCategory.setAdapter(catAdapter);
-                    }
+                    }*/
                 });
     }
 
@@ -206,143 +213,6 @@ public class AddTransactionActivity extends BaseActivity {
                 });
     }
 
-    private static final int REQUEST_IMAGE_CAPTURE = 101;
-    private static final int REQUEST_IMAGE_PICK = 102;
-// lấy camera từ máy
-    private void runMockOcrScan() {
-        String[] options = { "Chụp ảnh (Camera)", "Chọn ảnh từ thư viện (Gallery)" };
-        new androidx.appcompat.app.AlertDialog.Builder(this)
-                .setTitle("Quét Hóa Đơn AI (OCR)")
-                .setItems(options, (dialog, which) -> {
-                    if (which == 0) {
-                        // Launch Camera Intent
-                        Intent takePictureIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-                        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-                            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-                        } else {
-                            try {
-                                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-                            } catch (Exception e) {
-                                Toast.makeText(this, "Không thể mở ứng dụng Camera.", Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                    } else {
-                        // Launch Gallery Intent
-                        Intent pickPhotoIntent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                        startActivityForResult(pickPhotoIntent, REQUEST_IMAGE_PICK);
-                    }
-                })
-                .show();
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (resultCode == RESULT_OK) {
-            Bitmap bitmap = null;
-            if (requestCode == REQUEST_IMAGE_CAPTURE && data != null) {
-                Bundle extras = data.getExtras();
-                bitmap = (Bitmap) extras.get("data");
-            }
-            else if (requestCode == REQUEST_IMAGE_PICK && data != null) {
-                Uri selectedImage = data.getData();
-                try {
-                    InputStream imageStream = getContentResolver().openInputStream(selectedImage);
-                    bitmap = BitmapFactory.decodeStream(imageStream);
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            //  Tiến hành quét mã QR từ tấm ảnh mã Bitmap thu được
-            if (bitmap != null) {
-                processBillOcr(bitmap);
-                Toast.makeText(this, "Quét thông tin thành công", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(this, "Không thể xử lý hình ảnh này.", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
-    private String scanQRFromBitmap(Bitmap bitmap) {
-        int[] intArray = new int[bitmap.getWidth() * bitmap.getHeight()];
-        bitmap.getPixels(intArray, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
-
-        RGBLuminanceSource source = new RGBLuminanceSource(bitmap.getWidth(), bitmap.getHeight(), intArray);
-        BinaryBitmap binaryBitmap = new BinaryBitmap(new HybridBinarizer(source));
-
-        MultiFormatReader reader = new MultiFormatReader();
-        try {
-            Result result = reader.decode(binaryBitmap);
-            return result.getText();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-    private void parseAndFillData(String qrContent) {
-        if (qrContent == null || qrContent.trim().isEmpty()) {
-            return;
-        }
-
-        String cleanContent = qrContent.trim();
-
-        if (cleanContent.matches("\\d+")) {
-            etAmount.setText(cleanContent);
-            etDescription.setText("Thanh toán qua QR");
-            return;
-        }
-
-        if (cleanContent.contains("|")) {
-            try {
-                String[] parts = cleanContent.split("\\|");
-                for (String part : parts) {
-                    if (part.toLowerCase().startsWith("số tiền :") || part.toLowerCase().startsWith("amount:")) {
-                        etAmount.setText(part.substring(part.indexOf(":") + 1).trim());
-                    } else if (part.toLowerCase().startsWith("nội dung :") || part.toLowerCase().startsWith("note:")) {
-                        etDescription.setText(part.substring(part.indexOf(":") + 1).trim());
-                    }
-                }
-                return;
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        if (cleanContent.startsWith("000201")) {
-            try {
-                String amountPattern = "54";
-                if (cleanContent.contains(amountPattern)) {
-                    int index = cleanContent.indexOf(amountPattern);
-                    int length = Integer.parseInt(cleanContent.substring(index + 2, index + 4));
-                    String amount = cleanContent.substring(index + 4, index + 4 + length);
-                    etAmount.setText(amount);
-                }
-
-                String infoPattern = "62";
-                if (cleanContent.contains(infoPattern)) {
-                    int index = cleanContent.indexOf(infoPattern);
-                    int length = Integer.parseInt(cleanContent.substring(index + 2, index + 4));
-                    String subContent = cleanContent.substring(index + 4, index + 4 + length);
-                    if (subContent.contains("08")) {
-                        int subIndex = subContent.indexOf("08");
-                        int subLength = Integer.parseInt(subContent.substring(subIndex + 2, subIndex + 4));
-                        String note = subContent.substring(subIndex + 4, subIndex + 4 + subLength);
-                        etDescription.setText(note);
-                    } else {
-                        etDescription.setText("Quét mã VietQR");
-                    }
-                } else {
-                    etDescription.setText("Quét mã VietQR");
-                }
-                return;
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        etDescription.setText(cleanContent);
-    }
     private void saveTransaction() {
         String amountStr = etAmount.getText().toString().trim();
         String desc = etDescription.getText().toString().trim();
@@ -421,139 +291,6 @@ public class AddTransactionActivity extends BaseActivity {
                         Toast.makeText(AddTransactionActivity.this, "Lỗi kết nối mạng: " + t.getMessage(),
                                 Toast.LENGTH_LONG).show();
                     }
-                });
-    }
-    private void processBillOcr(Bitmap bitmap) {
-        if (bitmap == null) return;
-
-        InputImage image = InputImage.fromBitmap(bitmap, 0);
-        TextRecognizer recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS);
-
-        recognizer.process(image)
-                .addOnSuccessListener(visionText -> {
-                    // Toàn bộ chữ viết đọc được trên tờ bill sẽ nằm ở đây
-                    String fullText = visionText.getText();
-                    // Gọi hàm bóc tách thông minh để tìm số tiền và nội dung
-                    extractBillDetails(visionText);
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Không thể đọc được chữ từ ảnh bill này.", Toast.LENGTH_SHORT).show();
-                });
-    }
-
-    private void extractBillDetails(Text visionText) {
-        String foundAmount = "";
-        String foundNote = "";
-        List<Text.Line> allLines = new ArrayList<>();
-
-        // Duyệt qua từng đoạn văn bản đọc được trên tờ bill
-        for (Text.TextBlock block : visionText.getTextBlocks()) {
-            allLines.addAll(block.getLines());
-        }
-        for (int i = 0; i < allLines.size(); i++) {
-            String lineText = allLines.get(i).getText().trim();
-            String lowerText = lineText.toLowerCase();
-            if (lowerText.contains("số tiền")
-                    || lowerText.contains("chuyển tiền")
-                    || lowerText.contains("giao dịch")
-                    || lowerText.contains("thành công")
-                    || lowerText.contains("amount")) {
-                // Thử lấy số trên chính dòng hiện tại
-                String digits = lineText
-                        .replace(".", "")
-                        .replace(",", "")
-                        .replaceAll("[^0-9]", "");
-                if (!digits.isEmpty()) {
-                    foundAmount = digits;
-                }
-
-                // Nếu chưa có thì thử dòng kế tiếp
-                if (foundAmount.isEmpty() && i + 1 < allLines.size()) {
-                    String nextLine = allLines.get(i + 1).getText();
-                    digits = nextLine
-                            .replace(".", "")
-                            .replace(",", "")
-                            .replace(" ", "")
-                            .replaceAll("[^0-9]", "");
-                    if (!digits.isEmpty()) {
-                        foundAmount = digits;
-                    }
-                }
-            }
-            else if ((lowerText.contains("vnd")
-                    || lowerText.contains("vnđ")
-                    || lowerText.contains("đ"))
-                    && foundAmount.isEmpty()) {
-
-                String digits = lineText
-                        .replace(".", "")
-                        .replace(",", "")
-                        .replace(" ", "")
-                        .replaceAll("[^0-9]", "");
-                if (digits.length() >= 3 && !digits.matches("^0+$")) {
-                    foundAmount = digits;
-                }
-            }
-            if (lowerText.contains("nội dung")
-                    || lowerText.contains("lời nhắn")
-                    || lowerText.contains("ghi chú")
-                    || lowerText.contains("ndck")) {
-                if (lineText.contains(":")) {
-                    foundNote = lineText.substring(lineText.indexOf(":") + 1).trim();
-                } else {
-                    foundNote = lineText
-                            .replaceFirst("(?i)nội dung", "")
-                            .replaceFirst("(?i)lời nhắn", "")
-                            .replaceFirst("(?i)ghi chú", "")
-                            .replaceFirst("(?i)ndck", "")
-                            .trim();
-                    // Nếu sau từ khóa không còn gì thì lấy dòng kế tiếp
-                    if (foundNote.isEmpty() && i + 1 < allLines.size()) {
-                        foundNote = allLines.get(i + 1).getText().trim();
-                    }
-                }
-            }
-
-            Log.d("OCR_LINE", lineText);
-        }
-
-        Log.d("OCR_AMOUNT", foundAmount);
-        Log.d("OCR_NOTE", foundNote);
-        // Đổ dữ liệu tìm được lên giao diện
-        if (!foundAmount.isEmpty()) {
-            etAmount.setText(foundAmount);
-        } else {
-            Toast.makeText(this, "Không tự động tìm thấy số tiền, vui lòng nhập tay.", Toast.LENGTH_SHORT).show();
-        }
-        if (!foundNote.isEmpty()) {
-            etDescription.setText(foundNote);
-        } else {
-            etDescription.setText("Chi tiêu từ ảnh biên lai");
-        }
-    }
-    private void startQRScanner() {
-        // Cấu hình chỉ quét mã QR (bỏ qua các loại mã vạch khác để tăng tốc độ)
-        GmsBarcodeScannerOptions options = new GmsBarcodeScannerOptions.Builder()
-                .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
-                .enableAutoZoom() // Tự động phóng to nếu mã ở xa
-                .build();
-
-        GmsBarcodeScanner scanner = GmsBarcodeScanning.getClient(this, options);
-
-        // Bắt đầu quét
-        scanner.startScan()
-                .addOnSuccessListener(barcode -> {
-                    // Khi quét THÀNH CÔNG, thông tin chứa trong mã QR sẽ nằm ở đây
-                    String qrContent = barcode.getRawValue();
-
-                    // Hiển thị hoặc xử lý thông tin lấy được
-                    Toast.makeText(this, "Nội dung QR: " + qrContent, Toast.LENGTH_LONG).show();
-
-                    // TODO: Phân tích chuỗi qrContent để tự động điền vào ô Số tiền, Ghi chú...
-                })
-                .addOnFailureListener(e -> {
-                    // Khi quét THẤT BẠI hoặc người dùng bấm nút Back thoát ra
-                    Toast.makeText(this, "Quét mã thất bại: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
 }
