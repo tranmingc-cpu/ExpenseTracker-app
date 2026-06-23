@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#1F1F2E">
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="24dp">
+
+        <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Thanh toán QR"
+                android:textColor="#FFFFFF"
+                android:textSize="26sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:layout_marginBottom="24dp" />
+
+        <Spinner
+                android:id="@+id/spinnerQrBank"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:background="#2F2F45"
+                android:layout_marginBottom="12dp" />
+
+        <EditText
+                android:id="@+id/etQrAccountNumber"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:hint="Số tài khoản"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#BBBBBB"
+                android:inputType="number"
+                android:background="#2F2F45"
+                android:padding="12dp"
+                android:layout_marginBottom="12dp" />
+
+        <EditText
+                android:id="@+id/etQrRecipientName"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:hint="Tên người nhận"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#BBBBBB"
+                android:background="#2F2F45"
+                android:padding="12dp"
+                android:layout_marginBottom="12dp" />
+
+        <EditText
+                android:id="@+id/etQrAmount"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:hint="Số tiền"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#BBBBBB"
+                android:inputType="numberDecimal"
+                android:background="#2F2F45"
+                android:padding="12dp"
+                android:layout_marginBottom="12dp" />
+
+        <EditText
+                android:id="@+id/etQrDescription"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:hint="Nội dung"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#BBBBBB"
+                android:background="#2F2F45"
+                android:padding="12dp"
+                android:layout_marginBottom="12dp" />
+
+        <Spinner
+                android:id="@+id/spinnerQrCategory"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:background="#2F2F45"
+                android:layout_marginBottom="12dp" />
+
+        <Spinner
+                android:id="@+id/spinnerQrWallet"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:background="#2F2F45"
+                android:layout_marginBottom="20dp" />
+
+        <Button
+                android:id="@+id/btnMomoPayment"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="Tạo QR MoMo"
+                android:layout_marginBottom="12dp" />
+
+        <Button
+                android:id="@+id/btnVietQrPayment"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="Tạo VietQR"
+                android:layout_marginBottom="12dp" />
+
+        <Button
+                android:id="@+id/btnSaveQrTransaction"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="Lưu giao dịch" />
+
+    </LinearLayout>
+</ScrollView>
