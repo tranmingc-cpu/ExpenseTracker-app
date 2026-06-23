@@ -1,6 +1,9 @@
 package com.expensetracker_manager.network;
 
 import android.content.Context;
+
+import com.expensetracker_manager.network.api.PaymentApiService;
+
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
@@ -97,5 +100,9 @@ public class RetrofitClient {
 
     public com.expensetracker_manager.network.api.RecurringTransactionApiService getRecurringTransactionApi() {
         return create(com.expensetracker_manager.network.api.RecurringTransactionApiService.class);
+    }
+
+    public com.expensetracker_manager.network.api.PaymentApiService getPaymentApi() {
+        return create(com.expensetracker_manager.network.api.PaymentApiService.class);
     }
 }
