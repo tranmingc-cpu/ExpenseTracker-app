@@ -1,6 +1,7 @@
 FROM gradle:8.5-jdk17 AS build
 WORKDIR /home/gradle/src
-COPY --chown=gradle:gradle ExpenseTracker_api/ .
+COPY --chown=gradle:gradle . .
+
 RUN gradle build -x test --no-daemon
 
 FROM eclipse-temurin:17-jre-alpine
