@@ -109,8 +109,8 @@ public class HomeActivity extends BaseActivity {
 
     private void setupListeners() {
         btnProfile.setOnClickListener(v -> startActivity(new Intent(HomeActivity.this, ProfileActivity.class)));
-
-
+        btnSettings.setOnClickListener(v ->startActivity(new Intent(ProfileActivity.this, SettingsActivity.class)));
+        
         btnNavRecurring.setOnClickListener(v -> startActivity(new Intent(HomeActivity.this, RecurringActivity.class)));
 
         btnNavSync.setOnClickListener(v -> simulateBankSync());
