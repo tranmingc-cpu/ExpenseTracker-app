@@ -265,16 +265,12 @@
         android:alignmentMode="alignMargins"
         app:layout_constraintTop_toBottomOf="@id/cardQuickIncome">
 
-        <Button android:id="@+id/btnNavAdd" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_columnWeight="1" android:text="Thêm GD" android:textColor="#FFFFFF" android:backgroundTint="#2A2A4E" android:textSize="11sp" android:layout_margin="4dp"/>
-        <Button android:id="@+id/btnNavBudgets" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_columnWeight="1" android:text="Ngân Sách" android:textColor="#FFFFFF" android:backgroundTint="#2A2A4E" android:textSize="11sp" android:layout_margin="4dp"/>
-        <Button android:id="@+id/btnNavGoals" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_columnWeight="1" android:text="Tiết Kiệm" android:textColor="#FFFFFF" android:backgroundTint="#2A2A4E" android:textSize="11sp" android:layout_margin="4dp"/>
         <Button android:id="@+id/btnNavRecurring" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_columnWeight="1" android:text="Định Kỳ" android:textColor="#FFFFFF" android:backgroundTint="#2A2A4E" android:textSize="11sp" android:layout_margin="4dp"/>
         <Button android:id="@+id/btnNavSync" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_columnWeight="1" android:text="Đồng Bộ" android:textColor="#FFFFFF" android:backgroundTint="#2A2A4E" android:textSize="11sp" android:layout_margin="4dp"/>
         <Button android:id="@+id/btnNavExport" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_columnWeight="1" android:text="Xuất CSV" android:textColor="#FFFFFF" android:backgroundTint="#2A2A4E" android:textSize="11sp" android:layout_margin="4dp"/>
 
     </GridLayout>
 
-    <!-- Habit Alert Box -->
     <androidx.cardview.widget.CardView
         android:id="@+id/cardHabits"
         android:layout_width="match_parent"
@@ -357,11 +353,12 @@
     <LinearLayout
         android:id="@+id/layoutBottomNav"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
+        android:layout_height="64dp"
         android:orientation="horizontal"
         android:background="#1F1F35"
         android:gravity="center"
-        android:padding="4dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
@@ -376,17 +373,18 @@
             android:background="?android:attr/selectableItemBackground"
             android:clickable="true"
             android:focusable="true">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="➕"
-                android:textSize="18sp" />
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_add"
+                app:tint="#8A8A9E" />
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Thêm GD"
-                android:textColor="#FFFFFF"
-                android:textSize="10sp" />
+                android:textColor="#8A8A9E"
+                android:textSize="10sp"
+                android:layout_marginTop="2dp" />
         </LinearLayout>
 
         <LinearLayout
@@ -399,17 +397,18 @@
             android:background="?android:attr/selectableItemBackground"
             android:clickable="true"
             android:focusable="true">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="🐖"
-                android:textSize="18sp" />
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_savings"
+                app:tint="#8A8A9E" />
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Tiết kiệm"
-                android:textColor="#FFFFFF"
-                android:textSize="10sp" />
+                android:textColor="#8A8A9E"
+                android:textSize="10sp"
+                android:layout_marginTop="2dp" />
         </LinearLayout>
 
         <LinearLayout
@@ -422,17 +421,18 @@
             android:background="?android:attr/selectableItemBackground"
             android:clickable="true"
             android:focusable="true">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="📷"
-                android:textSize="18sp" />
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_qr_code"
+                app:tint="#8A8A9E" />
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Quét QR"
-                android:textColor="#FFFFFF"
-                android:textSize="10sp" />
+                android:textColor="#8A8A9E"
+                android:textSize="10sp"
+                android:layout_marginTop="2dp" />
         </LinearLayout>
 
         <LinearLayout
@@ -445,17 +445,18 @@
             android:background="?android:attr/selectableItemBackground"
             android:clickable="true"
             android:focusable="true">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="📊"
-                android:textSize="18sp" />
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_budget"
+                app:tint="#8A8A9E" />
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Ngân sách"
-                android:textColor="#FFFFFF"
-                android:textSize="10sp" />
+                android:textColor="#8A8A9E"
+                android:textSize="10sp"
+                android:layout_marginTop="2dp" />
         </LinearLayout>
 
         <LinearLayout
@@ -468,17 +469,18 @@
             android:background="?android:attr/selectableItemBackground"
             android:clickable="true"
             android:focusable="true">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="👤"
-                android:textSize="18sp" />
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_profile"
+                app:tint="#8A8A9E" />
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Profile"
-                android:textColor="#FFFFFF"
-                android:textSize="10sp" />
+                android:textColor="#8A8A9E"
+                android:textSize="10sp"
+                android:layout_marginTop="2dp" />
         </LinearLayout>
     </LinearLayout>
 
