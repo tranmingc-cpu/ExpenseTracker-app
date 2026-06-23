@@ -1,7 +1,7 @@
 FROM gradle:8.5-jdk17 AS build
-COPY --chown=gradle:gradle . /home/gradle/src
+COPY --chown=gradle:gradle . ./
 WORKDIR /home/gradle/src
-RUN ./gradlew build -x test
+RUN chmod +x gradlew && ./gradlew build -x test
 
 FROM eclipse-temurin:17-jre-alpine
 EXPOSE 8080
