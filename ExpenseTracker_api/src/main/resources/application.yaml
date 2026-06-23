@@ -2,7 +2,7 @@ spring:
   application:
     name: ExpenseTracker_api
   datasource:
-    url: jdbc:postgresql://db.uujzrwioggprwhntxsag.supabase.co:5432/postgres
+    url: jdbc:postgresql://db.uujzrwioggprwhntxsag.supabase.co:5432/postgres?sslmode=require
     username: postgres
     password: expensetracker2026
     driver-class-name: org.postgresql.Driver
