@@ -7,7 +7,8 @@ public class PaymentLinkRequest {
     private Double amount;
     private String note;
 
-    public PaymentLinkRequest() {}
+    public PaymentLinkRequest() {
+    }
 
     public PaymentLinkRequest(String phoneNumber, String bankId, String accountNumber, Double amount, String note) {
         this.phoneNumber = phoneNumber;
@@ -17,18 +18,51 @@ public class PaymentLinkRequest {
         this.note = note;
     }
 
-    public String getPhoneNumber() { return phoneNumber; }
-    public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
+    public PaymentLinkRequest(String phoneNumber, String bankId, String accountNumber, String amount, String note) {
+        this.phoneNumber = phoneNumber;
+        this.bankId = bankId;
+        this.accountNumber = accountNumber;
+        try {
+            this.amount = Double.parseDouble(amount);
+        } catch (Exception e) {
+            this.amount = 0.0;
+        }
+        this.note = note;
+    }
 
-    public String getBankId() { return bankId; }
-    public void setBankId(String bankId) { this.bankId = bankId; }
+    public PaymentLinkRequest(String phoneNumber, String bankId, String accountNumber, int amount, String note) {
+        this.phoneNumber = phoneNumber;
+        this.bankId = bankId;
+        this.accountNumber = accountNumber;
+        this.amount = (double) amount;
+        this.note = note;
+    }
 
-    public String getAccountNumber() { return accountNumber; }
-    public void setAccountNumber(String accountNumber) { this.accountNumber = accountNumber; }
+    public PaymentLinkRequest(String phoneNumber, String bankId, String accountNumber, long amount, String note) {
+        this.phoneNumber = phoneNumber;
+        this.bankId = bankId;
+        this.accountNumber = accountNumber;
+        this.amount = (double) amount;
+        this.note = note;
+    }
 
-    public Double getAmount() { return amount; }
-    public void setAmount(Double amount) { this.amount = amount; }
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
 
-    public String getNote() { return note; }
-    public void setNote(String note) { this.note = note; }
+    public String getBankId() {
+        return bankId;
+    }
+
+    public String getAccountNumber() {
+        return accountNumber;
+    }
+
+    public Double getAmount() {
+        return amount;
+    }
+
+    public String getNote() {
+        return note;
+    }
 }
