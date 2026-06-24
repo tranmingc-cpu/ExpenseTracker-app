@@ -10,6 +10,10 @@ public class PaymentLinkRequest {
     public PaymentLinkRequest() {}
 
     public PaymentLinkRequest(String phoneNumber, String bankId, String accountNumber, Double amount, String note) {
+    private Object amount;
+    private String note;
+
+    public PaymentLinkRequest(String phoneNumber, String bankId, String accountNumber, String amount, String note) {
         this.phoneNumber = phoneNumber;
         this.bankId = bankId;
         this.accountNumber = accountNumber;
@@ -32,3 +36,11 @@ public class PaymentLinkRequest {
     public String getNote() { return note; }
     public void setNote(String note) { this.note = note; }
 }
+    public PaymentLinkRequest(String phoneNumber, String bankId, String accountNumber, int amount, String note) {
+        this.phoneNumber = phoneNumber;
+        this.bankId = bankId;
+        this.accountNumber = accountNumber;
+        this.amount = amount;
+        this.note = note;
+    }
+

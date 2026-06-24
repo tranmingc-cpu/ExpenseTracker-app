@@ -17,3 +17,4 @@ public class PaymentLinkResponse {
     public String getVietQrUrl() { return vietQrUrl; }
     public void setVietQrUrl(String vietQrUrl) { this.vietQrUrl = vietQrUrl; }
 }
+   
