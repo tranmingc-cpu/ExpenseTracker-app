@@ -8,6 +8,6 @@ import retrofit2.http.Body;
 import retrofit2.http.POST;
 
 public interface PaymentApiService {
-    @POST("api/payment/generate-link")
+    @POST("api/payment/generate-links")
     Call<PaymentLinkResponse> generateLinks(@Body PaymentLinkRequest request);
 }

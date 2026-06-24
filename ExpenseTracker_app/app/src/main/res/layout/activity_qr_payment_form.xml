@@ -1,111 +1,256 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="#1F1F2E">
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#1E1E2C">
 
-    <LinearLayout
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="24dp">
+            android:paddingLeft="24dp"
+            android:paddingRight="24dp"
+            android:paddingTop="32dp"
+            android:paddingBottom="24dp">
 
-        <TextView
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Thanh Toán &amp; Chuyển Khoản"
+                android:textColor="#FFFFFF"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Nhập thông tin tài khoản đích để thực hiện giao dịch"
+                android:textColor="#8A8A9E"
+                android:textSize="13sp"
+                android:layout_marginTop="4dp" />
+
+            <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Thanh toán QR"
-                android:textColor="#FFFFFF"
-                android:textSize="26sp"
+                android:layout_marginTop="20dp"
+                app:cardCornerRadius="16dp"
+                app:cardBackgroundColor="#2A2A3E"
+                app:cardElevation="6dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="18dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="16dp">
+
+                        <View
+                            android:layout_width="4dp"
+                            android:layout_height="16dp"
+                            android:background="#00FF66"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="THÔNG TIN TÀI KHOẢN NHẬN"
+                            android:textColor="#00FF66"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:layout_marginStart="8dp"/>
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Ngân hàng"
+                        android:textColor="#8A8A9E"
+                        android:textSize="12sp"/>
+                    
+                    <Spinner
+                        android:id="@+id/spinnerQrBank"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:background="@drawable/bg_spinner"
+                        android:layout_marginTop="4dp"
+                        android:layout_marginBottom="12dp"
+                        android:padding="6dp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Số tài khoản"
+                        android:textColor="#8A8A9E"
+                        android:textSize="12sp"/>
+                    
+                    <EditText
+                        android:id="@+id/etQrAccountNumber"
+                        android:layout_width="match_parent"
+                        android:layout_height="45dp"
+                        android:background="@drawable/bg_edit_text"
+                        android:textColor="#FFFFFF"
+                        android:hint="Nhập số tài khoản/số điện thoại"
+                        android:textColorHint="#606075"
+                        android:inputType="number"
+                        android:paddingLeft="12dp"
+                        android:paddingRight="12dp"
+                        android:textSize="14sp"
+                        android:layout_marginTop="4dp"
+                        android:layout_marginBottom="12dp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Tên người nhận (Không dấu)"
+                        android:textColor="#8A8A9E"
+                        android:textSize="12sp"/>
+                    
+                    <EditText
+                        android:id="@+id/etQrRecipientName"
+                        android:layout_width="match_parent"
+                        android:layout_height="45dp"
+                        android:background="@drawable/bg_edit_text"
+                        android:textColor="#FFFFFF"
+                        android:hint="Nhập tên người nhận"
+                        android:textColorHint="#606075"
+                        android:inputType="textCapCharacters"
+                        android:paddingLeft="12dp"
+                        android:paddingRight="12dp"
+                        android:textSize="14sp"
+                        android:layout_marginTop="4dp"/>
+
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Thông tin giao dịch chi tiêu"
+                android:textColor="#8A8A9E"
+                android:textSize="13sp"
                 android:textStyle="bold"
-                android:gravity="center"
-                android:layout_marginBottom="24dp" />
+                android:layout_marginTop="24dp" />
 
-        <Spinner
-                android:id="@+id/spinnerQrBank"
-                android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:background="#2F2F45"
-                android:layout_marginBottom="12dp" />
-
-        <EditText
-                android:id="@+id/etQrAccountNumber"
-                android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:hint="Số tài khoản"
-                android:textColor="#FFFFFF"
-                android:textColorHint="#BBBBBB"
-                android:inputType="number"
-                android:background="#2F2F45"
-                android:padding="12dp"
-                android:layout_marginBottom="12dp" />
-
-        <EditText
-                android:id="@+id/etQrRecipientName"
-                android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:hint="Tên người nhận"
-                android:textColor="#FFFFFF"
-                android:textColorHint="#BBBBBB"
-                android:background="#2F2F45"
-                android:padding="12dp"
-                android:layout_marginBottom="12dp" />
-
-        <EditText
+            <EditText
                 android:id="@+id/etQrAmount"
                 android:layout_width="match_parent"
                 android:layout_height="52dp"
-                android:hint="Số tiền"
-                android:textColor="#FFFFFF"
-                android:textColorHint="#BBBBBB"
-                android:inputType="numberDecimal"
-                android:background="#2F2F45"
-                android:padding="12dp"
-                android:layout_marginBottom="12dp" />
+                android:background="@drawable/bg_edit_text"
+                android:hint="Số tiền (đ)"
+                android:textColorHint="#606075"
+                android:textColor="#00FF66"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp"
+                android:inputType="number"
+                android:layout_marginTop="12dp" />
 
-        <EditText
+            <EditText
                 android:id="@+id/etQrDescription"
                 android:layout_width="match_parent"
                 android:layout_height="52dp"
-                android:hint="Nội dung"
+                android:background="@drawable/bg_edit_text"
+                android:hint="Ghi chú / Nội dung"
+                android:textColorHint="#606075"
                 android:textColor="#FFFFFF"
-                android:textColorHint="#BBBBBB"
-                android:background="#2F2F45"
-                android:padding="12dp"
-                android:layout_marginBottom="12dp" />
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp"
+                android:inputType="text"
+                android:layout_marginTop="12dp" />
 
-        <Spinner
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Danh mục chi tiêu"
+                android:textColor="#8A8A9E"
+                android:textSize="12sp"
+                android:layout_marginTop="16dp"
+                android:layout_marginLeft="4dp"/>
+            <Spinner
                 android:id="@+id/spinnerQrCategory"
                 android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:background="#2F2F45"
-                android:layout_marginBottom="12dp" />
+                android:layout_height="50dp"
+                android:layout_marginTop="6dp"
+                android:background="@drawable/bg_spinner"
+                android:padding="8dp" />
 
-        <Spinner
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Ví / Tài khoản thanh toán"
+                android:textColor="#8A8A9E"
+                android:textSize="12sp"
+                android:layout_marginTop="16dp"
+                android:layout_marginLeft="4dp"/>
+            <Spinner
                 android:id="@+id/spinnerQrWallet"
                 android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:background="#2F2F45"
-                android:layout_marginBottom="20dp" />
+                android:layout_height="50dp"
+                android:layout_marginTop="6dp"
+                android:background="@drawable/bg_spinner"
+                android:padding="8dp" />
 
-        <Button
-                android:id="@+id/btnMomoPayment"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:text="Tạo QR MoMo"
-                android:layout_marginBottom="12dp" />
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="20dp"
+                android:weightSum="2">
 
-        <Button
-                android:id="@+id/btnVietQrPayment"
-                android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:text="Tạo VietQR"
-                android:layout_marginBottom="12dp" />
+                <Button
+                    android:id="@+id/btnMomoPayment"
+                    android:layout_width="0dp"
+                    android:layout_height="50dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="6dp"
+                    android:text="Thanh toán MoMo"
+                    android:textColor="#FFFFFF"
+                    android:backgroundTint="#A50064"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="12dp"/>
 
-        <Button
+                <Button
+                    android:id="@+id/btnVietQrPayment"
+                    android:layout_width="0dp"
+                    android:layout_height="50dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="6dp"
+                    android:text="Tạo mã VietQR"
+                    android:textColor="#FFFFFF"
+                    android:backgroundTint="#005BAA"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="12dp"/>
+
+            </LinearLayout>
+
+            <Button
                 android:id="@+id/btnSaveQrTransaction"
                 android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:text="Lưu giao dịch" />
+                android:layout_height="54dp"
+                android:text="Lưu giao dịch chi tiêu"
+                android:textColor="#1E1E2C"
+                android:background="@drawable/bg_button_primary"
+                app:backgroundTint="@null"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="40dp" />
 
-    </LinearLayout>
-</ScrollView>
+        </LinearLayout>
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
