@@ -1,9 +1,12 @@
 package com.example.expensetracker_app;
 
+import static android.content.Intent.getIntent;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -12,6 +15,12 @@ import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.google.mlkit.vision.common.InputImage;
+import com.google.mlkit.vision.text.Text;
+import com.google.mlkit.vision.text.TextRecognition;
+import com.google.mlkit.vision.text.TextRecognizer;
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions;
+
 import com.expensetracker_manager.model.request.TransactionRequest;
 import com.expensetracker_manager.model.response.CategoryResponse;
 import com.expensetracker_manager.model.response.TransactionResponse;
@@ -19,6 +28,25 @@ import com.expensetracker_manager.model.response.WalletResponse;
 import com.expensetracker_manager.network.RetrofitClient;
 import com.expensetracker_manager.utils.TokenManager;
 
+import com.google.mlkit.vision.codescanner.GmsBarcodeScanner;
+import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions;
+import com.google.mlkit.vision.codescanner.GmsBarcodeScanning;
+import com.google.mlkit.vision.barcode.common.Barcode;
+
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+
+import androidx.annotation.Nullable;
+
+import com.google.zxing.BinaryBitmap;
+import com.google.zxing.MultiFormatReader;
+import com.google.zxing.RGBLuminanceSource;
+import com.google.zxing.Result;
+import com.google.zxing.common.HybridBinarizer;
+
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -34,7 +62,6 @@ public class AddTransactionActivity extends BaseActivity {
     private Spinner spinnerType, spinnerCategory, spinnerWallet;
     private Button btnSaveTransaction, btnOcrScan;
     private ProgressBar ocrProgressBar;
-
     private List<CategoryResponse> categories = new ArrayList<>();
     private List<WalletResponse> wallets = new ArrayList<>();
 
@@ -51,14 +78,25 @@ public class AddTransactionActivity extends BaseActivity {
         btnSaveTransaction = findViewById(R.id.btnSaveTransaction);
         btnOcrScan = findViewById(R.id.btnOcrScan);
         ocrProgressBar = findViewById(R.id.ocrProgressBar);
-
         setupSpinners();
         loadCategories();
         loadWallets();
 
         etDescription.setHint("Ghi chú / Mô tả (Không bắt buộc)");
 
-        btnOcrScan.setOnClickListener(v -> runMockOcrScan());
+        Intent intent = getIntent();
+        if (intent != null) {
+            String prefilledAmount = intent.getStringExtra("extra_amount");
+            String prefilledDesc = intent.getStringExtra("extra_desc");
+            if (prefilledAmount != null && !prefilledAmount.isEmpty()) {
+                etAmount.setText(prefilledAmount);
+            }
+            if (prefilledDesc != null && !prefilledDesc.isEmpty()) {
+                etDescription.setText(prefilledDesc);
+            }
+        }
+
+        btnOcrScan.setOnClickListener(v -> startActivity(new Intent(AddTransactionActivity.this, BillOcrActivity.class)));
         btnSaveTransaction.setOnClickListener(v -> saveTransaction());
     }
 
@@ -111,6 +149,11 @@ public class AddTransactionActivity extends BaseActivity {
                     }
 
                     @Override
+                    public void onFailure(Call<List<CategoryResponse>> call, Throwable throwable) {
+
+                    }
+
+                  /* @Override
                     public void onFailure(Call<List<CategoryResponse>> call, Throwable t) {
                         // Offline fallbacks
                         List<String> names = new ArrayList<>();
@@ -123,7 +166,7 @@ public class AddTransactionActivity extends BaseActivity {
                         ArrayAdapter<String> catAdapter = new ArrayAdapter<>(AddTransactionActivity.this,
                                 android.R.layout.simple_spinner_dropdown_item, names);
                         spinnerCategory.setAdapter(catAdapter);
-                    }
+                    }*/
                 });
     }
 
@@ -168,56 +211,6 @@ public class AddTransactionActivity extends BaseActivity {
                         spinnerWallet.setAdapter(walletAdapter);
                     }
                 });
-    }
-
-    private static final int REQUEST_IMAGE_CAPTURE = 101;
-    private static final int REQUEST_IMAGE_PICK = 102;
-
-    private void runMockOcrScan() {
-        String[] options = { "Chụp ảnh (Camera)", "Chọn ảnh từ thư viện (Gallery)" };
-        new androidx.appcompat.app.AlertDialog.Builder(this)
-                .setTitle("Quét Hóa Đơn AI (OCR)")
-                .setItems(options, (dialog, which) -> {
-                    if (which == 0) {
-                        // Launch Camera Intent
-                        Intent takePictureIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-                        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-                            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-                        } else {
-                            try {
-                                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-                            } catch (Exception e) {
-                                Toast.makeText(this, "Không thể mở ứng dụng Camera.", Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                    } else {
-                        // Launch Gallery Intent
-                        Intent pickPhotoIntent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                        startActivityForResult(pickPhotoIntent, REQUEST_IMAGE_PICK);
-                    }
-                })
-                .show();
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK && (requestCode == REQUEST_IMAGE_CAPTURE || requestCode == REQUEST_IMAGE_PICK)) {
-            // Start mock OCR processing
-            btnOcrScan.setEnabled(false);
-            ocrProgressBar.setVisibility(View.VISIBLE);
-
-            new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                ocrProgressBar.setVisibility(View.GONE);
-                btnOcrScan.setEnabled(true);
-
-                // Populate fields with mock scanned details - ONLY amount is set automatically
-                etAmount.setText("185000");
-
-                Toast.makeText(AddTransactionActivity.this,
-                        "Xử lý OCR hóa đơn thành công! Đã nhận dạng số tiền: 185.000đ. Vui lòng tự nhập các thông tin khác.", Toast.LENGTH_LONG).show();
-            }, 2000);
-        }
     }
 
     private void saveTransaction() {

@@ -1,6 +1,7 @@
+
 plugins {
     alias(libs.plugins.android.application)
-    id 'com.google.gms.google-services'
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -13,7 +14,7 @@ android {
 
     defaultConfig {
         applicationId "com.example.expensetracker_app"
-        minSdk 28
+        minSdk 29
         targetSdk 36
         versionCode 1
         versionName "1.0"
@@ -36,8 +37,9 @@ android {
 dependencies {
 
     implementation("com.google.android.gms:play-services-auth:21.6.0")
-    implementation platform('com.google.firebase:firebase-bom:34.1.0')
+    implementation(platform("com.google.firebase:firebase-bom:34.15.0"))
     implementation 'com.google.firebase:firebase-auth'
+    implementation("com.google.firebase:firebase-analytics")
     implementation libs.appcompat
     implementation libs.material
     implementation libs.activity
@@ -45,13 +47,18 @@ dependencies {
     testImplementation libs.junit
     androidTestImplementation libs.ext.junit
     androidTestImplementation libs.espresso.core
+    // QR of Google Play Services
+    implementation("com.google.android.gms:play-services-code-scanner:16.1.0")
+    // zxing mã hóa QR
+    implementation("com.google.zxing:core:3.5.3")
 
     // Retrofit & OkHttp
     implementation 'com.squareup.retrofit2:retrofit:2.11.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.11.0'
     implementation 'com.squareup.okhttp3:okhttp:4.12.0'
     implementation 'com.squareup.okhttp3:logging-interceptor:4.12.0'
-
+    // OCR nhận diện chữ từ ảnh
+    implementation("com.google.android.gms:play-services-mlkit-text-recognition:19.0.1")
     // Security Crypto for EncryptedSharedPreferences
     implementation 'androidx.security:security-crypto:1.1.0-alpha06'
 

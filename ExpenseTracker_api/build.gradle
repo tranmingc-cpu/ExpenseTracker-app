@@ -26,6 +26,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
 
     implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.json:json:20240303'
 
     implementation 'com.google.firebase:firebase-admin:9.4.3'
 
@@ -35,6 +36,7 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.5'
 
     compileOnly 'org.projectlombok:lombok'
+    implementation 'com.google.cloud:google-cloud-vision:3.44.0'
 
     annotationProcessor 'org.projectlombok:lombok'
 
