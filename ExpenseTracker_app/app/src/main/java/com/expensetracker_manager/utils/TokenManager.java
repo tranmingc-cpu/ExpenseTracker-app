@@ -2,6 +2,7 @@ package com.expensetracker_manager.utils;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+
 import androidx.security.crypto.EncryptedSharedPreferences;
 import androidx.security.crypto.MasterKeys;
 
@@ -12,6 +13,7 @@ public class TokenManager {
     private static final String KEY_USER_EMAIL = "user_email";
     private static final String KEY_USER_AVATAR = "user_avatar";
     private static final String KEY_USER_ID = "user_id";
+    private static final String KEY_USER_PHONE = "user_phone";
     private static final String KEY_PASSCODE = "app_passcode";
 
     private static TokenManager instance;
@@ -57,6 +59,15 @@ public class TokenManager {
         editor.commit();
     }
 
+    public void saveUserPhone(String phoneNumber) {
+        editor.putString(KEY_USER_PHONE, phoneNumber);
+        editor.commit();
+    }
+
+    public String getUserPhone() {
+        return sharedPreferences.getString(KEY_USER_PHONE, "");
+    }
+
     public String getUserName() {
         return sharedPreferences.getString(KEY_USER_NAME, "");
     }
@@ -78,7 +89,11 @@ public class TokenManager {
     }
 
     public void savePasscode(String passcode) {
-        editor.putString(KEY_PASSCODE, passcode).commit();
+        if (passcode == null || passcode.trim().isEmpty()) {
+            editor.remove(KEY_PASSCODE).commit();
+        } else {
+            editor.putString(KEY_PASSCODE, passcode).commit();
+        }
     }
 
     public String getPasscode() {
