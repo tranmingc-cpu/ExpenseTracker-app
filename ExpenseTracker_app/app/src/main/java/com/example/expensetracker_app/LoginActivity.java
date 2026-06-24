@@ -4,7 +4,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -29,11 +32,6 @@ import com.google.firebase.auth.GoogleAuthProvider;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-
-import android.widget.EditText;
-import android.widget.Button;
-import android.widget.TextView;
-import com.expensetracker_manager.model.request.LoginRequest;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -64,7 +62,13 @@ public class LoginActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
 
-        String webClientId = getString(R.string.default_web_client_id);
+        String emailFromRegister = getIntent().getStringExtra("email");
+        if (emailFromRegister != null && !emailFromRegister.trim().isEmpty()) {
+            etEmail.setText(emailFromRegister.trim());
+            etPassword.requestFocus();
+        }
+
+        String webClientId = getDefaultWebClientId();
 
         GoogleSignInOptions.Builder gsoBuilder = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail();
@@ -72,39 +76,16 @@ public class LoginActivity extends AppCompatActivity {
         if (webClientId != null && !webClientId.isEmpty()) {
             gsoBuilder.requestIdToken(webClientId);
         } else {
-            Log.e(TAG, "default_web_client_id resource not found. Google Sign-In will not be able to authenticate with the backend.");
+            Log.e(TAG, "default_web_client_id resource not found. Google Sign-In is not configured for this Firebase project.");
         }
 
         GoogleSignInOptions gso = gsoBuilder.build();
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
 
-        btnGoogleSignIn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                signIn();
-            }
-        });
-
-        btnLogin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                handleLocalLogin();
-            }
-        });
-
-        tvRegisterLink.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
-            }
-        });
-
-        tvForgotPassword.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(LoginActivity.this, ForgotPasswordActivity.class));
-            }
-        });
+        btnGoogleSignIn.setOnClickListener(v -> signIn());
+        btnLogin.setOnClickListener(v -> handleLocalLogin());
+        tvRegisterLink.setOnClickListener(v -> startActivity(new Intent(LoginActivity.this, RegisterActivity.class)));
+        tvForgotPassword.setOnClickListener(v -> startActivity(new Intent(LoginActivity.this, ForgotPasswordActivity.class)));
     }
 
     private void handleLocalLogin() {
@@ -112,48 +93,115 @@ public class LoginActivity extends AppCompatActivity {
         String password = etPassword.getText().toString().trim();
 
         if (email.isEmpty() || password.isEmpty()) {
-            Toast.makeText(this, "Vui lòng điền Email và Mật khẩu", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Vui lòng nhập email và mật khẩu.", Toast.LENGTH_SHORT).show();
             return;
         }
 
         showLoading(true);
 
-        LoginRequest request = new LoginRequest(email, password);
-        RetrofitClient.getInstance().getAuthApi().login(request)
-                .enqueue(new Callback<AuthResponse>() {
-                    @Override
-                    public void onResponse(Call<AuthResponse> call, Response<AuthResponse> response) {
-                        showLoading(false);
-                        if (response.isSuccessful() && response.body() != null) {
-                            AuthResponse authResponse = response.body();
-                            TokenManager tokenManager = TokenManager.getInstance(LoginActivity.this);
-                            tokenManager.saveToken(authResponse.getJwtToken());
-                            tokenManager.saveUserInfo(
-                                    authResponse.getUserId(),
-                                    authResponse.getEmail(),
-                                    authResponse.getFullName(),
-                                    authResponse.getAvatarUrl()
-                            );
-                            Toast.makeText(LoginActivity.this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
-                            startActivity(new Intent(LoginActivity.this, HomeActivity.class));
-                            finish();
-                        } else {
-                            Toast.makeText(LoginActivity.this, "Đăng nhập thất bại. Vui lòng kiểm tra lại email/mật khẩu.", Toast.LENGTH_LONG).show();
-                        }
-                    }
+        mAuth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        FirebaseUser user = mAuth.getCurrentUser();
 
-                    @Override
-                    public void onFailure(Call<AuthResponse> call, Throwable t) {
+                        if (user != null) {
+                            user.getIdToken(true).addOnCompleteListener(tokenTask -> {
+                                if (tokenTask.isSuccessful()) {
+                                    String firebaseIdToken = tokenTask.getResult().getToken();
+                                    sendTokenToBackend(firebaseIdToken);
+                                } else {
+                                    showLoading(false);
+                                    Log.e(TAG, "Cannot get Firebase token", tokenTask.getException());
+                                    Toast.makeText(
+                                            LoginActivity.this,
+                                            "Đăng nhập chưa thành công. Vui lòng thử lại sau.",
+                                            Toast.LENGTH_LONG
+                                    ).show();
+                                }
+                            });
+                        } else {
+                            showLoading(false);
+                            Toast.makeText(
+                                    LoginActivity.this,
+                                    "Đăng nhập chưa thành công. Vui lòng thử lại sau.",
+                                    Toast.LENGTH_LONG
+                            ).show();
+                        }
+                    } else {
                         showLoading(false);
-                        Toast.makeText(LoginActivity.this, "Lỗi kết nối mạng: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                        Log.e(TAG, "Firebase email/password login failed", task.getException());
+                        Toast.makeText(
+                                LoginActivity.this,
+                                getVietnameseLoginError(task.getException()),
+                                Toast.LENGTH_LONG
+                        ).show();
                     }
                 });
     }
 
+    private String getVietnameseLoginError(Exception exception) {
+        if (exception == null || exception.getMessage() == null) {
+            return "Đăng nhập thất bại. Vui lòng thử lại.";
+        }
+
+        String error = exception.getMessage().toLowerCase();
+
+        if (error.contains("auth credential")
+                || error.contains("password is invalid")
+                || error.contains("invalid login credentials")
+                || error.contains("malformed")
+                || error.contains("expired")
+                || error.contains("supplied auth credential")) {
+            return "Email hoặc mật khẩu không đúng.";
+        }
+
+        if (error.contains("no user record")
+                || error.contains("user-not-found")
+                || error.contains("user may have been deleted")) {
+            return "Tài khoản không tồn tại.";
+        }
+
+        if (error.contains("badly formatted")
+                || error.contains("invalid email")) {
+            return "Email không đúng định dạng.";
+        }
+
+        if (error.contains("network")
+                || error.contains("timeout")
+                || error.contains("connection")) {
+            return "Không thể kết nối mạng. Vui lòng thử lại sau.";
+        }
+
+        if (error.contains("too many")
+                || error.contains("blocked")) {
+            return "Bạn đăng nhập sai quá nhiều lần. Vui lòng thử lại sau.";
+        }
+
+        return "Đăng nhập thất bại. Vui lòng kiểm tra email hoặc mật khẩu.";
+    }
+
     private void signIn() {
-        String webClientId = getString(R.string.default_web_client_id);
+        String webClientId = getDefaultWebClientId();
+
+        if (webClientId == null || webClientId.isEmpty()) {
+            Toast.makeText(
+                    this,
+                    "Đăng nhập Google chưa sẵn sàng. Vui lòng thử lại sau.",
+                    Toast.LENGTH_LONG
+            ).show();
+            return;
+        }
+
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
+    }
+
+    private String getDefaultWebClientId() {
+        int resId = getResources().getIdentifier("default_web_client_id", "string", getPackageName());
+        if (resId == 0) {
+            return "";
+        }
+        return getString(resId);
     }
 
     @Override
@@ -169,12 +217,17 @@ public class LoginActivity extends AppCompatActivity {
                 }
             } catch (ApiException e) {
                 Log.w(TAG, "Google sign in failed", e);
-                Toast.makeText(this, "Đăng nhập Google thất bại: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Đăng nhập Google không thành công. Vui lòng thử lại.", Toast.LENGTH_LONG).show();
             }
         }
     }
 
     private void firebaseAuthWithGoogle(String idToken) {
+        if (idToken == null || idToken.isEmpty()) {
+            Toast.makeText(this, "Đăng nhập Google không thành công. Vui lòng thử lại.", Toast.LENGTH_LONG).show();
+            return;
+        }
+
         showLoading(true);
         AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
         mAuth.signInWithCredential(credential)
@@ -182,20 +235,24 @@ public class LoginActivity extends AppCompatActivity {
                     if (task.isSuccessful()) {
                         FirebaseUser user = mAuth.getCurrentUser();
                         if (user != null) {
-                            // Lấy Firebase ID Token để gửi lên Backend
                             user.getIdToken(true).addOnCompleteListener(tokenTask -> {
                                 if (tokenTask.isSuccessful()) {
                                     String firebaseIdToken = tokenTask.getResult().getToken();
                                     sendTokenToBackend(firebaseIdToken);
                                 } else {
                                     showLoading(false);
-                                    Toast.makeText(LoginActivity.this, "Không lấy được Firebase Token", Toast.LENGTH_SHORT).show();
+                                    Log.e(TAG, "Cannot get Firebase token after Google login", tokenTask.getException());
+                                    Toast.makeText(LoginActivity.this, "Đăng nhập chưa thành công. Vui lòng thử lại sau.", Toast.LENGTH_LONG).show();
                                 }
                             });
+                        } else {
+                            showLoading(false);
+                            Toast.makeText(LoginActivity.this, "Đăng nhập chưa thành công. Vui lòng thử lại sau.", Toast.LENGTH_LONG).show();
                         }
                     } else {
                         showLoading(false);
-                        Toast.makeText(LoginActivity.this, "Xác thực Firebase thất bại", Toast.LENGTH_SHORT).show();
+                        Log.e(TAG, "Firebase Google auth failed", task.getException());
+                        Toast.makeText(LoginActivity.this, "Đăng nhập Google không thành công. Vui lòng thử lại.", Toast.LENGTH_LONG).show();
                     }
                 });
     }
@@ -208,10 +265,10 @@ public class LoginActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(Call<AuthResponse> call, Response<AuthResponse> response) {
                         showLoading(false);
+
                         if (response.isSuccessful() && response.body() != null) {
                             AuthResponse authResponse = response.body();
 
-                            // Lưu JWT Token và thông tin người dùng vào SharedPreferences
                             TokenManager tokenManager = TokenManager.getInstance(LoginActivity.this);
                             tokenManager.saveToken(authResponse.getJwtToken());
                             tokenManager.saveUserInfo(
@@ -221,14 +278,17 @@ public class LoginActivity extends AppCompatActivity {
                                     authResponse.getAvatarUrl()
                             );
 
-                            Toast.makeText(LoginActivity.this, "Đăng nhập Backend thành công!", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(LoginActivity.this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
 
-                            // Chuyển sang HomeActivity
                             startActivity(new Intent(LoginActivity.this, HomeActivity.class));
                             finish();
                         } else {
                             Log.e(TAG, "Backend error: " + response.code());
-                            Toast.makeText(LoginActivity.this, "Backend từ chối xác thực. Mã lỗi: " + response.code(), Toast.LENGTH_LONG).show();
+                            Toast.makeText(
+                                    LoginActivity.this,
+                                    "Đăng nhập chưa thành công. Vui lòng thử lại sau.",
+                                    Toast.LENGTH_LONG
+                            ).show();
                             mAuth.signOut();
                         }
                     }
@@ -237,7 +297,11 @@ public class LoginActivity extends AppCompatActivity {
                     public void onFailure(Call<AuthResponse> call, Throwable t) {
                         showLoading(false);
                         Log.e(TAG, "API Connection failed", t);
-                        Toast.makeText(LoginActivity.this, "Không kết nối được với Server API: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                        Toast.makeText(
+                                LoginActivity.this,
+                                "Không thể kết nối máy chủ. Vui lòng kiểm tra mạng và thử lại sau.",
+                                Toast.LENGTH_LONG
+                        ).show();
                         mAuth.signOut();
                     }
                 });
@@ -248,10 +312,14 @@ public class LoginActivity extends AppCompatActivity {
             progressBar.setVisibility(View.VISIBLE);
             btnGoogleSignIn.setEnabled(false);
             btnGoogleSignIn.setAlpha(0.6f);
+            btnLogin.setEnabled(false);
+            btnLogin.setAlpha(0.6f);
         } else {
             progressBar.setVisibility(View.GONE);
             btnGoogleSignIn.setEnabled(true);
             btnGoogleSignIn.setAlpha(1.0f);
+            btnLogin.setEnabled(true);
+            btnLogin.setAlpha(1.0f);
         }
     }
 }
