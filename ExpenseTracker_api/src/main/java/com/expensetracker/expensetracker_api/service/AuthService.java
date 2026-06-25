@@ -22,6 +22,9 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.UUID;
 
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -31,6 +34,10 @@ public class AuthService {
     private final JwtTokenProvider jwtTokenProvider;
     private final CategoryRepository categoryRepository;
     private final WalletRepository walletRepository;
+
+    private final JavaMailSender mailSender;
+
+
 
     public AuthResponse register(RegisterRequest request) {
         validateStrongPassword(request.getPassword());
@@ -178,26 +185,59 @@ public class AuthService {
     }
 
     public AuthResponse forgotPassword(String email) {
-        UserEntity user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
+        String normalizedEmail = email.trim().toLowerCase();
+
+        UserEntity user = userRepository.findByEmail(normalizedEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + normalizedEmail));
 
         String code = String.format("%06d", new java.util.Random().nextInt(1000000));
+
         user.setResetToken(passwordEncoder.encode(code));
         user.setResetTokenExpiry(java.time.LocalDateTime.now().plusMinutes(10));
         userRepository.save(user);
 
-        System.out.println("================================================");
-        System.out.println("PASSWORD RESET CODE FOR " + email + ": " + code);
-        System.out.println("================================================");
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(normalizedEmail);
+        message.setSubject("Mã xác thực đặt lại mật khẩu Expense Tracker");
+        message.setText(
+                "Mã xác thực đặt lại mật khẩu của bạn là: " + code + "\n\n"
+                        + "Mã này có hiệu lực trong 10 phút.\n"
+                        + "Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này."
+        );
+
+        mailSender.send(message);
 
         return AuthResponse.builder()
-                .message("Reset code generated. Code (for test): " + code)
-                .email(email)
+                .message("Mã xác thực đã được gửi đến email của bạn")
+                .email(normalizedEmail)
+                .build();
+    }
+
+    public AuthResponse verifyResetCode(String email, String token) {
+        String normalizedEmail = email.trim().toLowerCase();
+
+        UserEntity user = userRepository.findByEmail(normalizedEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + normalizedEmail));
+
+        if (user.getResetTokenExpiry() == null || user.getResetTokenExpiry().isBefore(java.time.LocalDateTime.now())) {
+            throw new RuntimeException("Reset code has expired");
+        }
+
+        if (!passwordEncoder.matches(token, user.getResetToken())) {
+            throw new RuntimeException("Invalid reset code");
+        }
+
+        return AuthResponse.builder()
+                .message("Reset code is valid")
+                .userId(user.getId())
+                .email(user.getEmail())
                 .build();
     }
 
     public AuthResponse resetPassword(String email, String token, String newPassword) {
-        UserEntity user = userRepository.findByEmail(email)
+        String normalizedEmail = email.trim().toLowerCase();
+
+        UserEntity user = userRepository.findByEmail(normalizedEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
 
         if (user.getResetTokenExpiry() == null || user.getResetTokenExpiry().isBefore(java.time.LocalDateTime.now())) {
@@ -207,6 +247,7 @@ public class AuthService {
         if (!passwordEncoder.matches(token, user.getResetToken())) {
             throw new RuntimeException("Invalid reset code");
         }
+        validateStrongPassword(newPassword);
 
         user.setPassword(passwordEncoder.encode(newPassword));
         user.setResetToken(null);
@@ -291,4 +332,6 @@ public class AuthService {
             throw new RuntimeException("Mật khẩu quá phổ biến, vui lòng chọn mật khẩu khác");
         }
     }
+
+
 }

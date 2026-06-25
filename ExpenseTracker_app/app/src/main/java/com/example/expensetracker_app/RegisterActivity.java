@@ -2,34 +2,36 @@ package com.example.expensetracker_app;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.expensetracker_manager.model.request.RegisterRequest;
-import com.expensetracker_manager.model.response.AuthResponse;
-import com.expensetracker_manager.network.RetrofitClient;
-import com.expensetracker_manager.utils.TokenManager;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
 
 public class RegisterActivity extends AppCompatActivity {
+
+    private static final String TAG = "RegisterActivity";
 
     private EditText etFullName, etEmail, etPassword, etPhoneNumber;
     private Button btnRegister;
     private TextView tvLoginLink;
     private ProgressBar progressBar;
+    private FirebaseAuth firebaseAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
+
+        firebaseAuth = FirebaseAuth.getInstance();
 
         etFullName = findViewById(R.id.etFullName);
         etEmail = findViewById(R.id.etEmail);
@@ -47,12 +49,12 @@ public class RegisterActivity extends AppCompatActivity {
         String fullName = etFullName.getText().toString().trim();
         String email = etEmail.getText().toString().trim();
         String password = etPassword.getText().toString().trim();
-        String phone = etPhoneNumber.getText().toString().trim();
 
         if (fullName.isEmpty() || email.isEmpty() || password.isEmpty()) {
-            Toast.makeText(this, "Vui lòng nhập đầy đủ họ tên, email và mật khẩu", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Vui lòng nhập đầy đủ họ tên, email và mật khẩu.", Toast.LENGTH_SHORT).show();
             return;
         }
+
         String passwordError = getPasswordError(password);
         if (passwordError != null) {
             etPassword.setError("Mật khẩu chưa đủ mạnh");
@@ -60,62 +62,112 @@ public class RegisterActivity extends AppCompatActivity {
             showPasswordRequirementDialog(passwordError);
             return;
         }
+
         showLoading(true);
 
-        RegisterRequest request = new RegisterRequest();
-        request.setFullName(fullName);
-        request.setEmail(email);
-        request.setPassword(password);
-        request.setPhoneNumber(phone);
+        firebaseAuth.createUserWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
 
-        RetrofitClient.getInstance().getAuthApi().register(request)
-                .enqueue(new Callback<AuthResponse>() {
-                    @Override
-                    public void onResponse(Call<AuthResponse> call, Response<AuthResponse> response) {
-                        showLoading(false);
-                        if (response.isSuccessful() && response.body() != null) {
-                            new androidx.appcompat.app.AlertDialog.Builder(RegisterActivity.this)
-                                    .setTitle("Đăng ký thành công")
-                                    .setMessage("Tài khoản đã được tạo thành công.\n\nVui lòng đăng nhập bằng email và mật khẩu vừa đăng ký.")
-                                    .setPositiveButton("Đăng nhập ngay", (dialog, which) -> {
-                                        Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
-                                        intent.putExtra("email", email);
-                                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                                        startActivity(intent);
-                                        finish();
-                                    })
-                                    .setCancelable(false)
-                                    .show();
-                        } else {
-                            String errorMessage = "Đăng ký thất bại. Vui lòng kiểm tra lại email, số điện thoại hoặc mật khẩu.";
-
-                            try {
-                                if (response.errorBody() != null) {
-                                    String errorBody = response.errorBody().string();
-
-                                    if (errorBody.contains("Email already exists")) {
-                                        errorMessage = "Email này đã được đăng ký.";
-                                    } else if (errorBody.toLowerCase().contains("phone")) {
-                                        errorMessage = "Số điện thoại này đã được đăng ký.";
-                                    } else if (errorBody.contains("Mật khẩu")) {
-                                        errorMessage = "Mật khẩu chưa đạt yêu cầu bảo mật.";
-                                    }
-                                }
-                            } catch (Exception e) {
-                                errorMessage = "Đăng ký thất bại. Vui lòng thử lại.";
-                            }
-
-                            Toast.makeText(RegisterActivity.this, errorMessage, Toast.LENGTH_LONG).show();
+                        if (firebaseUser == null) {
+                            showLoading(false);
+                            Toast.makeText(this, "Đăng ký chưa thành công. Vui lòng thử lại sau.", Toast.LENGTH_LONG).show();
+                            return;
                         }
-                    }
 
-                    @Override
-                    public void onFailure(Call<AuthResponse> call, Throwable t) {
+                        UserProfileChangeRequest profileUpdates =
+                                new UserProfileChangeRequest.Builder()
+                                        .setDisplayName(fullName)
+                                        .build();
+
+                        firebaseUser.updateProfile(profileUpdates)
+                                .addOnCompleteListener(profileTask -> {
+                                    showLoading(false);
+
+                                    if (!profileTask.isSuccessful()) {
+                                        Log.e(TAG, "Update Firebase profile failed", profileTask.getException());
+                                    }
+
+                                    // Send email verification
+                                    firebaseUser.sendEmailVerification()
+                                            .addOnCompleteListener(verificationTask -> {
+                                                showLoading(false);
+                                                if (verificationTask.isSuccessful()) {
+                                                    Log.d(TAG, "Verification email sent.");
+                                                } else {
+                                                    Log.e(TAG, "Failed to send verification email.", verificationTask.getException());
+                                                }
+                                                showRegisterSuccessDialog(email);
+                                            });
+                                });
+                    } else {
                         showLoading(false);
-                        Toast.makeText(RegisterActivity.this, "Lỗi kết nối mạng: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                        Log.e(TAG, "Firebase register failed", task.getException());
+                        Toast.makeText(
+                                RegisterActivity.this,
+                                getVietnameseRegisterError(task.getException()),
+                                Toast.LENGTH_LONG
+                        ).show();
                     }
                 });
     }
+
+    private void showRegisterSuccessDialog(String email) {
+        firebaseAuth.signOut();
+
+        new androidx.appcompat.app.AlertDialog.Builder(RegisterActivity.this)
+                .setTitle("Đăng ký thành công")
+                .setMessage("Tài khoản đã được tạo thành công.\n\nMột email xác thực đã được gửi tới " + email + ". Vui lòng kiểm tra hộp thư và xác thực tài khoản trước khi đăng nhập.")
+                .setPositiveButton("Đăng nhập ngay", (dialog, which) -> {
+                    Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+                    intent.putExtra("email", email);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                    finish();
+                })
+                .setCancelable(false)
+                .show();
+    }
+
+    private String getVietnameseRegisterError(Exception exception) {
+        if (exception == null || exception.getMessage() == null) {
+            return "Đăng ký thất bại. Vui lòng thử lại.";
+        }
+
+        String error = exception.getMessage().toLowerCase();
+
+        if (error.contains("email address is already in use")
+                || error.contains("already in use")
+                || error.contains("email-already-in-use")) {
+            return "Email này đã được đăng ký.";
+        }
+
+        if (error.contains("badly formatted")
+                || error.contains("invalid email")) {
+            return "Email không đúng định dạng.";
+        }
+
+        if (error.contains("password is invalid")
+                || error.contains("weak password")
+                || error.contains("password should be at least")) {
+            return "Mật khẩu chưa đủ mạnh. Vui lòng nhập mật khẩu tối thiểu 8 ký tự, có chữ hoa, chữ thường, số và ký tự đặc biệt.";
+        }
+
+        if (error.contains("network")
+                || error.contains("timeout")
+                || error.contains("connection")) {
+            return "Lỗi mạng. Vui lòng kiểm tra kết nối Internet.";
+        }
+
+        if (error.contains("too many")
+                || error.contains("blocked")) {
+            return "Bạn thao tác quá nhiều lần. Vui lòng thử lại sau.";
+        }
+
+        return "Đăng ký thất bại. Vui lòng kiểm tra lại email hoặc mật khẩu.";
+    }
+
     private String getPasswordError(String password) {
         if (password == null || password.trim().isEmpty()) {
             return "Mật khẩu không được để trống.\n\n"
@@ -174,6 +226,7 @@ public class RegisterActivity extends AppCompatActivity {
 
         return message.toString();
     }
+
     private void showPasswordRequirementDialog(String message) {
         new androidx.appcompat.app.AlertDialog.Builder(this)
                 .setTitle("Yêu cầu mật khẩu")
@@ -181,6 +234,7 @@ public class RegisterActivity extends AppCompatActivity {
                 .setPositiveButton("Đã hiểu", null)
                 .show();
     }
+
     private void showLoading(boolean loading) {
         progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
         btnRegister.setEnabled(!loading);

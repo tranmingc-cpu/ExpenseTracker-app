@@ -6,6 +6,19 @@ spring:
     username: postgres.uujzrwioggprwhntxsag
     password: expensetracker2026
     driver-class-name: org.postgresql.Driver
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: expensetracker.smtp@gmail.com
+    password: kzwkrfppbslhiecb
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
   jpa:
     hibernate:
       ddl-auto: update

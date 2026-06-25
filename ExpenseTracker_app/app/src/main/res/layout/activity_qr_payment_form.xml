@@ -202,7 +202,6 @@
                 android:background="@drawable/bg_spinner"
                 android:padding="8dp" />
 
-            <!-- Payment Buttons Area -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
