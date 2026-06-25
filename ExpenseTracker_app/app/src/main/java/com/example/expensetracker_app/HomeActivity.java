@@ -1,5 +1,6 @@
 package com.example.expensetracker_app;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -44,7 +45,7 @@ import com.google.mlkit.vision.barcode.common.Barcode;
 public class HomeActivity extends BaseActivity {
 
     private TextView tvDashboardUserName, tvNetBalance, tvTotalIncome, tvTotalExpense, tvHabitsWarning, btnViewAllTransactions;
-    private ImageView btnProfile;
+    private ImageView btnProfile,btnAnalytics;
     private Button btnNavRecurring, btnNavSync, btnNavExport, btnSignOut, btnMonthFilter;
     private int selectedYear;
     private int selectedMonth;
@@ -60,6 +61,7 @@ public class HomeActivity extends BaseActivity {
     private List<TransactionResponse> transactionsList = new ArrayList<>();
     private List<com.expensetracker_manager.model.response.BudgetResponse> budgetList = new ArrayList<>();
 
+    @SuppressLint("WrongViewCast")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,6 +73,7 @@ public class HomeActivity extends BaseActivity {
         tvTotalExpense = findViewById(R.id.tvTotalExpense);
         tvHabitsWarning = findViewById(R.id.tvHabitsWarning);
         btnProfile = findViewById(R.id.btnProfile);
+        btnAnalytics = findViewById(R.id.btnAnalytics);
 
         btnNavRecurring = findViewById(R.id.btnNavRecurring);
         btnNavSync = findViewById(R.id.btnNavSync);
@@ -109,7 +112,9 @@ public class HomeActivity extends BaseActivity {
 
     private void setupListeners() {
         btnProfile.setOnClickListener(v -> startActivity(new Intent(HomeActivity.this, SettingsActivity.class)));
-        
+        btnAnalytics.setOnClickListener(v -> startActivity(new Intent(HomeActivity.this, AnalyticsActivity.class)));
+
+
         btnNavRecurring.setOnClickListener(v -> startActivity(new Intent(HomeActivity.this, RecurringActivity.class)));
 
         btnNavSync.setOnClickListener(v -> simulateBankSync());

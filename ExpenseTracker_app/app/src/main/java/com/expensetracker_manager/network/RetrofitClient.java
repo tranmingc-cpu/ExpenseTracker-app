@@ -14,7 +14,8 @@ import java.util.concurrent.TimeUnit;
 public class RetrofitClient {
 
     // 10.0.2.2 trỏ về localhost của máy tính chạy Emulator
-    private static final String BASE_URL = "https://expensetracker-app-quec.onrender.com/";
+     private static final String BASE_URL = "http://192.168.1.9:8080";
+   // private static final String BASE_URL = "https://expensetracker-app-quec.onrender.com/";
 
     private static Context appContext;
     private static RetrofitClient instance;
@@ -104,5 +105,9 @@ public class RetrofitClient {
 
     public com.expensetracker_manager.network.api.PaymentApiService getPaymentApi() {
         return create(com.expensetracker_manager.network.api.PaymentApiService.class);
+    }
+
+    public com.expensetracker_manager.network.api.AnalyticsApiService getAnalyticsApi() {
+        return create(com.expensetracker_manager.network.api.AnalyticsApiService.class);
     }
 }
