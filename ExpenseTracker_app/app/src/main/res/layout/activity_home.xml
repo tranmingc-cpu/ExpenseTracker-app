@@ -41,7 +41,7 @@
             android:background="@android:drawable/btn_default"
             android:backgroundTint="#2A2A3E"
             android:padding="8dp"
-            android:src="@android:drawable/ic_menu_myplaces" />
+            android:src="@android:drawable/ic_menu_manage" />
 
     </RelativeLayout>
 
