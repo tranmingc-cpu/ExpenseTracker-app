@@ -89,7 +89,17 @@ public class RegisterActivity extends AppCompatActivity {
                                         Log.e(TAG, "Update Firebase profile failed", profileTask.getException());
                                     }
 
-                                    showRegisterSuccessDialog(email);
+                                    // Send email verification
+                                    firebaseUser.sendEmailVerification()
+                                            .addOnCompleteListener(verificationTask -> {
+                                                showLoading(false);
+                                                if (verificationTask.isSuccessful()) {
+                                                    Log.d(TAG, "Verification email sent.");
+                                                } else {
+                                                    Log.e(TAG, "Failed to send verification email.", verificationTask.getException());
+                                                }
+                                                showRegisterSuccessDialog(email);
+                                            });
                                 });
                     } else {
                         showLoading(false);
@@ -108,7 +118,7 @@ public class RegisterActivity extends AppCompatActivity {
 
         new androidx.appcompat.app.AlertDialog.Builder(RegisterActivity.this)
                 .setTitle("Đăng ký thành công")
-                .setMessage("Tài khoản đã được tạo thành công.\n\nVui lòng quay lại màn đăng nhập để đăng nhập bằng email và mật khẩu vừa đăng ký.")
+                .setMessage("Tài khoản đã được tạo thành công.\n\nMột email xác thực đã được gửi tới " + email + ". Vui lòng kiểm tra hộp thư và xác thực tài khoản trước khi đăng nhập.")
                 .setPositiveButton("Đăng nhập ngay", (dialog, which) -> {
                     Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
                     intent.putExtra("email", email);
