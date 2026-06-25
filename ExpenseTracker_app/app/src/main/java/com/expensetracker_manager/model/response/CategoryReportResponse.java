@@ -10,6 +10,12 @@ public class CategoryReportResponse {
     @SerializedName("amount")
     private double amount;
 
+    @SerializedName("percentage")
+    private double percentage;
+
+    @SerializedName("type")
+    private String type;
+
     public CategoryReportResponse() {}
 
     public String getCategoryName() { return categoryName; }
@@ -17,4 +23,10 @@ public class CategoryReportResponse {
 
     public double getAmount() { return amount; }
     public void setAmount(double amount) { this.amount = amount; }
+
+    public double getPercentage() { return percentage; }
+    public void setPercentage(double percentage) { this.percentage = percentage; }
+
+    public String getType() { return type; }
+    public void setType(String type) { this.type = type; }
 }

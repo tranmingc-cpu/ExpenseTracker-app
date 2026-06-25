@@ -1,11 +1,14 @@
 package com.example.expensetracker_app;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
+
 import com.expensetracker_manager.utils.TokenManager;
 
 public class PinLockActivity extends AppCompatActivity {
@@ -17,7 +20,7 @@ public class PinLockActivity extends AppCompatActivity {
     private String pinInput = "";
     private boolean isSetupMode = false;
     private boolean isCheckingLock = false;
-    private String firstPin = ""; // For setup confirmation
+    private String firstPin = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,7 +62,6 @@ public class PinLockActivity extends AppCompatActivity {
         findViewById(R.id.btnDel).setOnClickListener(v -> deletePin());
         findViewById(R.id.btnCancel).setOnClickListener(v -> {
             if (isCheckingLock) {
-                // Exit app if canceled on lock screen
                 finishAffinity();
             } else {
                 finish();
@@ -87,8 +89,8 @@ public class PinLockActivity extends AppCompatActivity {
 
     private void updateDots() {
         int len = pinInput.length();
-        int activeColor = 0xFF00FF66; // Bright neon green
-        int inactiveColor = 0xFF444455; // Dark slate gray
+        int activeColor = 0xFF00FF66;
+        int inactiveColor = 0xFF444455;
 
         dot1.setBackgroundTintList(android.content.res.ColorStateList.valueOf(len >= 1 ? activeColor : inactiveColor));
         dot2.setBackgroundTintList(android.content.res.ColorStateList.valueOf(len >= 2 ? activeColor : inactiveColor));
@@ -123,8 +125,16 @@ public class PinLockActivity extends AppCompatActivity {
             }
         } else {
             String savedPin = tokenManager.getPasscode();
+
             if (savedPin != null && pinInput.equals(savedPin)) {
                 Toast.makeText(this, "Mở khóa thành công!", Toast.LENGTH_SHORT).show();
+
+                if (isCheckingLock) {
+                    Intent intent = new Intent(PinLockActivity.this, HomeActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                }
+
                 finish();
             } else {
                 Toast.makeText(this, "Sai mã PIN. Hãy thử lại!", Toast.LENGTH_SHORT).show();

@@ -33,6 +33,11 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import android.widget.EditText;
+import android.widget.Button;
+import android.widget.TextView;
+import com.expensetracker_manager.model.request.LoginRequest;
+
 public class LoginActivity extends AppCompatActivity {
 
     private static final String TAG = "LoginActivity";
@@ -105,6 +110,16 @@ public class LoginActivity extends AppCompatActivity {
                         FirebaseUser user = mAuth.getCurrentUser();
 
                         if (user != null) {
+                            if (!user.isEmailVerified()) {
+                                showLoading(false);
+                                Toast.makeText(
+                                        LoginActivity.this,
+                                        "Tài khoản của bạn chưa được xác thực email. Vui lòng kiểm tra hộp thư để xác thực trước khi đăng nhập.",
+                                        Toast.LENGTH_LONG
+                                ).show();
+                                mAuth.signOut();
+                                return;
+                            }
                             user.getIdToken(true).addOnCompleteListener(tokenTask -> {
                                 if (tokenTask.isSuccessful()) {
                                     String firebaseIdToken = tokenTask.getResult().getToken();
@@ -256,8 +271,7 @@ public class LoginActivity extends AppCompatActivity {
                     }
                 });
     }
-
-    private void sendTokenToBackend(String firebaseIdToken) {
+private void sendTokenToBackend(String firebaseIdToken) {
         FirebaseLoginRequest request = new FirebaseLoginRequest(firebaseIdToken);
 
         RetrofitClient.getInstance().getAuthApi().firebaseLogin(request)
@@ -265,10 +279,10 @@ public class LoginActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(Call<AuthResponse> call, Response<AuthResponse> response) {
                         showLoading(false);
-
                         if (response.isSuccessful() && response.body() != null) {
                             AuthResponse authResponse = response.body();
 
+                            // Lưu JWT Token và thông tin người dùng vào SharedPreferences
                             TokenManager tokenManager = TokenManager.getInstance(LoginActivity.this);
                             tokenManager.saveToken(authResponse.getJwtToken());
                             tokenManager.saveUserInfo(
@@ -280,6 +294,7 @@ public class LoginActivity extends AppCompatActivity {
 
                             Toast.makeText(LoginActivity.this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
 
+                            // Chuyển sang HomeActivity
                             startActivity(new Intent(LoginActivity.this, HomeActivity.class));
                             finish();
                         } else {
