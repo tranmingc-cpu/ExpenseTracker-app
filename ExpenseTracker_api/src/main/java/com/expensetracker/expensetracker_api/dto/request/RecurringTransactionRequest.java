@@ -16,10 +16,10 @@ public class RecurringTransactionRequest {
     private String description;
 
     @NotNull(message = "Type is required")
-    private String type; // INCOME, EXPENSE
+    private String type;
 
     @NotNull(message = "Frequency is required")
-    private String frequency; // WEEKLY, MONTHLY, YEARLY
+    private String frequency;
 
     @NotNull(message = "Next execution date is required")
     private LocalDateTime nextExecutionDate;
