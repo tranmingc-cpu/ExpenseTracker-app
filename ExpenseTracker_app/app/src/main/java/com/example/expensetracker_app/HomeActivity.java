@@ -45,7 +45,7 @@ public class HomeActivity extends BaseActivity {
 
     private TextView tvDashboardUserName, tvNetBalance, tvTotalIncome, tvTotalExpense, tvHabitsWarning, btnViewAllTransactions;
     private ImageView btnProfile;
-    private Button btnNavRecurring, btnNavSync, btnNavExport, btnSignOut, btnMonthFilter;
+    private Button btnNavRecurring, btnNavSync, btnNavExport, btnSignOut, btnMonthFilter,btnSettings,btnStatistics  ;
     private int selectedYear;
     private int selectedMonth;
     private LinearLayout layoutTransactionsContainer;
@@ -71,6 +71,7 @@ public class HomeActivity extends BaseActivity {
         tvTotalExpense = findViewById(R.id.tvTotalExpense);
         tvHabitsWarning = findViewById(R.id.tvHabitsWarning);
         btnProfile = findViewById(R.id.btnProfile);
+        btnStatistics = findViewById(R.id.btnStatistics);
 
         btnNavRecurring = findViewById(R.id.btnNavRecurring);
         btnNavSync = findViewById(R.id.btnNavSync);
@@ -94,7 +95,7 @@ public class HomeActivity extends BaseActivity {
         btnBottomNavQr = findViewById(R.id.btnBottomNavQr);
         btnBottomNavBudgets = findViewById(R.id.btnBottomNavBudgets);
         btnBottomNavProfile = findViewById(R.id.btnBottomNavProfile);
-
+        
         TokenManager tokenManager = TokenManager.getInstance(this);
         tvDashboardUserName.setText(tokenManager.getUserName().isEmpty() ? "Người dùng" : tokenManager.getUserName());
 
@@ -109,8 +110,7 @@ public class HomeActivity extends BaseActivity {
 
     private void setupListeners() {
         btnProfile.setOnClickListener(v -> startActivity(new Intent(HomeActivity.this, ProfileActivity.class)));
-        btnSettings.setOnClickListener(v ->startActivity(new Intent(ProfileActivity.this, SettingsActivity.class)));
-        
+        btnStatistics.setOnClickListener(v -> startActivity(new Intent(HomeActivity.this, StatisticsActivity.class)));
         btnNavRecurring.setOnClickListener(v -> startActivity(new Intent(HomeActivity.this, RecurringActivity.class)));
 
         btnNavSync.setOnClickListener(v -> simulateBankSync());
@@ -797,5 +797,22 @@ public class HomeActivity extends BaseActivity {
         } catch (Exception e) {
             Toast.makeText(this, "Lỗi xuất file: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
+    }
+    private List<TransactionResponse> filterTransactionsBySelectedMonth(List<TransactionResponse> source) {
+    List<TransactionResponse> result = new ArrayList<>();
+
+    String prefix = String.format(Locale.US,
+            "%04d-%02d",
+            selectedYear,
+            selectedMonth);
+
+    for (TransactionResponse tr : source) {
+        if (tr.getTransactionDate() != null &&
+                tr.getTransactionDate().startsWith(prefix)) {
+            result.add(tr);
+        }
+    }
+
+    return result;
     }
 }
