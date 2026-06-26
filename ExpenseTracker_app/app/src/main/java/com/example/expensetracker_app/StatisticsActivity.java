@@ -1,6 +1,7 @@
 package com.example.expensetracker_app;
 
 import android.os.Bundle;
+import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -15,7 +16,6 @@ import com.expensetracker_manager.model.response.TransactionResponse;
 import com.expensetracker_manager.network.RetrofitClient;
 import com.expensetracker_manager.utils.TokenManager;
 
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -35,6 +35,8 @@ public class StatisticsActivity extends AppCompatActivity {
     private TextView tvBalance;
     private TextView tvInsight;
 
+    private ImageButton btnBack;
+
     private ProgressBar progressIncome;
     private ProgressBar progressExpense;
 
@@ -42,9 +44,6 @@ public class StatisticsActivity extends AppCompatActivity {
 
     private TopCategoryAdapter adapter;
     private final List<TopCategory> topCategories = new ArrayList<>();
-
-    private final NumberFormat moneyFormat =
-            NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,12 +58,16 @@ public class StatisticsActivity extends AppCompatActivity {
         progressIncome = findViewById(R.id.progressIncome);
         progressExpense = findViewById(R.id.progressExpense);
 
+        btnBack = findViewById(R.id.btnBack);
+
         rvTopCategory = findViewById(R.id.rvTopCategory);
 
         rvTopCategory.setLayoutManager(new LinearLayoutManager(this));
 
         adapter = new TopCategoryAdapter(topCategories);
         rvTopCategory.setAdapter(adapter);
+
+        btnBack.setOnClickListener(v -> finish());
 
         loadStatistics();
     }
@@ -74,7 +77,7 @@ public class StatisticsActivity extends AppCompatActivity {
         Long userId = TokenManager.getInstance(this).getUserId();
 
         if (userId == -1L) {
-            Toast.makeText(this, "Không tìm thấy User", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Không tìm thấy người dùng.", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -90,14 +93,18 @@ public class StatisticsActivity extends AppCompatActivity {
                         if (response.isSuccessful() && response.body() != null) {
                             calculateStatistics(response.body());
                         } else {
-                            Toast.makeText(StatisticsActivity.this,
-                                    "Không có dữ liệu.",
-                                    Toast.LENGTH_SHORT).show();
+                            Toast.makeText(
+                                    StatisticsActivity.this,
+                                    "Không có dữ liệu giao dịch.",
+                                    Toast.LENGTH_SHORT
+                            ).show();
                         }
+
                     }
 
                     @Override
-                    public void onFailure(Call<List<TransactionResponse>> call, Throwable t) {
+                    public void onFailure(Call<List<TransactionResponse>> call,
+                                          Throwable t) {
 
                         Toast.makeText(
                                 StatisticsActivity.this,
@@ -133,9 +140,9 @@ public class StatisticsActivity extends AppCompatActivity {
                     category = "Khác";
                 }
 
-                double old = categoryMap.getOrDefault(category, 0.0);
+                double oldAmount = categoryMap.getOrDefault(category, 0.0);
 
-                categoryMap.put(category, old + tr.getAmount());
+                categoryMap.put(category, oldAmount + tr.getAmount());
 
             }
 
@@ -143,17 +150,17 @@ public class StatisticsActivity extends AppCompatActivity {
 
         double balance = income - expense;
 
-        tvIncome.setText(moneyFormat.format(income));
-        tvExpense.setText(moneyFormat.format(expense));
-        tvBalance.setText(moneyFormat.format(balance));
+        tvIncome.setText(formatVND(income));
+        tvExpense.setText(formatVND(expense));
+        tvBalance.setText(formatVND(balance));
 
         int total = (int) (income + expense);
 
         if (total > 0) {
 
-            progressIncome.setProgress((int) (income * 100 / total));
+            progressIncome.setProgress((int) ((income / total) * 100));
 
-            progressExpense.setProgress((int) (expense * 100 / total));
+            progressExpense.setProgress((int) ((expense / total) * 100));
 
         } else {
 
@@ -204,28 +211,28 @@ public class StatisticsActivity extends AppCompatActivity {
 
         double percent = expense / income * 100;
 
-        String text;
-
         if (percent >= 90) {
 
-            text = "⚠ Bạn đã sử dụng hơn 90% thu nhập. Hãy hạn chế chi tiêu.";
+            tvInsight.setText("⚠ Bạn đã sử dụng hơn 90% thu nhập. Hãy hạn chế chi tiêu.");
 
         } else if (percent >= 70) {
 
-            text = "⚠ Chi tiêu đang ở mức cao (" + (int) percent + "%).";
+            tvInsight.setText("⚠ Chi tiêu đang ở mức cao (" + (int) percent + "%).");
 
         } else if (percent >= 50) {
 
-            text = "✓ Chi tiêu ở mức trung bình.";
+            tvInsight.setText("✓ Chi tiêu ở mức trung bình.");
 
         } else {
 
-            text = "🎉 Bạn đang quản lý tài chính rất tốt.";
+            tvInsight.setText("🎉 Bạn đang quản lý tài chính rất tốt.");
 
         }
 
-        tvInsight.setText(text);
+    }
 
+    private String formatVND(double amount) {
+        return String.format(Locale.US, "%,.0f ₫", amount);
     }
 
 }
