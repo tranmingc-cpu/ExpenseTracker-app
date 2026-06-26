@@ -61,7 +61,8 @@ dependencies {
     implementation("com.google.android.gms:play-services-mlkit-text-recognition:19.0.1")
     // Security Crypto for EncryptedSharedPreferences
     implementation 'androidx.security:security-crypto:1.1.0-alpha06'
-
+    // Thêm thư viện MPAndroidChart
+    implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
     // Room Database
     implementation 'androidx.room:room-runtime:2.6.1'
     annotationProcessor 'androidx.room:room-compiler:2.6.1'
