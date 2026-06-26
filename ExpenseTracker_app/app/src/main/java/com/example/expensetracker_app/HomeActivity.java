@@ -45,7 +45,7 @@ public class HomeActivity extends BaseActivity {
 
     private TextView tvDashboardUserName, tvNetBalance, tvTotalIncome, tvTotalExpense, tvHabitsWarning, btnViewAllTransactions;
     private ImageView btnProfile;
-    private Button btnNavRecurring, btnNavSync, btnNavExport, btnSignOut, btnMonthFilter,btnSettings,btnStatistics  ;
+    private Button btnNavRecurring, btnNavSync, btnNavExport, btnSignOut, btnMonthFilter,btnSettings,btnBottomNavStatistics  ;
     private int selectedYear;
     private int selectedMonth;
     private LinearLayout layoutTransactionsContainer;
@@ -71,7 +71,7 @@ public class HomeActivity extends BaseActivity {
         tvTotalExpense = findViewById(R.id.tvTotalExpense);
         tvHabitsWarning = findViewById(R.id.tvHabitsWarning);
         btnProfile = findViewById(R.id.btnProfile);
-        btnStatistics = findViewById(R.id.btnStatistics);
+        btnBottomNavStatistics = findViewById(R.id.btnBottomNavStatistics);
 
         btnNavRecurring = findViewById(R.id.btnNavRecurring);
         btnNavSync = findViewById(R.id.btnNavSync);
@@ -110,7 +110,7 @@ public class HomeActivity extends BaseActivity {
 
     private void setupListeners() {
         btnProfile.setOnClickListener(v -> startActivity(new Intent(HomeActivity.this, ProfileActivity.class)));
-        btnStatistics.setOnClickListener(v -> startActivity(new Intent(HomeActivity.this, StatisticsActivity.class)));
+        btnBottomNavStatistics.setOnClickListener(v ->startActivity(new Intent(HomeActivity.this,StatisticsActivity.class)));
         btnNavRecurring.setOnClickListener(v -> startActivity(new Intent(HomeActivity.this, RecurringActivity.class)));
 
         btnNavSync.setOnClickListener(v -> simulateBankSync());
