@@ -268,7 +268,8 @@
         <Button android:id="@+id/btnNavRecurring" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_columnWeight="1" android:text="Định Kỳ" android:textColor="#FFFFFF" android:backgroundTint="#2A2A4E" android:textSize="11sp" android:layout_margin="4dp"/>
         <Button android:id="@+id/btnNavSync" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_columnWeight="1" android:text="Đồng Bộ" android:textColor="#FFFFFF" android:backgroundTint="#2A2A4E" android:textSize="11sp" android:layout_margin="4dp"/>
         <Button android:id="@+id/btnNavExport" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_columnWeight="1" android:text="Xuất CSV" android:textColor="#FFFFFF" android:backgroundTint="#2A2A4E" android:textSize="11sp" android:layout_margin="4dp"/>
-
+        <Button android:id="@+id/btnStatistics"android:layout_width="0dp"android:layout_height="wrap_content"android:layout_columnWeight="1"android:text="Thống kê"android:textColor="#FFFFFF"android:backgroundTint="#2A2A4E"android:textSize="11sp"android:layout_margin="4dp"/>
+        
     </GridLayout>
 
     <androidx.cardview.widget.CardView
