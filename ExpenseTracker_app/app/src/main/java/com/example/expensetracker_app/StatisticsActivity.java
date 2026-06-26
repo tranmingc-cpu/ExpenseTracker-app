@@ -41,10 +41,10 @@ public class StatisticsActivity extends AppCompatActivity {
     private RecyclerView rvTopCategory;
 
     private TopCategoryAdapter adapter;
-    private List<TopCategory> topCategories = new ArrayList<>();
+    private final List<TopCategory> topCategories = new ArrayList<>();
 
-    private NumberFormat moneyFormat =
-            NumberFormat.getCurrencyInstance(new Locale("vi","VN"));
+    private final NumberFormat moneyFormat =
+            NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,12 +69,12 @@ public class StatisticsActivity extends AppCompatActivity {
         loadStatistics();
     }
 
-    private void loadStatistics(){
+    private void loadStatistics() {
 
         Long userId = TokenManager.getInstance(this).getUserId();
 
-        if(userId==-1){
-            Toast.makeText(this,"Không tìm thấy User",Toast.LENGTH_SHORT).show();
+        if (userId == -1L) {
+            Toast.makeText(this, "Không tìm thấy User", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -87,114 +87,114 @@ public class StatisticsActivity extends AppCompatActivity {
                     public void onResponse(Call<List<TransactionResponse>> call,
                                            Response<List<TransactionResponse>> response) {
 
-                        if(response.isSuccessful() && response.body()!=null){
-
+                        if (response.isSuccessful() && response.body() != null) {
                             calculateStatistics(response.body());
-
+                        } else {
+                            Toast.makeText(StatisticsActivity.this,
+                                    "Không có dữ liệu.",
+                                    Toast.LENGTH_SHORT).show();
                         }
-
                     }
 
                     @Override
                     public void onFailure(Call<List<TransactionResponse>> call, Throwable t) {
 
-                        Toast.makeText(StatisticsActivity.this,
-                                t.getMessage(),
-                                Toast.LENGTH_LONG).show();
+                        Toast.makeText(
+                                StatisticsActivity.this,
+                                "Lỗi: " + t.getMessage(),
+                                Toast.LENGTH_LONG
+                        ).show();
 
                     }
                 });
 
     }
 
-    private void calculateStatistics(List<TransactionResponse> list){
+    private void calculateStatistics(List<TransactionResponse> list) {
 
-        double income=0;
-        double expense=0;
+        double income = 0;
+        double expense = 0;
 
-        Map<String,Double> categoryMap=new HashMap<>();
+        Map<String, Double> categoryMap = new HashMap<>();
 
-        for(TransactionResponse tr:list){
+        for (TransactionResponse tr : list) {
 
-            if("INCOME".equalsIgnoreCase(tr.getType())){
+            if ("INCOME".equalsIgnoreCase(tr.getType())) {
 
-                income+=tr.getAmount();
+                income += tr.getAmount();
 
-            }else{
+            } else {
 
-                expense+=tr.getAmount();
+                expense += tr.getAmount();
 
-                String category=tr.getCategoryName();
+                String category = tr.getCategoryName();
 
-                if(category==null)
-                    category="Khác";
+                if (category == null || category.isEmpty()) {
+                    category = "Khác";
+                }
 
-                double old=categoryMap.containsKey(category)?
-                        categoryMap.get(category):0;
+                double old = categoryMap.getOrDefault(category, 0.0);
 
-                categoryMap.put(category,old+tr.getAmount());
+                categoryMap.put(category, old + tr.getAmount());
 
             }
 
         }
 
-        double balance=income-expense;
+        double balance = income - expense;
 
         tvIncome.setText(moneyFormat.format(income));
-
         tvExpense.setText(moneyFormat.format(expense));
-
         tvBalance.setText(moneyFormat.format(balance));
 
-        int total=(int)(income+expense);
+        int total = (int) (income + expense);
 
-        if(total>0){
+        if (total > 0) {
 
-            progressIncome.setProgress((int)(income*100/total));
+            progressIncome.setProgress((int) (income * 100 / total));
 
-            progressExpense.setProgress((int)(expense*100/total));
+            progressExpense.setProgress((int) (expense * 100 / total));
+
+        } else {
+
+            progressIncome.setProgress(0);
+            progressExpense.setProgress(0);
 
         }
 
         topCategories.clear();
 
-        for(Map.Entry<String,Double> item:categoryMap.entrySet()){
+        for (Map.Entry<String, Double> item : categoryMap.entrySet()) {
 
             topCategories.add(
-                    new TopCategory(item.getKey(),item.getValue())
+                    new TopCategory(
+                            item.getKey(),
+                            item.getValue()
+                    )
             );
 
         }
 
-        Collections.sort(topCategories,
-                new Comparator<TopCategory>() {
-                    @Override
-                    public int compare(TopCategory o1, TopCategory o2) {
-                        return Double.compare(o2.getAmount(),o1.getAmount());
-                    }
-                });
+        Collections.sort(topCategories, new Comparator<TopCategory>() {
+            @Override
+            public int compare(TopCategory o1, TopCategory o2) {
+                return Double.compare(o2.getAmount(), o1.getAmount());
+            }
+        });
 
-        if(topCategories.size()>5){
-
-            topCategories=new ArrayList<>(topCategories.subList(0,5));
-
-            adapter=new TopCategoryAdapter(topCategories);
-
-            rvTopCategory.setAdapter(adapter);
-
-        }else{
-
-            adapter.notifyDataSetChanged();
-
+        if (topCategories.size() > 5) {
+            topCategories.subList(5, topCategories.size()).clear();
         }
 
-        generateInsight(income,expense);
+        adapter.notifyDataSetChanged();
+
+        generateInsight(income, expense);
 
     }
 
-    private void generateInsight(double income,double expense){
+    private void generateInsight(double income, double expense) {
 
-        if(income==0){
+        if (income == 0) {
 
             tvInsight.setText("Chưa có dữ liệu thu nhập.");
 
@@ -202,25 +202,25 @@ public class StatisticsActivity extends AppCompatActivity {
 
         }
 
-        double percent=expense/income*100;
+        double percent = expense / income * 100;
 
         String text;
 
-        if(percent>=90){
+        if (percent >= 90) {
 
-            text="⚠ Bạn đã sử dụng hơn 90% thu nhập. Hãy hạn chế chi tiêu.";
+            text = "⚠ Bạn đã sử dụng hơn 90% thu nhập. Hãy hạn chế chi tiêu.";
 
-        }else if(percent>=70){
+        } else if (percent >= 70) {
 
-            text="⚠ Chi tiêu đang ở mức cao ("+(int)percent+"%).";
+            text = "⚠ Chi tiêu đang ở mức cao (" + (int) percent + "%).";
 
-        }else if(percent>=50){
+        } else if (percent >= 50) {
 
-            text="✓ Chi tiêu ở mức trung bình.";
+            text = "✓ Chi tiêu ở mức trung bình.";
 
-        }else{
+        } else {
 
-            text="🎉 Bạn đang quản lý tài chính rất tốt.";
+            text = "🎉 Bạn đang quản lý tài chính rất tốt.";
 
         }
 
