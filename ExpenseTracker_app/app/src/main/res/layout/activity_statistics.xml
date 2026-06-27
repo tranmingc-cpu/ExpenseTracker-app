@@ -16,8 +16,8 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
             <ImageButton
                 android:id="@+id/btnBack"
@@ -25,16 +25,16 @@
                 android:layout_height="40dp"
                 android:background="@android:color/transparent"
                 android:src="@android:drawable/ic_media_previous"
-                android:tint="#FFFFFF"/>
+                android:tint="#FFFFFF" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
                 android:text="Statistics"
                 android:textColor="#FFFFFF"
                 android:textSize="24sp"
-                android:textStyle="bold"
-                android:layout_marginStart="12dp"/>
+                android:textStyle="bold" />
 
         </LinearLayout>
 
@@ -44,8 +44,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            app:cardCornerRadius="15dp"
-            app:cardBackgroundColor="#1F1F35">
+            app:cardBackgroundColor="#1F1F35"
+            app:cardCornerRadius="15dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -54,12 +54,12 @@
                 android:padding="16dp">
 
                 <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:text="💰 Total Income"
                     android:textColor="#00E676"
-                    android:textStyle="bold"
                     android:textSize="18sp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/tvIncome"
@@ -67,15 +67,15 @@
                     android:layout_height="wrap_content"
                     android:text="0 ₫"
                     android:textColor="#FFFFFF"
-                    android:textStyle="bold"
-                    android:textSize="26sp"/>
+                    android:textSize="26sp"
+                    android:textStyle="bold" />
 
                 <ProgressBar
                     android:id="@+id/progressIncome"
                     style="?android:attr/progressBarStyleHorizontal"
                     android:layout_width="match_parent"
                     android:layout_height="10dp"
-                    android:max="100"/>
+                    android:max="100" />
 
             </LinearLayout>
 
@@ -87,8 +87,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="15dp"
-            app:cardCornerRadius="15dp"
-            app:cardBackgroundColor="#1F1F35">
+            app:cardBackgroundColor="#1F1F35"
+            app:cardCornerRadius="15dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -97,12 +97,12 @@
                 android:padding="16dp">
 
                 <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:text="💸 Total Expense"
                     android:textColor="#FF5252"
-                    android:textStyle="bold"
                     android:textSize="18sp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/tvExpense"
@@ -110,15 +110,15 @@
                     android:layout_height="wrap_content"
                     android:text="0 ₫"
                     android:textColor="#FFFFFF"
-                    android:textStyle="bold"
-                    android:textSize="26sp"/>
+                    android:textSize="26sp"
+                    android:textStyle="bold" />
 
                 <ProgressBar
                     android:id="@+id/progressExpense"
                     style="?android:attr/progressBarStyleHorizontal"
                     android:layout_width="match_parent"
                     android:layout_height="10dp"
-                    android:max="100"/>
+                    android:max="100" />
 
             </LinearLayout>
 
@@ -130,22 +130,22 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="15dp"
-            app:cardCornerRadius="15dp"
-            app:cardBackgroundColor="#1F1F35">
+            app:cardBackgroundColor="#1F1F35"
+            app:cardCornerRadius="15dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="16dp"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:padding="16dp">
 
                 <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:text="💳 Current Balance"
                     android:textColor="#FFD54F"
-                    android:textStyle="bold"
                     android:textSize="18sp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/tvBalance"
@@ -153,29 +153,42 @@
                     android:layout_height="wrap_content"
                     android:text="0 ₫"
                     android:textColor="#FFFFFF"
-                    android:textStyle="bold"
-                    android:textSize="26sp"/>
+                    android:textSize="26sp"
+                    android:textStyle="bold" />
 
             </LinearLayout>
 
         </androidx.cardview.widget.CardView>
 
-        <!-- Top Categories -->
+        <!-- Top Spending Categories -->
 
         <TextView
-            android:layout_marginTop="20dp"
-            android:text="Top Spending Categories"
-            android:textColor="#FFFFFF"
-            android:textStyle="bold"
-            android:textSize="18sp"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="🏆 Top Spending Categories"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:textStyle="bold" />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvTopCategory"
+        <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:nestedScrollingEnabled="false"/>
+            android:layout_marginTop="10dp"
+            app:cardBackgroundColor="#1F1F35"
+            app:cardCornerRadius="15dp">
+
+            <TextView
+                android:id="@+id/tvTopCategory"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                android:text="Chưa có dữ liệu."
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                android:lineSpacingExtra="6dp" />
+
+        </androidx.cardview.widget.CardView>
 
         <!-- AI Insight -->
 
@@ -183,31 +196,31 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            app:cardCornerRadius="15dp"
-            app:cardBackgroundColor="#2A1B2E">
+            app:cardBackgroundColor="#2A1B2E"
+            app:cardCornerRadius="15dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="16dp"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:padding="16dp">
 
                 <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:text="🤖 AI Insight"
                     android:textColor="#FFFFFF"
-                    android:textStyle="bold"
                     android:textSize="18sp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/tvInsight"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
                     android:text="Loading..."
                     android:textColor="#FFD54F"
-                    android:textSize="16sp"
-                    android:layout_marginTop="8dp"/>
+                    android:textSize="16sp" />
 
             </LinearLayout>
 
