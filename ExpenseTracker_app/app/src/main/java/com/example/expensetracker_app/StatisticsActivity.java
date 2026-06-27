@@ -7,11 +7,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.expensetracker_app.adapter.TopCategoryAdapter;
-import com.example.expensetracker_app.model.TopCategory;
 import com.expensetracker_manager.model.response.TransactionResponse;
 import com.expensetracker_manager.network.RetrofitClient;
 import com.expensetracker_manager.utils.TokenManager;
@@ -34,16 +30,12 @@ public class StatisticsActivity extends AppCompatActivity {
     private TextView tvExpense;
     private TextView tvBalance;
     private TextView tvInsight;
+    private TextView tvTopCategory;
 
     private ImageButton btnBack;
 
     private ProgressBar progressIncome;
     private ProgressBar progressExpense;
-
-    private RecyclerView rvTopCategory;
-
-    private TopCategoryAdapter adapter;
-    private final List<TopCategory> topCategories = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,19 +46,12 @@ public class StatisticsActivity extends AppCompatActivity {
         tvExpense = findViewById(R.id.tvExpense);
         tvBalance = findViewById(R.id.tvBalance);
         tvInsight = findViewById(R.id.tvInsight);
+        tvTopCategory = findViewById(R.id.tvTopCategory);
 
         progressIncome = findViewById(R.id.progressIncome);
         progressExpense = findViewById(R.id.progressExpense);
 
         btnBack = findViewById(R.id.btnBack);
-
-        rvTopCategory = findViewById(R.id.rvTopCategory);
-
-        rvTopCategory.setLayoutManager(new LinearLayoutManager(this));
-
-        adapter = new TopCategoryAdapter(topCategories);
-        rvTopCategory.setAdapter(adapter);
-
         btnBack.setOnClickListener(v -> finish());
 
         loadStatistics();
@@ -91,13 +76,33 @@ public class StatisticsActivity extends AppCompatActivity {
                                            Response<List<TransactionResponse>> response) {
 
                         if (response.isSuccessful() && response.body() != null) {
-                            calculateStatistics(response.body());
+
+                            if (response.body().isEmpty()) {
+
+                                tvIncome.setText(formatVND(0));
+                                tvExpense.setText(formatVND(0));
+                                tvBalance.setText(formatVND(0));
+
+                                progressIncome.setProgress(0);
+                                progressExpense.setProgress(0);
+
+                                tvTopCategory.setText("Chưa có dữ liệu.");
+                                tvInsight.setText("Chưa có giao dịch.");
+
+                            } else {
+
+                                calculateStatistics(response.body());
+
+                            }
+
                         } else {
+
                             Toast.makeText(
                                     StatisticsActivity.this,
                                     "Không có dữ liệu giao dịch.",
                                     Toast.LENGTH_SHORT
                             ).show();
+
                         }
 
                     }
@@ -140,9 +145,8 @@ public class StatisticsActivity extends AppCompatActivity {
                     category = "Khác";
                 }
 
-                double oldAmount = categoryMap.getOrDefault(category, 0.0);
-
-                categoryMap.put(category, oldAmount + tr.getAmount());
+                double current = categoryMap.getOrDefault(category, 0.0);
+                categoryMap.put(category, current + tr.getAmount());
 
             }
 
@@ -157,43 +161,46 @@ public class StatisticsActivity extends AppCompatActivity {
         int total = (int) (income + expense);
 
         if (total > 0) {
-
             progressIncome.setProgress((int) ((income / total) * 100));
-
             progressExpense.setProgress((int) ((expense / total) * 100));
-
         } else {
-
             progressIncome.setProgress(0);
             progressExpense.setProgress(0);
-
         }
 
-        topCategories.clear();
+        List<Map.Entry<String, Double>> sorted =
+                new ArrayList<>(categoryMap.entrySet());
 
-        for (Map.Entry<String, Double> item : categoryMap.entrySet()) {
-
-            topCategories.add(
-                    new TopCategory(
-                            item.getKey(),
-                            item.getValue()
-                    )
-            );
-
-        }
-
-        Collections.sort(topCategories, new Comparator<TopCategory>() {
+        Collections.sort(sorted, new Comparator<Map.Entry<String, Double>>() {
             @Override
-            public int compare(TopCategory o1, TopCategory o2) {
-                return Double.compare(o2.getAmount(), o1.getAmount());
+            public int compare(Map.Entry<String, Double> o1,
+                               Map.Entry<String, Double> o2) {
+                return Double.compare(o2.getValue(), o1.getValue());
             }
         });
 
-        if (topCategories.size() > 5) {
-            topCategories.subList(5, topCategories.size()).clear();
+        StringBuilder builder = new StringBuilder();
+
+        int limit = Math.min(5, sorted.size());
+
+        for (int i = 0; i < limit; i++) {
+
+            Map.Entry<String, Double> item = sorted.get(i);
+
+            builder.append(i + 1)
+                    .append(". ")
+                    .append(item.getKey())
+                    .append(" : ")
+                    .append(formatVND(item.getValue()))
+                    .append("\n");
+
         }
 
-        adapter.notifyDataSetChanged();
+        if (builder.length() == 0) {
+            builder.append("Chưa có dữ liệu.");
+        }
+
+        tvTopCategory.setText(builder.toString());
 
         generateInsight(income, expense);
 
@@ -202,11 +209,8 @@ public class StatisticsActivity extends AppCompatActivity {
     private void generateInsight(double income, double expense) {
 
         if (income == 0) {
-
             tvInsight.setText("Chưa có dữ liệu thu nhập.");
-
             return;
-
         }
 
         double percent = expense / income * 100;
@@ -232,7 +236,7 @@ public class StatisticsActivity extends AppCompatActivity {
     }
 
     private String formatVND(double amount) {
-        return String.format(Locale.US, "%,.0f ₫", amount);
+        return String.format(new Locale("vi", "VN"), "%,.0f ₫", amount)
+                .replace(",", ".");
     }
-
 }
