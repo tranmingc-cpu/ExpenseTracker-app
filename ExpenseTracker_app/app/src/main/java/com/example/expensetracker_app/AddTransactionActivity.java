@@ -78,9 +78,9 @@ public class AddTransactionActivity extends BaseActivity {
         btnSaveTransaction = findViewById(R.id.btnSaveTransaction);
         btnOcrScan = findViewById(R.id.btnOcrScan);
         ocrProgressBar = findViewById(R.id.ocrProgressBar);
-        
+
         etAmount.addTextChangedListener(new com.expensetracker_manager.utils.NumberTextWatcher(etAmount));
-        
+
         setupSpinners();
         loadCategories();
         loadWallets();
@@ -105,8 +105,7 @@ public class AddTransactionActivity extends BaseActivity {
 
     private void setupSpinners() {
         String[] types = { "EXPENSE", "INCOME" };
-        ArrayAdapter<String> typeAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item,
-                types);
+        ArrayAdapter<String> typeAdapter = createSpinnerAdapter(java.util.Arrays.asList(types));
         spinnerType.setAdapter(typeAdapter);
     }
 
@@ -120,8 +119,7 @@ public class AddTransactionActivity extends BaseActivity {
             names.add("Y tế");
             names.add("Chuyển khoản");
             names.add("Khác");
-            ArrayAdapter<String> catAdapter = new ArrayAdapter<>(AddTransactionActivity.this,
-                    android.R.layout.simple_spinner_dropdown_item, names);
+            ArrayAdapter<String> catAdapter = createSpinnerAdapter(names);
             spinnerCategory.setAdapter(catAdapter);
             return;
         }
@@ -130,7 +128,7 @@ public class AddTransactionActivity extends BaseActivity {
                 .enqueue(new Callback<List<CategoryResponse>>() {
                     @Override
                     public void onResponse(Call<List<CategoryResponse>> call,
-                            Response<List<CategoryResponse>> response) {
+                                           Response<List<CategoryResponse>> response) {
                         if (response.isSuccessful() && response.body() != null) {
                             categories = response.body();
                             List<String> names = new ArrayList<>();
@@ -150,8 +148,7 @@ public class AddTransactionActivity extends BaseActivity {
                                 names.add("Y tế");
                                 names.add("Khác");
                             }
-                            ArrayAdapter<String> catAdapter = new ArrayAdapter<>(AddTransactionActivity.this,
-                                     android.R.layout.simple_spinner_dropdown_item, names);
+                            ArrayAdapter<String> catAdapter = createSpinnerAdapter(names);
                             spinnerCategory.setAdapter(catAdapter);
                         }
                     }
@@ -171,8 +168,7 @@ public class AddTransactionActivity extends BaseActivity {
                         names.add("Đi chơi");
                         names.add("Y tế");
                         names.add("Khác");
-                        ArrayAdapter<String> catAdapter = new ArrayAdapter<>(AddTransactionActivity.this,
-                                android.R.layout.simple_spinner_dropdown_item, names);
+                        ArrayAdapter<String> catAdapter = createSpinnerAdapter(names);
                         spinnerCategory.setAdapter(catAdapter);
                     }*/
                 });
@@ -184,8 +180,7 @@ public class AddTransactionActivity extends BaseActivity {
             List<String> names = new ArrayList<>();
             names.add("Ví tiền mặt");
             names.add("Tài khoản ngân hàng");
-            ArrayAdapter<String> walletAdapter = new ArrayAdapter<>(AddTransactionActivity.this,
-                    android.R.layout.simple_spinner_dropdown_item, names);
+            ArrayAdapter<String> walletAdapter = createSpinnerAdapter(names);
             spinnerWallet.setAdapter(walletAdapter);
             return;
         }
@@ -202,8 +197,7 @@ public class AddTransactionActivity extends BaseActivity {
                             }
                             if (names.isEmpty())
                                 names.add("Ví tiền mặt");
-                            ArrayAdapter<String> walletAdapter = new ArrayAdapter<>(AddTransactionActivity.this,
-                                     android.R.layout.simple_spinner_dropdown_item, names);
+                            ArrayAdapter<String> walletAdapter = createSpinnerAdapter(names);
                             spinnerWallet.setAdapter(walletAdapter);
                         }
                     }
@@ -214,8 +208,7 @@ public class AddTransactionActivity extends BaseActivity {
                         List<String> names = new ArrayList<>();
                         names.add("Ví tiền mặt");
                         names.add("Tài khoản ngân hàng");
-                        ArrayAdapter<String> walletAdapter = new ArrayAdapter<>(AddTransactionActivity.this,
-                                android.R.layout.simple_spinner_dropdown_item, names);
+                        ArrayAdapter<String> walletAdapter = createSpinnerAdapter(names);
                         spinnerWallet.setAdapter(walletAdapter);
                     }
                 });
@@ -303,4 +296,44 @@ public class AddTransactionActivity extends BaseActivity {
                     }
                 });
     }
+
+    private ArrayAdapter<String> createSpinnerAdapter(List<String> items) {
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, items) {
+            @Override
+            public android.view.View getView(int position, android.view.View convertView, android.view.ViewGroup parent) {
+                android.widget.TextView view = (android.widget.TextView) super.getView(position, convertView, parent);
+                view.setTextColor(themeColor(R.color.app_text_primary));
+                view.setPadding(dp(12), 0, dp(12), 0);
+                return view;
+            }
+
+            @Override
+            public android.view.View getDropDownView(int position, android.view.View convertView, android.view.ViewGroup parent) {
+                android.widget.TextView view = (android.widget.TextView) super.getDropDownView(position, convertView, parent);
+                view.setTextColor(themeColor(R.color.app_text_primary));
+                view.setBackgroundColor(themeColor(R.color.app_surface));
+                view.setPadding(dp(12), dp(12), dp(12), dp(12));
+                return view;
+            }
+        };
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        return adapter;
+    }
+
+
+    private int themeColor(int colorResId) {
+        return androidx.core.content.ContextCompat.getColor(this, colorResId);
+    }
+
+    private android.graphics.drawable.GradientDrawable roundedBg(int colorResId) {
+        android.graphics.drawable.GradientDrawable bg = new android.graphics.drawable.GradientDrawable();
+        bg.setColor(themeColor(colorResId));
+        bg.setCornerRadius(dp(12));
+        return bg;
+    }
+
+    private int dp(int value) {
+        return Math.round(value * getResources().getDisplayMetrics().density);
+    }
+
 }

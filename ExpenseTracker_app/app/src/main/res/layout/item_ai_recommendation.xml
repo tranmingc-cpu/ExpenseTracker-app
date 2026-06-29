@@ -5,7 +5,7 @@
     android:layout_height="wrap_content"
     android:layout_marginBottom="12dp"
     app:cardCornerRadius="12dp"
-    app:cardBackgroundColor="#2A2A3E">
+    app:cardBackgroundColor="@color/app_surface">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -18,7 +18,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Khuyến nghị"
-            android:textColor="#FFCC00"
+            android:textColor="@color/app_accent_warning"
             android:textSize="15sp"
             android:textStyle="bold"/>
 
@@ -28,7 +28,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
             android:text="Mô tả khuyến nghị"
-            android:textColor="#FFFFFF"
+            android:textColor="@color/app_text_primary"
             android:textSize="14sp"/>
 
         <TextView
@@ -37,7 +37,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:text="Giải thích từ AI..."
-            android:textColor="#808090"
+            android:textColor="@color/app_text_secondary"
             android:textSize="12sp"/>
 
         <LinearLayout
@@ -53,7 +53,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="36dp"
                 android:text="Bỏ qua"
-                android:textColor="#808090"
+                android:textColor="@color/app_text_secondary"
                 android:textSize="12sp"/>
 
             <Button
@@ -62,8 +62,8 @@
                 android:layout_height="36dp"
                 android:layout_marginStart="8dp"
                 android:text="Áp dụng"
-                android:textColor="#FFFFFF"
-                android:backgroundTint="#00FF66"
+                android:textColor="@color/app_button_text"
+                android:backgroundTint="@color/app_accent_income"
                 android:textSize="12sp"/>
 
         </LinearLayout>

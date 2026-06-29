@@ -8,6 +8,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import com.expensetracker_manager.utils.TokenManager;
 
@@ -24,6 +25,7 @@ public class PinLockActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        ThemeHelper.applySavedTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pin_lock);
 
@@ -89,8 +91,8 @@ public class PinLockActivity extends AppCompatActivity {
 
     private void updateDots() {
         int len = pinInput.length();
-        int activeColor = 0xFF00FF66;
-        int inactiveColor = 0xFF444455;
+        int activeColor = ContextCompat.getColor(this, R.color.app_accent_income);
+        int inactiveColor = ContextCompat.getColor(this, R.color.app_divider);
 
         dot1.setBackgroundTintList(android.content.res.ColorStateList.valueOf(len >= 1 ? activeColor : inactiveColor));
         dot2.setBackgroundTintList(android.content.res.ColorStateList.valueOf(len >= 2 ? activeColor : inactiveColor));

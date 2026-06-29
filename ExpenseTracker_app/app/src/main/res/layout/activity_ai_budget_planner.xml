@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#1E1E2C"
+    android:background="@color/app_background"
     android:fillViewport="true">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -16,7 +16,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="🤖 AI Smart Budget Planner"
-            android:textColor="#FFFFFF"
+            android:textColor="@color/app_text_primary"
             android:textSize="22sp"
             android:textStyle="bold"
             app:layout_constraintTop_toTopOf="parent"
@@ -28,7 +28,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             app:cardCornerRadius="16dp"
-            app:cardBackgroundColor="#2A2A3E"
+            app:cardBackgroundColor="@color/app_surface"
             app:layout_constraintTop_toBottomOf="@id/tvTitle">
 
             <LinearLayout
@@ -41,7 +41,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Sức Khỏe Tài Chính"
-                    android:textColor="#808090"
+                    android:textColor="@color/app_text_secondary"
                     android:textSize="14sp"
                     android:textStyle="bold"/>
 
@@ -55,7 +55,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="85"
-                        android:textColor="#00FF66"
+                        android:textColor="@color/app_accent_income"
                         android:textSize="48sp"
                         android:textStyle="bold"/>
 
@@ -67,7 +67,7 @@
                         android:layout_marginStart="12dp"
                         android:layout_alignTop="@id/tvHealthScore"
                         android:text="Xuất sắc"
-                        android:textColor="#FFFFFF"
+                        android:textColor="@color/app_text_primary"
                         android:textSize="20sp"
                         android:textStyle="bold"/>
 
@@ -78,7 +78,7 @@
                         android:layout_marginStart="12dp"
                         android:layout_below="@id/tvHealthStatus"
                         android:text="Dựa trên tỷ lệ tiết kiệm &amp; ngân sách"
-                        android:textColor="#808090"
+                        android:textColor="@color/app_text_secondary"
                         android:textSize="12sp"/>
 
                 </RelativeLayout>
@@ -90,8 +90,8 @@
                     android:layout_height="8dp"
                     android:layout_marginTop="16dp"
                     android:progress="85"
-                    android:progressTint="#00FF66"
-                    android:progressBackgroundTint="#3D3D5C"/>
+                    android:progressTint="@color/app_accent_income"
+                    android:progressBackgroundTint="@color/app_divider"/>
 
             </LinearLayout>
         </androidx.cardview.widget.CardView>
@@ -102,7 +102,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             app:cardCornerRadius="16dp"
-            app:cardBackgroundColor="#2A2A3E"
+            app:cardBackgroundColor="@color/app_surface"
             app:layout_constraintTop_toBottomOf="@id/cardHealth">
 
             <LinearLayout
@@ -122,7 +122,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Rủi ro chi tiêu vượt mức:"
-                        android:textColor="#FFFFFF"
+                        android:textColor="@color/app_text_primary"
                         android:textSize="14sp"
                         android:textStyle="bold"/>
 
@@ -131,7 +131,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="THẤP"
-                        android:textColor="#00FF66"
+                        android:textColor="@color/app_accent_income"
                         android:textSize="14sp"
                         android:textStyle="bold"
                         android:paddingHorizontal="10dp"
@@ -142,14 +142,14 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:background="#3D3D5C"
+                    android:background="@color/app_divider"
                     android:layout_marginVertical="12dp"/>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Dự Báo Chi Tiêu Tháng"
-                    android:textColor="#808090"
+                    android:textColor="@color/app_text_secondary"
                     android:textSize="12sp"
                     android:textStyle="bold"/>
 
@@ -169,14 +169,14 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Hiện tại:"
-                            android:textColor="#808090"
+                            android:textColor="@color/app_text_secondary"
                             android:textSize="14sp"/>
                         <TextView
                             android:id="@+id/tvCurrentSpent"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="0đ"
-                            android:textColor="#FFFFFF"
+                            android:textColor="@color/app_text_primary"
                             android:textSize="16sp"
                             android:textStyle="bold"/>
                     </LinearLayout>
@@ -191,14 +191,14 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Dự báo cuối tháng:"
-                            android:textColor="#808090"
+                            android:textColor="@color/app_text_secondary"
                             android:textSize="14sp"/>
                         <TextView
                             android:id="@+id/tvPredictedSpent"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="0đ"
-                            android:textColor="#FFCC00"
+                            android:textColor="@color/app_accent_warning"
                             android:textSize="16sp"
                             android:textStyle="bold"/>
                     </LinearLayout>
@@ -212,14 +212,14 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Còn lại:"
-                            android:textColor="#808090"
+                            android:textColor="@color/app_text_secondary"
                             android:textSize="14sp"/>
                         <TextView
                             android:id="@+id/tvRemainingBudget"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="0đ"
-                            android:textColor="#00FF66"
+                            android:textColor="@color/app_accent_income"
                             android:textSize="16sp"
                             android:textStyle="bold"/>
                     </LinearLayout>
@@ -235,7 +235,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             app:cardCornerRadius="16dp"
-            app:cardBackgroundColor="#2A2A3E"
+            app:cardBackgroundColor="@color/app_surface"
             app:layout_constraintTop_toBottomOf="@id/cardForecast">
 
             <LinearLayout
@@ -247,13 +247,13 @@
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
-                    
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_centerVertical="true"
                         android:text="Mục Tiêu Tích Lũy"
-                        android:textColor="#808090"
+                        android:textColor="@color/app_text_secondary"
                         android:textSize="14sp"
                         android:textStyle="bold"/>
 
@@ -264,7 +264,7 @@
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true"
                         android:text="Đổi mục tiêu"
-                        android:textColor="#00E5FF"
+                        android:textColor="@color/app_accent_cyan"
                         android:textSize="12sp"
                         android:textStyle="bold"
                         android:padding="4dp"/>
@@ -275,7 +275,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Mua điện thoại mới"
-                    android:textColor="#FFFFFF"
+                    android:textColor="@color/app_text_primary"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:layout_marginTop="8dp"/>
@@ -290,7 +290,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="15,000,000đ / 20,000,000đ"
-                        android:textColor="#808090"
+                        android:textColor="@color/app_text_secondary"
                         android:textSize="12sp"/>
 
                     <TextView
@@ -299,7 +299,7 @@
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
                         android:text="75%"
-                        android:textColor="#00FF66"
+                        android:textColor="@color/app_accent_income"
                         android:textSize="12sp"
                         android:textStyle="bold"/>
 
@@ -312,8 +312,8 @@
                     android:layout_height="6dp"
                     android:layout_marginTop="8dp"
                     android:progress="75"
-                    android:progressTint="#00FF66"
-                    android:progressBackgroundTint="#3D3D5C"/>
+                    android:progressTint="@color/app_accent_income"
+                    android:progressBackgroundTint="@color/app_divider"/>
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -330,14 +330,14 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Thời gian còn lại"
-                            android:textColor="#808090"
+                            android:textColor="@color/app_text_secondary"
                             android:textSize="11sp"/>
                         <TextView
                             android:id="@+id/tvRemainingDays"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="45 ngày"
-                            android:textColor="#FFFFFF"
+                            android:textColor="@color/app_text_primary"
                             android:textSize="14sp"
                             android:textStyle="bold"/>
                     </LinearLayout>
@@ -351,14 +351,14 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Dự kiến hoàn thành"
-                            android:textColor="#808090"
+                            android:textColor="@color/app_text_secondary"
                             android:textSize="11sp"/>
                         <TextView
                             android:id="@+id/tvCompletionDate"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="15/08/2026"
-                            android:textColor="#FFFFFF"
+                            android:textColor="@color/app_text_primary"
                             android:textSize="14sp"
                             android:textStyle="bold"/>
                     </LinearLayout>
@@ -380,7 +380,7 @@
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:text="Khuyến Nghị Từ AI"
-                android:textColor="#FFFFFF"
+                android:textColor="@color/app_text_primary"
                 android:textSize="16sp"
                 android:textStyle="bold" />
 
@@ -392,7 +392,7 @@
                 android:layout_centerVertical="true"
                 android:padding="8dp"
                 android:text="Xem tất cả"
-                android:textColor="#00FF66"
+                android:textColor="@color/app_accent_income"
                 android:textSize="14sp"
                 android:textStyle="bold" />
         </RelativeLayout>
@@ -411,7 +411,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Đề Xuất Hạn Mức Ngân Sách"
-            android:textColor="#FFFFFF"
+            android:textColor="@color/app_text_primary"
             android:textSize="16sp"
             android:textStyle="bold"
             android:layout_marginTop="24dp"
@@ -433,8 +433,8 @@
             android:layout_marginTop="24dp"
             android:layout_marginBottom="20dp"
             android:text="Áp dụng tất cả đề xuất"
-            android:textColor="#FFFFFF"
-            android:backgroundTint="#00FF66"
+            android:textColor="@color/app_text_primary"
+            android:backgroundTint="@color/app_accent_income"
             android:textStyle="bold"
             app:layout_constraintTop_toBottomOf="@id/layoutSuggestedBudgets"
             app:layout_constraintBottom_toBottomOf="parent"/>

@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#1E1E2C"
+    android:background="@color/app_background"
     android:paddingLeft="24dp"
     android:paddingRight="24dp"
     android:paddingTop="48dp"
@@ -15,7 +15,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Ngân Sách Tháng"
-        android:textColor="#FFFFFF"
+        android:textColor="@color/app_text_primary"
         android:textSize="20sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
@@ -26,9 +26,9 @@
         android:layout_width="188dp"
         android:layout_height="39dp"
         android:layout_marginTop="8dp"
-        android:backgroundTint="#8A2BE2"
+        android:backgroundTint="@color/app_primary"
         android:text="🤖 AI Smart Planner"
-        android:textColor="#FFFFFF"
+        android:textColor="@color/app_button_text"
         android:textSize="13sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
@@ -48,7 +48,7 @@
             android:id="@+id/spinnerBudgetCategory"
             android:layout_width="match_parent"
             android:layout_height="50dp"
-            android:background="#2A2A3E"
+            android:background="@drawable/bg_spinner"
             android:padding="8dp" />
 
         <EditText
@@ -56,22 +56,22 @@
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:layout_marginTop="12dp"
-            android:background="#2A2A3E"
+            android:background="@drawable/bg_edit_text"
             android:hint="Giới hạn ngân sách (đ)"
             android:inputType="number"
             android:paddingLeft="16dp"
             android:paddingRight="16dp"
-            android:textColor="#FFFFFF"
-            android:textColorHint="#808090" />
+            android:textColor="@color/app_text_primary"
+            android:textColorHint="@color/app_input_hint" />
 
         <Button
             android:id="@+id/btnSaveBudget"
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:layout_marginTop="16dp"
-            android:backgroundTint="#00FF66"
+            android:backgroundTint="@color/app_accent_income"
             android:text="Thiết lập ngân sách"
-            android:textColor="#FFFFFF"
+            android:textColor="@color/app_button_text"
             android:textStyle="bold" />
 
     </LinearLayout>
@@ -82,7 +82,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="36dp"
         android:text="Tiến Độ Tiêu Dùng"
-        android:textColor="#FFFFFF"
+        android:textColor="@color/app_text_primary"
         android:textSize="16sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"

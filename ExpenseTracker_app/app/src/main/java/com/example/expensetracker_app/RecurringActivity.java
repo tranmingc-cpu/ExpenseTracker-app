@@ -71,14 +71,14 @@ public class RecurringActivity extends BaseActivity {
 
         final android.widget.EditText etName = new android.widget.EditText(this);
         etName.setHint("Tên dịch vụ (Ví dụ: Tiền mạng, Netflix)");
-        etName.setHintTextColor(0xFF808090);
-        etName.setTextColor(0xFFFFFFFF);
+        etName.setHintTextColor(themeColor(R.color.app_input_hint));
+        etName.setTextColor(themeColor(R.color.app_text_primary));
         layout.addView(etName);
 
         final android.widget.EditText etAmount = new android.widget.EditText(this);
         etAmount.setHint("Số tiền thanh toán (đ)");
-        etAmount.setHintTextColor(0xFF808090);
-        etAmount.setTextColor(0xFFFFFFFF);
+        etAmount.setHintTextColor(themeColor(R.color.app_input_hint));
+        etAmount.setTextColor(themeColor(R.color.app_text_primary));
         etAmount.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
         etAmount.addTextChangedListener(new com.expensetracker_manager.utils.NumberTextWatcher(etAmount));
         android.widget.LinearLayout.LayoutParams amtParams = new android.widget.LinearLayout.LayoutParams(
@@ -90,8 +90,8 @@ public class RecurringActivity extends BaseActivity {
 
         final android.widget.EditText etDay = new android.widget.EditText(this);
         etDay.setHint("Ngày nhắc hàng tháng (1-31)");
-        etDay.setHintTextColor(0xFF808090);
-        etDay.setTextColor(0xFFFFFFFF);
+        etDay.setHintTextColor(themeColor(R.color.app_input_hint));
+        etDay.setTextColor(themeColor(R.color.app_text_primary));
         etDay.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
         android.widget.LinearLayout.LayoutParams dayParams = new android.widget.LinearLayout.LayoutParams(
                 android.widget.LinearLayout.LayoutParams.MATCH_PARENT, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
@@ -142,7 +142,7 @@ public class RecurringActivity extends BaseActivity {
         // Định dạng nền cửa sổ để phù hợp với giao diện tối
         if (dialog.getWindow() != null) {
             android.graphics.drawable.GradientDrawable gd = new android.graphics.drawable.GradientDrawable();
-            gd.setColor(0xFF1E1E2C);
+            gd.setColor(themeColor(R.color.app_surface));
             gd.setCornerRadius(24f);
             dialog.getWindow().setBackgroundDrawable(gd);
         }
@@ -249,7 +249,7 @@ public class RecurringActivity extends BaseActivity {
             LinearLayout row = new LinearLayout(this);
             row.setOrientation(LinearLayout.VERTICAL);
             row.setPadding(16, 16, 16, 16);
-            row.setBackgroundColor(0xFF2A2A3E);
+            row.setBackground(roundedBg(R.color.app_surface_alt));
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
             );
@@ -258,14 +258,14 @@ public class RecurringActivity extends BaseActivity {
 
             TextView tvName = new TextView(this);
             tvName.setText(item.name);
-            tvName.setTextColor(0xFFFFFFFF);
+            tvName.setTextColor(themeColor(R.color.app_text_primary));
             tvName.setTextSize(16);
             tvName.setTypeface(null, android.graphics.Typeface.BOLD);
             row.addView(tvName);
 
             TextView tvInfo = new TextView(this);
             tvInfo.setText("Số tiền: " + formatVND(item.amount) + " | Ngày thanh toán: " + item.day + " hàng tháng");
-            tvInfo.setTextColor(0xFF8A8A9E);
+            tvInfo.setTextColor(themeColor(R.color.app_text_secondary));
             tvInfo.setTextSize(12);
             row.addView(tvInfo);
 
@@ -276,8 +276,8 @@ public class RecurringActivity extends BaseActivity {
             Button btnPay = new Button(this);
             btnPay.setText("Thanh toán ngay");
             btnPay.setTextSize(11);
-            btnPay.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xFF00FF66));
-            btnPay.setTextColor(0xFFFFFFFF);
+            btnPay.setBackgroundTintList(android.content.res.ColorStateList.valueOf(themeColor(R.color.app_accent_income)));
+            btnPay.setTextColor(themeColor(R.color.app_button_text));
             btnPay.setLayoutParams(new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT, 80
             ));
@@ -287,8 +287,8 @@ public class RecurringActivity extends BaseActivity {
             Button btnDelete = new Button(this);
             btnDelete.setText("Xóa");
             btnDelete.setTextSize(11);
-            btnDelete.setBackgroundTintList(android.content.res.ColorStateList.valueOf(0xFFFF3366));
-            btnDelete.setTextColor(0xFFFFFFFF);
+            btnDelete.setBackgroundTintList(android.content.res.ColorStateList.valueOf(themeColor(R.color.app_accent_expense)));
+            btnDelete.setTextColor(themeColor(R.color.app_button_text));
             LinearLayout.LayoutParams delParams = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.WRAP_CONTENT, 80
             );
@@ -401,4 +401,20 @@ public class RecurringActivity extends BaseActivity {
                     }
                 });
     }
+
+    private int themeColor(int colorResId) {
+        return androidx.core.content.ContextCompat.getColor(this, colorResId);
+    }
+
+    private android.graphics.drawable.GradientDrawable roundedBg(int colorResId) {
+        android.graphics.drawable.GradientDrawable bg = new android.graphics.drawable.GradientDrawable();
+        bg.setColor(themeColor(colorResId));
+        bg.setCornerRadius(dp(12));
+        return bg;
+    }
+
+    private int dp(int value) {
+        return Math.round(value * getResources().getDisplayMetrics().density);
+    }
+
 }

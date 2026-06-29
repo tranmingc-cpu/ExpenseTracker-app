@@ -200,7 +200,7 @@ public class TransactionHistoryActivity extends BaseActivity {
         if (filtered.isEmpty()) {
             TextView empty = new TextView(this);
             empty.setText("Không có giao dịch trong tháng này");
-            empty.setTextColor(0xFFAAAAAA);
+            empty.setTextColor(themeColor(R.color.app_text_secondary));
             empty.setTextSize(14);
             empty.setPadding(12, 24, 12, 24);
             layoutHistoryContainer.addView(empty);
@@ -211,7 +211,7 @@ public class TransactionHistoryActivity extends BaseActivity {
             LinearLayout item = new LinearLayout(this);
             item.setOrientation(LinearLayout.HORIZONTAL);
             item.setPadding(12, 12, 12, 12);
-            item.setBackgroundColor(0xFF1F1F35);
+            item.setBackground(roundedBg(R.color.app_surface));
 
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT,
@@ -230,13 +230,13 @@ public class TransactionHistoryActivity extends BaseActivity {
 
             TextView tvDesc = new TextView(this);
             tvDesc.setText(tr.getDescription());
-            tvDesc.setTextColor(0xFFFFFFFF);
+            tvDesc.setTextColor(themeColor(R.color.app_text_primary));
             tvDesc.setTextSize(14);
             leftBox.addView(tvDesc);
 
             TextView tvDate = new TextView(this);
             tvDate.setText(formatTransactionDate(tr.getTransactionDate()));
-            tvDate.setTextColor(0xFFAAAAAA);
+            tvDate.setTextColor(themeColor(R.color.app_text_secondary));
             tvDate.setTextSize(12);
             leftBox.addView(tvDate);
 
@@ -245,20 +245,20 @@ public class TransactionHistoryActivity extends BaseActivity {
             TextView tvValue = new TextView(this);
             boolean isIncome = "INCOME".equalsIgnoreCase(tr.getType());
             tvValue.setText((isIncome ? "+" : "-") + formatVND(tr.getAmount()));
-            tvValue.setTextColor(isIncome ? 0xFF00FF66 : 0xFFFF3366);
+            tvValue.setTextColor(isIncome ? themeColor(R.color.app_accent_income) : themeColor(R.color.app_accent_expense));
             tvValue.setTypeface(null, android.graphics.Typeface.BOLD);
             item.addView(tvValue);
 
             // Thêm trình lắng nghe Nhấn giữ để Xóa
             item.setOnLongClickListener(v -> {
                 new androidx.appcompat.app.AlertDialog.Builder(TransactionHistoryActivity.this)
-                    .setTitle("Xóa giao dịch")
-                    .setMessage("Bạn có chắc chắn muốn xóa giao dịch này?")
-                    .setPositiveButton("Xóa", (dialog, which) -> {
-                        deleteTransaction(tr);
-                    })
-                    .setNegativeButton("Hủy", null)
-                    .show();
+                        .setTitle("Xóa giao dịch")
+                        .setMessage("Bạn có chắc chắn muốn xóa giao dịch này?")
+                        .setPositiveButton("Xóa", (dialog, which) -> {
+                            deleteTransaction(tr);
+                        })
+                        .setNegativeButton("Hủy", null)
+                        .show();
                 return true;
             });
 
@@ -279,7 +279,7 @@ public class TransactionHistoryActivity extends BaseActivity {
             }
             cache.cacheTransactions(txs);
             com.expensetracker_manager.service.FinancialAnalysisEngine.analyze(this);
-            
+
             // Điều chỉnh tóm tắt báo cáo ngoại tuyến
             com.expensetracker_manager.model.response.ReportSummaryResponse summary = cache.getCachedReportSummary();
             boolean isIncome = "INCOME".equalsIgnoreCase(tr.getType());
@@ -299,29 +299,29 @@ public class TransactionHistoryActivity extends BaseActivity {
         }
 
         RetrofitClient.getInstance().getTransactionApi().delete(tr.getId())
-            .enqueue(new Callback<Void>() {
-                @Override
-                public void onResponse(Call<Void> call, Response<Void> response) {
-                    if (response.isSuccessful()) {
-                        Toast.makeText(TransactionHistoryActivity.this, "Đã xóa giao dịch thành công!", Toast.LENGTH_SHORT).show();
-                        // Xóa khỏi danh sách hiện tại
-                        allTransactions.remove(tr);
-                        // Cập nhật bộ nhớ đệm ngoại tuyến
-                        com.expensetracker_manager.utils.OfflineCacheManager.getInstance(TransactionHistoryActivity.this)
-                            .cacheTransactions(allTransactions);
-                        // Kích hoạt tính toán lại
-                        com.expensetracker_manager.service.FinancialAnalysisEngine.analyze(TransactionHistoryActivity.this);
-                        renderTransactions();
-                    } else {
-                        Toast.makeText(TransactionHistoryActivity.this, "Không thể xóa giao dịch", Toast.LENGTH_SHORT).show();
+                .enqueue(new Callback<Void>() {
+                    @Override
+                    public void onResponse(Call<Void> call, Response<Void> response) {
+                        if (response.isSuccessful()) {
+                            Toast.makeText(TransactionHistoryActivity.this, "Đã xóa giao dịch thành công!", Toast.LENGTH_SHORT).show();
+                            // Xóa khỏi danh sách hiện tại
+                            allTransactions.remove(tr);
+                            // Cập nhật bộ nhớ đệm ngoại tuyến
+                            com.expensetracker_manager.utils.OfflineCacheManager.getInstance(TransactionHistoryActivity.this)
+                                    .cacheTransactions(allTransactions);
+                            // Kích hoạt tính toán lại
+                            com.expensetracker_manager.service.FinancialAnalysisEngine.analyze(TransactionHistoryActivity.this);
+                            renderTransactions();
+                        } else {
+                            Toast.makeText(TransactionHistoryActivity.this, "Không thể xóa giao dịch", Toast.LENGTH_SHORT).show();
+                        }
                     }
-                }
 
-                @Override
-                public void onFailure(Call<Void> call, Throwable t) {
-                    Toast.makeText(TransactionHistoryActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                }
-            });
+                    @Override
+                    public void onFailure(Call<Void> call, Throwable t) {
+                        Toast.makeText(TransactionHistoryActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     private List<TransactionResponse> filterBySelectedMonth(List<TransactionResponse> source) {
@@ -355,4 +355,20 @@ public class TransactionHistoryActivity extends BaseActivity {
             return rawDate;
         }
     }
+
+    private int themeColor(int colorResId) {
+        return androidx.core.content.ContextCompat.getColor(this, colorResId);
+    }
+
+    private android.graphics.drawable.GradientDrawable roundedBg(int colorResId) {
+        android.graphics.drawable.GradientDrawable bg = new android.graphics.drawable.GradientDrawable();
+        bg.setColor(themeColor(colorResId));
+        bg.setCornerRadius(dp(12));
+        return bg;
+    }
+
+    private int dp(int value) {
+        return Math.round(value * getResources().getDisplayMetrics().density);
+    }
+
 }

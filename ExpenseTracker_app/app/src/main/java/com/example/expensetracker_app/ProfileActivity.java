@@ -412,12 +412,12 @@ public class ProfileActivity extends BaseActivity {
     private EditText createPasswordInput(String hint) {
         EditText editText = new EditText(this);
         editText.setHint(hint);
-        editText.setTextColor(0xFFFFFFFF);
-        editText.setHintTextColor(0xFF808090);
+        editText.setTextColor(color(R.color.app_text_primary));
+        editText.setHintTextColor(color(R.color.app_input_hint));
         editText.setSingleLine(true);
         editText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
         editText.setPadding(dp(14), 0, dp(14), 0);
-        editText.setBackgroundColor(0xFF2A2A3E);
+        editText.setBackgroundColor(color(R.color.app_input_background));
 
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -449,4 +449,9 @@ public class ProfileActivity extends BaseActivity {
     private int dp(int value) {
         return Math.round(value * getResources().getDisplayMetrics().density);
     }
+
+    private int color(int colorResId) {
+        return ContextCompat.getColor(this, colorResId);
+    }
+
 }
