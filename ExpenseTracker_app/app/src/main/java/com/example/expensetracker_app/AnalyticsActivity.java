@@ -10,8 +10,8 @@ public class AnalyticsActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_analytics);
 
-        ImageView btnBack = findViewById(R.id.btnBack);
-        btnBack.setOnClickListener(v -> finish());
+        // ImageView btnBack = findViewById(R.id.btnBack);
+        // btnBack.setOnClickListener(v -> finish());
 
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()

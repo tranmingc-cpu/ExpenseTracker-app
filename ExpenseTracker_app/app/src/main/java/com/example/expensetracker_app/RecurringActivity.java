@@ -80,6 +80,7 @@ public class RecurringActivity extends BaseActivity {
         etAmount.setHintTextColor(0xFF808090);
         etAmount.setTextColor(0xFFFFFFFF);
         etAmount.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+        etAmount.addTextChangedListener(new com.expensetracker_manager.utils.NumberTextWatcher(etAmount));
         android.widget.LinearLayout.LayoutParams amtParams = new android.widget.LinearLayout.LayoutParams(
                 android.widget.LinearLayout.LayoutParams.MATCH_PARENT, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
         );
@@ -110,7 +111,7 @@ public class RecurringActivity extends BaseActivity {
             android.widget.Button button = dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE);
             button.setOnClickListener(v -> {
                 String name = etName.getText().toString().trim();
-                String amountStr = etAmount.getText().toString().trim();
+                String amountStr = etAmount.getText().toString().trim().replace(".", "");
                 String dayStr = etDay.getText().toString().trim();
 
                 if (name.isEmpty() || amountStr.isEmpty() || dayStr.isEmpty()) {
@@ -138,7 +139,7 @@ public class RecurringActivity extends BaseActivity {
             });
         });
 
-        // Style the window background to fit the dark theme
+        // Định dạng nền cửa sổ để phù hợp với giao diện tối
         if (dialog.getWindow() != null) {
             android.graphics.drawable.GradientDrawable gd = new android.graphics.drawable.GradientDrawable();
             gd.setColor(0xFF1E1E2C);
@@ -331,14 +332,14 @@ public class RecurringActivity extends BaseActivity {
         if (userId == -1L) return;
 
         if (!NetworkUtils.isNetworkAvailable(this)) {
-            // Offline payment: deduct locally
+            // Thanh toán ngoại tuyến: trừ tiền cục bộ
             OfflineCacheManager cache = OfflineCacheManager.getInstance(this);
             com.expensetracker_manager.model.response.ReportSummaryResponse summary = cache.getCachedReportSummary();
             summary.setTotalExpense(summary.getTotalExpense() + item.amount);
             summary.setCurrentBalance(summary.getCurrentBalance() - item.amount);
             cache.cacheReportSummary(summary);
 
-            // Add fake offline transaction response to local cache
+            // Thêm phản hồi giao dịch ngoại tuyến giả vào bộ nhớ đệm cục bộ
             List<TransactionResponse> txs = cache.getCachedTransactions();
             TransactionResponse newTx = new TransactionResponse();
             newTx.setId(System.currentTimeMillis());

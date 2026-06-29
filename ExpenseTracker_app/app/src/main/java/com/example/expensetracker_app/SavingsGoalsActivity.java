@@ -43,6 +43,8 @@ public class SavingsGoalsActivity extends BaseActivity {
         etGoalCurrent = findViewById(R.id.etGoalCurrent);
         btnSaveGoal = findViewById(R.id.btnSaveGoal);
         layoutGoalsContainer = findViewById(R.id.layoutGoalsContainer);
+        
+        etGoalTarget.addTextChangedListener(new com.expensetracker_manager.utils.NumberTextWatcher(etGoalTarget));
 
         fetchCurrentBalanceAndLoadGoals();
 
@@ -121,6 +123,10 @@ public class SavingsGoalsActivity extends BaseActivity {
     }
 
     private void renderGoalsList() {
+        if (isFinishing() || isDestroyed()) {
+            return;
+        }
+
         layoutGoalsContainer.removeAllViews();
 
         for (SavingGoalResponse g : goals) {
@@ -168,15 +174,20 @@ public class SavingsGoalsActivity extends BaseActivity {
 
             layoutGoalsContainer.addView(item);
 
-            // Completion alert check
             if (current >= target && !alertedGoalIds.contains(g.getId())) {
                 alertedGoalIds.add(g.getId());
-                new androidx.appcompat.app.AlertDialog.Builder(this)
-                        .setTitle("🎉 Chúc mừng bạn!")
-                        .setMessage("Bạn đã hoàn thành xuất sắc mục tiêu tiết kiệm: \"" + g.getName() + "\" với số dư hiện tại " + formatVND(current) + "!")
-                        .setPositiveButton("Tuyệt vời", null)
-                        .show();
+                showCompletionDialog(g.getName(), current);
             }
+        }
+    }
+
+    private void showCompletionDialog(String goalName, double currentAmount) {
+        if (!isFinishing() && !isDestroyed()) {
+            new androidx.appcompat.app.AlertDialog.Builder(this)
+                    .setTitle("🎉 Chúc mừng bạn!")
+                    .setMessage("Bạn đã hoàn thành xuất sắc mục tiêu tiết kiệm: \"" + goalName + "\" với số dư hiện tại " + formatVND(currentAmount) + "!")
+                    .setPositiveButton("Tuyệt vời", null)
+                    .show();
         }
     }
 
@@ -216,7 +227,7 @@ public class SavingsGoalsActivity extends BaseActivity {
 
     private void saveGoal() {
         String name = etGoalName.getText().toString().trim();
-        String targetStr = etGoalTarget.getText().toString().trim();
+        String targetStr = etGoalTarget.getText().toString().trim().replace(".", "");
 
         if (name.isEmpty() || targetStr.isEmpty()) {
             Toast.makeText(this, "Vui lòng điền tên mục tiêu và số tiền tích lũy", Toast.LENGTH_SHORT).show();
@@ -234,6 +245,7 @@ public class SavingsGoalsActivity extends BaseActivity {
             mockGoal.setCompleted(currentBalance >= targetVal.doubleValue());
             goals.add(mockGoal);
             com.expensetracker_manager.utils.OfflineCacheManager.getInstance(this).cacheSavingGoals(goals);
+            com.expensetracker_manager.service.FinancialAnalysisEngine.analyze(this);
             Toast.makeText(this, "Đã lưu mục tiêu (Offline)", Toast.LENGTH_SHORT).show();
             etGoalName.setText("");
             etGoalTarget.setText("");
@@ -253,6 +265,7 @@ public class SavingsGoalsActivity extends BaseActivity {
                     public void onResponse(Call<SavingGoalResponse> call, Response<SavingGoalResponse> response) {
                         if (response.isSuccessful()) {
                             Toast.makeText(SavingsGoalsActivity.this, "Thêm mục tiêu thành công!", Toast.LENGTH_SHORT).show();
+                            com.expensetracker_manager.service.FinancialAnalysisEngine.analyze(SavingsGoalsActivity.this);
                             etGoalName.setText("");
                             etGoalTarget.setText("");
                             fetchCurrentBalanceAndLoadGoals();

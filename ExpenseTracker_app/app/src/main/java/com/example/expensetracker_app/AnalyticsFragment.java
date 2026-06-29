@@ -34,6 +34,7 @@ import com.github.mikephil.charting.utils.ColorTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class AnalyticsFragment extends Fragment {
 
@@ -115,6 +116,9 @@ public class AnalyticsFragment extends Fragment {
         pieChartCategory.getLegend().setTextColor(Color.WHITE);
         pieChartCategory.getLegend().setTextSize(14f);
         pieChartCategory.getLegend().setWordWrapEnabled(true);
+        pieChartCategory.getLegend().setFormToTextSpace(8f);
+        pieChartCategory.getLegend().setYEntrySpace(10f);
+        pieChartCategory.getLegend().setXEntrySpace(15f);
     }
 
     private void setupListeners() {
@@ -209,10 +213,11 @@ public class AnalyticsFragment extends Fragment {
 
         ArrayList<PieEntry> entries = new ArrayList<>();
         for (CategoryReportResponse item : data) {
-            entries.add(new PieEntry((float) item.getPercentage(), item.getCategoryName()));
+            String label = String.format(Locale.US, "%s (%.1f%%)", item.getCategoryName(), item.getPercentage());
+            entries.add(new PieEntry((float) item.getPercentage(), label));
         }
 
-        PieDataSet dataSet = new PieDataSet(entries, "Danh mục");
+        PieDataSet dataSet = new PieDataSet(entries, "");
         
         // Premium colors
         ArrayList<Integer> colors = new ArrayList<>();
@@ -226,6 +231,7 @@ public class AnalyticsFragment extends Fragment {
         colors.add(Color.parseColor("#5C6BC0"));
         colors.add(Color.parseColor("#8D6E63"));
         dataSet.setColors(colors);
+        dataSet.setSliceSpace(4f);
         
         dataSet.setValueLinePart1OffsetPercentage(80.f);
         dataSet.setValueLinePart1Length(0.2f);

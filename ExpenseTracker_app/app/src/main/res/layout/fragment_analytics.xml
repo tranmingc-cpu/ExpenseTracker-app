@@ -99,7 +99,7 @@
                     android:layout_height="wrap_content"
                     android:text="Cơ Cấu Danh Mục"
                     android:textColor="#E4E4ED"
-                    android:textSize="15sp"
+                    android:textSize="13sp"
                     android:textStyle="bold"
                     android:layout_centerVertical="true" />
 
@@ -113,33 +113,33 @@
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnTypeExpense"
-                        android:layout_width="wrap_content"
-                        android:layout_height="38dp"
-                        android:text="Chi Tiêu"
-                        android:textSize="13sp"
-                        android:textColor="#FFFFFF"
-                        android:textStyle="bold"
+                        android:layout_width="73dp"
+                        android:layout_height="27dp"
+                        android:layout_marginEnd="6dp"
                         android:backgroundTint="#D32F2F"
-                        android:paddingStart="16dp"
-                        android:paddingEnd="16dp"
                         android:insetTop="0dp"
                         android:insetBottom="0dp"
-                        app:cornerRadius="12dp"
-                        android:layout_marginEnd="6dp" />
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:text="Chi Tiêu"
+                        android:textColor="#FFFFFF"
+                        android:textSize="10sp"
+                        android:textStyle="bold"
+                        app:cornerRadius="12dp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnTypeIncome"
                         android:layout_width="wrap_content"
-                        android:layout_height="38dp"
-                        android:text="Thu Nhập"
-                        android:textSize="13sp"
-                        android:textColor="#8A8A9E"
-                        android:textStyle="bold"
+                        android:layout_height="26dp"
                         android:backgroundTint="#2A2A3E"
-                        android:paddingStart="16dp"
-                        android:paddingEnd="16dp"
                         android:insetTop="0dp"
                         android:insetBottom="0dp"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:text="Thu Nhập"
+                        android:textColor="#8A8A9E"
+                        android:textSize="10sp"
+                        android:textStyle="bold"
                         app:cornerRadius="12dp" />
                 </LinearLayout>
             </RelativeLayout>
@@ -147,7 +147,7 @@
                 <com.github.mikephil.charting.charts.PieChart
                     android:id="@+id/pieChartCategory"
                     android:layout_width="match_parent"
-                    android:layout_height="360dp" />
+                    android:layout_height="300dp" />
 
             </LinearLayout>
         </androidx.cardview.widget.CardView>

@@ -44,11 +44,23 @@ public class BudgetsActivity extends BaseActivity {
         etBudgetAmount = findViewById(R.id.etBudgetAmount);
         btnSaveBudget = findViewById(R.id.btnSaveBudget);
         layoutBudgetsContainer = findViewById(R.id.layoutBudgetsContainer);
+        
+        etBudgetAmount.addTextChangedListener(new com.expensetracker_manager.utils.NumberTextWatcher(etBudgetAmount));
+
+        findViewById(R.id.btnAiPlanner).setOnClickListener(v -> {
+            startActivity(new android.content.Intent(this, AiBudgetPlannerActivity.class));
+        });
 
         loadCategories();
         loadBudgets();
 
         btnSaveBudget.setOnClickListener(v -> saveBudget());
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadBudgets();
     }
 
     private void loadCategories() {
@@ -61,7 +73,12 @@ public class BudgetsActivity extends BaseActivity {
                             categories = response.body();
                             List<String> names = new ArrayList<>();
                             for (CategoryResponse cat : categories) {
-                                names.add(cat.getName());
+                                if (!names.contains(cat.getName())) {
+                                    names.add(cat.getName());
+                                }
+                            }
+                            if (!names.contains("Chuyển khoản")) {
+                                names.add("Chuyển khoản");
                             }
                             if (names.isEmpty()) {
                                 names.add("Ăn uống");
@@ -69,6 +86,7 @@ public class BudgetsActivity extends BaseActivity {
                                 names.add("Quần áo");
                                 names.add("Chi ngoài");
                                 names.add("Y tế");
+                                names.add("Chuyển khoản");
                                 names.add("Khác");
                             }
                             ArrayAdapter<String> catAdapter = new ArrayAdapter<>(BudgetsActivity.this,
@@ -85,6 +103,7 @@ public class BudgetsActivity extends BaseActivity {
                         names.add("Quần áo");
                         names.add("Chi ngoài");
                         names.add("Y tế");
+                        names.add("Chuyển khoản");
                         names.add("Khác");
                         ArrayAdapter<String> catAdapter = new ArrayAdapter<>(BudgetsActivity.this,
                                 android.R.layout.simple_spinner_dropdown_item, names);
@@ -176,7 +195,7 @@ public class BudgetsActivity extends BaseActivity {
 
     private void renderOfflineMockBudgets() {
         layoutBudgetsContainer.removeAllViews();
-        // Add one mock budget item
+        // Thêm một mục ngân sách mô phỏng
         LinearLayout item = new LinearLayout(this);
         item.setOrientation(LinearLayout.VERTICAL);
         item.setPadding(16, 16, 16, 16);
@@ -214,7 +233,7 @@ public class BudgetsActivity extends BaseActivity {
     }
 
     private void saveBudget() {
-        String amountStr = etBudgetAmount.getText().toString().trim();
+        String amountStr = etBudgetAmount.getText().toString().trim().replace(".", "");
         if (amountStr.isEmpty()) {
             Toast.makeText(this, "Vui lòng nhập giới hạn số tiền", Toast.LENGTH_SHORT).show();
             return;
@@ -223,7 +242,7 @@ public class BudgetsActivity extends BaseActivity {
         double amount = Double.parseDouble(amountStr);
 
         if (!com.expensetracker_manager.utils.NetworkUtils.isNetworkAvailable(this)) {
-            // Save locally to offline cache
+            // Lưu cục bộ vào bộ nhớ đệm ngoại tuyến
             BudgetResponse mockBudget = new BudgetResponse();
             mockBudget.setId(System.currentTimeMillis());
             mockBudget.setAmount(amount);
@@ -234,7 +253,7 @@ public class BudgetsActivity extends BaseActivity {
             } else {
                 mockBudget.setCategoryName("Khác");
             }
-            mockBudget.setSpent(0); // offline initial mock spent
+            mockBudget.setSpent(0); // mức chi tiêu mô phỏng ban đầu khi ngoại tuyến
             budgets.add(mockBudget);
             com.expensetracker_manager.utils.OfflineCacheManager.getInstance(this).cacheBudgets(budgets);
 

@@ -61,6 +61,10 @@ public class HomeActivity extends BaseActivity {
     private List<TransactionResponse> transactionsList = new ArrayList<>();
     private List<com.expensetracker_manager.model.response.BudgetResponse> budgetList = new ArrayList<>();
 
+    private androidx.cardview.widget.CardView cardAiInsights;
+    private TextView tvAiOverallStatus;
+    private LinearLayout layoutAiInsightsContainer;
+
     @SuppressLint("WrongViewCast")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,6 +94,8 @@ public class HomeActivity extends BaseActivity {
         btnSaveQuickIncome = findViewById(R.id.btnSaveQuickIncome);
         cardBudgetWarning = findViewById(R.id.cardBudgetWarning);
         tvBudgetWarningMessage = findViewById(R.id.tvBudgetWarningMessage);
+        
+        etQuickIncomeAmount.addTextChangedListener(new com.expensetracker_manager.utils.NumberTextWatcher(etQuickIncomeAmount));
 
         btnViewAllTransactions = findViewById(R.id.btnViewAllTransactions);
         btnBottomNavAdd = findViewById(R.id.btnBottomNavAdd);
@@ -100,6 +106,10 @@ public class HomeActivity extends BaseActivity {
 
         TokenManager tokenManager = TokenManager.getInstance(this);
         tvDashboardUserName.setText(tokenManager.getUserName().isEmpty() ? "Người dùng" : tokenManager.getUserName());
+
+        cardAiInsights = findViewById(R.id.cardAiInsights);
+        tvAiOverallStatus = findViewById(R.id.tvAiOverallStatus);
+        layoutAiInsightsContainer = findViewById(R.id.layoutAiInsightsContainer);
 
         setupListeners();
     }
@@ -172,7 +182,7 @@ public class HomeActivity extends BaseActivity {
     }
 
     private void saveQuickIncome() {
-        String amountStr = etQuickIncomeAmount.getText().toString().trim();
+        String amountStr = etQuickIncomeAmount.getText().toString().trim().replace(".", "");
         if (amountStr.isEmpty()) {
             Toast.makeText(this, "Vui lòng nhập số tiền", Toast.LENGTH_SHORT).show();
             return;
@@ -191,7 +201,7 @@ public class HomeActivity extends BaseActivity {
 
         btnSaveQuickIncome.setEnabled(false);
 
-        // Fetch categories to find the "Thu nhập" category
+        // Lấy danh mục để tìm danh mục "Thu nhập"
         RetrofitClient.getInstance().getCategoryApi().getAll()
                 .enqueue(new Callback<List<com.expensetracker_manager.model.response.CategoryResponse>>() {
                     @Override
@@ -207,7 +217,7 @@ public class HomeActivity extends BaseActivity {
                             }
                         }
 
-                        // If not found online, fallback to 1
+                        // Nếu không tìm thấy trực tuyến, mặc định là 1
                         if (categoryId == -1) {
                             categoryId = 1;
                         }
@@ -317,7 +327,7 @@ public class HomeActivity extends BaseActivity {
         if (userId == -1L) return;
 
         if (!com.expensetracker_manager.utils.NetworkUtils.isNetworkAvailable(this)) {
-            // Load from offline cache
+            // Tải từ bộ nhớ đệm cục bộ
             com.expensetracker_manager.utils.OfflineCacheManager cache = com.expensetracker_manager.utils.OfflineCacheManager.getInstance(this);
             ReportSummaryResponse summary = cache.getCachedReportSummary();
             double net = summary.getCurrentBalance() != 0 ? summary.getCurrentBalance() : (summary.getTotalIncome() - summary.getTotalExpense());
@@ -331,10 +341,13 @@ public class HomeActivity extends BaseActivity {
 
             budgetList = cache.getCachedBudgets();
             evaluateBudgetStatus();
+
+            // Kích hoạt tính toán lại phân tích tài chính
+            com.expensetracker_manager.service.FinancialAnalysisEngine.analyze(this);
             return;
         }
 
-        // Fetch balance report
+        // Lấy báo cáo số dư
         Calendar cal = Calendar.getInstance();
         cal.set(Calendar.YEAR, selectedYear);
         cal.set(Calendar.MONTH, selectedMonth - 1);
@@ -393,6 +406,7 @@ public class HomeActivity extends BaseActivity {
 
                             renderTransactions();
                             checkBudgets();
+                            loadAiInsights();
                         }
                     }
 
@@ -403,6 +417,7 @@ public class HomeActivity extends BaseActivity {
                         );
                         renderTransactions();
                         checkBudgets();
+                        loadAiInsights();
                     }
                 });
     }
@@ -438,53 +453,7 @@ public class HomeActivity extends BaseActivity {
     }
 
     private void evaluateBudgetStatus() {
-        if (budgetList.isEmpty() || transactionsList.isEmpty()) {
-            cardBudgetWarning.setVisibility(View.GONE);
-            return;
-        }
-
-        // Filter for current month's expenses only
-        String curYearMonthPrefix = String.format(Locale.US, "%04d-%02d", selectedYear, selectedMonth);
-
-        java.util.Map<String, Double> expensesByCategory = new java.util.HashMap<>();
-        for (TransactionResponse tr : transactionsList) {
-            if ("EXPENSE".equalsIgnoreCase(tr.getType()) && tr.getTransactionDate() != null && tr.getTransactionDate().startsWith(curYearMonthPrefix)) {
-                String catName = tr.getCategoryName();
-                if (catName == null || catName.isEmpty()) {
-                    catName = "Khác";
-                }
-                double amt = tr.getAmount();
-                expensesByCategory.put(catName, expensesByCategory.getOrDefault(catName, 0.0) + amt);
-            }
-        }
-
-        StringBuilder warningBuilder = new StringBuilder();
-        for (com.expensetracker_manager.model.response.BudgetResponse b : budgetList) {
-            String catName = b.getCategoryName();
-            if (catName == null) continue;
-            double spent = expensesByCategory.getOrDefault(catName, 0.0);
-            double limit = b.getAmount();
-            if (spent > limit) {
-                double exceeded = spent - limit;
-                if (warningBuilder.length() > 0) {
-                    warningBuilder.append("\n");
-                }
-                warningBuilder.append("Cảnh báo: Danh mục ")
-                        .append(catName)
-                        .append(" vượt hạn mức ")
-                        .append(formatVND(exceeded))
-                        .append(" (Đã tiêu: ")
-                        .append(formatVND(spent))
-                        .append(" / Hạn mức: ")
-                        .append(formatVND(limit))
-                        .append(")");
-            }
-        }
-
-        if (warningBuilder.length() > 0) {
-            tvBudgetWarningMessage.setText(warningBuilder.toString());
-            cardBudgetWarning.setVisibility(View.VISIBLE);
-        } else {
+        if (cardBudgetWarning != null) {
             cardBudgetWarning.setVisibility(View.GONE);
         }
     }
@@ -509,10 +478,14 @@ public class HomeActivity extends BaseActivity {
     private void renderTransactions() {
         layoutTransactionsContainer.removeAllViews();
 
-        int maxItems = Math.min(transactionsList.size(), 3);
+        List<TransactionResponse> sortedList = new ArrayList<>(transactionsList);
+        // Sắp xếp theo ID giảm dần để hiển thị các giao dịch được lưu gần đây nhất lên đầu
+        sortedList.sort((t1, t2) -> Long.compare(t2.getId(), t1.getId()));
+
+        int maxItems = Math.min(sortedList.size(), 3);
 
         for (int i = 0; i < maxItems; i++) {
-            TransactionResponse tr = transactionsList.get(i);
+            TransactionResponse tr = sortedList.get(i);
             LinearLayout item = new LinearLayout(this);
             item.setOrientation(LinearLayout.HORIZONTAL);
             item.setPadding(12, 12, 12, 12);
@@ -801,5 +774,108 @@ public class HomeActivity extends BaseActivity {
         } catch (Exception e) {
             Toast.makeText(this, "Lỗi xuất file: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
-    }
+     }
+
+     private void loadAiInsights() {
+         Long userId = TokenManager.getInstance(this).getUserId();
+         if (userId == -1L) return;
+
+         if (!com.expensetracker_manager.utils.NetworkUtils.isNetworkAvailable(this)) {
+             tvAiOverallStatus.setText("OFFLINE");
+             tvAiOverallStatus.setTextColor(0xFFAAAAAA);
+             layoutAiInsightsContainer.removeAllViews();
+             TextView tvOffline = new TextView(this);
+             tvOffline.setText("Vui lòng kết nối mạng để tải AI Insights.");
+             tvOffline.setTextColor(0xFFAAAAAA);
+             tvOffline.setTextSize(12);
+             layoutAiInsightsContainer.addView(tvOffline);
+             return;
+         }
+
+         tvAiOverallStatus.setText("ANALYZING...");
+         tvAiOverallStatus.setTextColor(0xFF00FFCC);
+
+         RetrofitClient.getInstance().getAnalyticsApi().getBudgetAnalysis(userId)
+                 .enqueue(new Callback<com.expensetracker_manager.model.response.AiAnalysisResponse>() {
+                     @Override
+                     public void onResponse(Call<com.expensetracker_manager.model.response.AiAnalysisResponse> call,
+                                          Response<com.expensetracker_manager.model.response.AiAnalysisResponse> response) {
+                         if (response.isSuccessful() && response.body() != null) {
+                             com.expensetracker_manager.model.response.AiAnalysisResponse analysis = response.body();
+                             renderAiInsights(analysis);
+                         } else {
+                             tvAiOverallStatus.setText("ERROR");
+                             tvAiOverallStatus.setTextColor(0xFFFF3366);
+                         }
+                     }
+
+                     @Override
+                     public void onFailure(Call<com.expensetracker_manager.model.response.AiAnalysisResponse> call, Throwable t) {
+                         tvAiOverallStatus.setText("FAILED");
+                         tvAiOverallStatus.setTextColor(0xFFFF3366);
+                     }
+                 });
+     }
+
+     private void renderAiInsights(com.expensetracker_manager.model.response.AiAnalysisResponse analysis) {
+         String status = analysis.getOverallStatus();
+         if (status == null) status = "LOW_RISK";
+
+         switch (status) {
+             case "HIGH_RISK":
+                 tvAiOverallStatus.setText("HIGH RISK ⚠️");
+                 tvAiOverallStatus.setTextColor(0xFFFF3366);
+                 break;
+             case "MEDIUM_RISK":
+                 tvAiOverallStatus.setText("MEDIUM RISK ⚠️");
+                 tvAiOverallStatus.setTextColor(0xFFFFBB00);
+                 break;
+             default:
+                 tvAiOverallStatus.setText("LOW RISK");
+                 tvAiOverallStatus.setTextColor(0xFF00FF66);
+                 break;
+         }
+
+         layoutAiInsightsContainer.removeAllViews();
+         List<com.expensetracker_manager.model.response.AiAnalysisResponse.Insight> insights = analysis.getInsights();
+         if (insights == null || insights.isEmpty()) {
+             TextView tvNoInsights = new TextView(this);
+             tvNoInsights.setText("Ngân sách của bạn hoạt động rất tốt, chưa cần phân tích thêm!");
+             tvNoInsights.setTextColor(0xFFFFFFFF);
+             tvNoInsights.setTextSize(13);
+             layoutAiInsightsContainer.addView(tvNoInsights);
+             return;
+         }
+
+         for (com.expensetracker_manager.model.response.AiAnalysisResponse.Insight insight : insights) {
+             LinearLayout item = new LinearLayout(this);
+             item.setOrientation(LinearLayout.VERTICAL);
+             item.setPadding(8, 8, 8, 8);
+             
+             // Nền dựa trên mức độ rủi ro
+             int bg = 0x1A00FF66; // rủi ro thấp màu xanh nhạt
+             if ("HIGH".equalsIgnoreCase(insight.getRisk())) {
+                 bg = 0x1AFF3366; // rủi ro cao màu đỏ nhạt
+             } else if ("MEDIUM".equalsIgnoreCase(insight.getRisk())) {
+                 bg = 0x1AFFBB00; // rủi ro trung bình màu cam nhạt
+             }
+             
+             item.setBackgroundColor(bg);
+
+             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                     LinearLayout.LayoutParams.MATCH_PARENT,
+                     LinearLayout.LayoutParams.WRAP_CONTENT
+             );
+             params.setMargins(0, 0, 0, 8);
+             item.setLayoutParams(params);
+
+             TextView tvMessage = new TextView(this);
+             tvMessage.setText(insight.getMessage());
+             tvMessage.setTextColor(0xFFFFFFFF);
+             tvMessage.setTextSize(12);
+             item.addView(tvMessage);
+
+             layoutAiInsightsContainer.addView(item);
+         }
+     }
 }

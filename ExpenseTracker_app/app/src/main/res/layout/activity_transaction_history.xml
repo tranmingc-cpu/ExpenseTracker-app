@@ -9,11 +9,10 @@
 
     <Button
         android:id="@+id/btnBackHistory"
-        android:layout_width="88dp"
-        android:layout_height="32dp"
-        android:layout_marginTop="12dp"
-        android:backgroundTint="#2D2D56"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
         android:text="←"
+        android:backgroundTint="#2D2D56"
         android:textColor="#FFFFFF"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -25,26 +24,24 @@
         android:gravity="center"
         android:text="Lịch sử giao dịch"
         android:textColor="#FFFFFF"
-        android:textSize="20sp"
+        android:textSize="22sp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="@id/btnBackHistory"
+        app:layout_constraintBottom_toBottomOf="@+id/btnBackHistory"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toEndOf="@id/btnBackHistory"
-        app:layout_constraintTop_toTopOf="@id/btnBackHistory"
-        app:layout_constraintVertical_bias="1.0" />
+        app:layout_constraintStart_toEndOf="@+id/btnBackHistory"
+        app:layout_constraintTop_toTopOf="@+id/btnBackHistory" />
 
     <Button
         android:id="@+id/btnHistoryMonthFilter"
         android:layout_width="wrap_content"
         android:layout_height="40dp"
+        android:layout_marginTop="16dp"
+        android:backgroundTint="#2D2D56"
         android:text="Tháng hiện tại"
         android:textAllCaps="false"
         android:textColor="#FFFFFF"
-        android:backgroundTint="#2D2D56"
-        android:layout_marginTop="16dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btnBackHistory" />
+        app:layout_constraintTop_toBottomOf="@+id/btnBackHistory" />
 
     <androidx.cardview.widget.CardView
         android:id="@+id/cardHistorySummary"
