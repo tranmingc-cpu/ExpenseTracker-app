@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#1E1E2C"
+    android:background="@color/app_background"
     android:padding="24dp">
 
     <ScrollView
@@ -30,7 +30,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Expense Tracker"
-                android:textColor="#FFFFFF"
+                android:textColor="@color/app_text_primary"
                 android:textSize="26sp"
                 android:textStyle="bold"
                 android:layout_marginTop="8dp" />
@@ -40,7 +40,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Quản lý tài chính thông minh"
-                android:textColor="#A0A0B0"
+                android:textColor="@color/app_text_secondary"
                 android:textSize="14sp"
                 android:layout_marginTop="4dp" />
 
@@ -49,10 +49,10 @@
                 android:id="@+id/etEmail"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
-                android:background="#2A2A3E"
+                android:background="@color/app_surface"
                 android:hint="Email"
-                android:textColorHint="#808090"
-                android:textColor="#FFFFFF"
+                android:textColorHint="@color/app_input_hint"
+                android:textColor="@color/app_text_primary"
                 android:paddingLeft="16dp"
                 android:paddingRight="16dp"
                 android:inputType="textEmailAddress"
@@ -62,10 +62,10 @@
                 android:id="@+id/etPassword"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
-                android:background="#2A2A3E"
+                android:background="@color/app_surface"
                 android:hint="Mật khẩu"
-                android:textColorHint="#808090"
-                android:textColor="#FFFFFF"
+                android:textColorHint="@color/app_input_hint"
+                android:textColor="@color/app_text_primary"
                 android:paddingLeft="16dp"
                 android:paddingRight="16dp"
                 android:inputType="textPassword"
@@ -76,7 +76,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Quên mật khẩu?"
-                android:textColor="#00FF66"
+                android:textColor="@color/app_accent_income"
                 android:textSize="14sp"
                 android:layout_gravity="end"
                 android:layout_marginTop="8dp"
@@ -89,8 +89,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="52dp"
                 android:text="Đăng nhập"
-                android:textColor="#FFFFFF"
-                android:backgroundTint="#00FF66"
+                android:textColor="@color/app_button_text"
+                android:backgroundTint="@color/app_accent_income"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:layout_marginTop="24dp" />
@@ -101,7 +101,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Chưa có tài khoản? Đăng ký ngay"
-                android:textColor="#A0A0B0"
+                android:textColor="@color/app_text_secondary"
                 android:textSize="14sp"
                 android:layout_marginTop="16dp"
                 android:clickable="true"
@@ -111,7 +111,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="HOẶC"
-                android:textColor="#606070"
+                android:textColor="@color/app_text_muted"
                 android:textSize="12sp"
                 android:layout_marginTop="24dp" />
 
@@ -126,7 +126,7 @@
                 android:focusable="true"
                 android:foreground="?android:attr/selectableItemBackground"
                 app:cardCornerRadius="25dp"
-                app:cardBackgroundColor="#FFFFFF"
+                app:cardBackgroundColor="@color/app_surface"
                 app:cardElevation="4dp">
 
                 <LinearLayout
@@ -148,7 +148,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Đăng nhập bằng Google"
-                        android:textColor="#333333"
+                        android:textColor="@color/app_text_primary"
                         android:textSize="15sp"
                         android:textStyle="bold" />
 
@@ -164,7 +164,7 @@
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:visibility="gone"
-        android:indeterminateTint="#00FF66"
+        android:indeterminateTint="@color/app_accent_income"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"

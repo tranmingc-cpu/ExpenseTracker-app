@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#1E1E2C">
+    android:background="@color/app_background">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -23,7 +23,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Kết Quả Phân Tích"
-                android:textColor="#FFFFFF"
+                android:textColor="@color/app_text_primary"
                 android:textSize="24sp"
                 android:textStyle="bold" />
 
@@ -31,7 +31,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Dữ liệu bóc tách tự động từ hóa đơn / QR"
-                android:textColor="#8A8A9E"
+                android:textColor="@color/app_text_secondary"
                 android:textSize="13sp"
                 android:layout_marginTop="4dp" />
 
@@ -40,7 +40,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
                 app:cardCornerRadius="16dp"
-                app:cardBackgroundColor="#2A2A3E"
+                app:cardBackgroundColor="@color/app_surface"
                 app:cardElevation="6dp">
 
                 <LinearLayout
@@ -59,13 +59,13 @@
                         <View
                             android:layout_width="4dp"
                             android:layout_height="16dp"
-                            android:background="#00FF66"/>
+                            android:background="@color/app_accent_income"/>
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="THÔNG TIN HÓA ĐƠN "
-                            android:textColor="#00FF66"
+                            android:textColor="@color/app_accent_income"
                             android:textSize="13sp"
                             android:textStyle="bold"
                             android:layout_marginStart="8dp"/>
@@ -75,14 +75,14 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Ngân hàng"
-                        android:textColor="#8A8A9E"
+                        android:textColor="@color/app_text_secondary"
                         android:textSize="12sp"/>
                     <TextView
                         android:id="@+id/tvQrBank"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Đang chờ quét..."
-                        android:textColor="#FFFFFF"
+                        android:textColor="@color/app_text_primary"
                         android:textSize="16sp"
                         android:textStyle="bold"
                         android:layout_marginTop="2dp"
@@ -92,14 +92,14 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Số tài khoản"
-                        android:textColor="#8A8A9E"
+                        android:textColor="@color/app_text_secondary"
                         android:textSize="12sp"/>
                     <TextView
                         android:id="@+id/tvQrAccountNumber"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Đang chờ quét..."
-                        android:textColor="#FFFFFF"
+                        android:textColor="@color/app_text_primary"
                         android:textSize="16sp"
                         android:textStyle="bold"
                         android:layout_marginTop="2dp"
@@ -109,14 +109,14 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Tên người nhận"
-                        android:textColor="#8A8A9E"
+                        android:textColor="@color/app_text_secondary"
                         android:textSize="12sp"/>
                     <TextView
                         android:id="@+id/tvQrRecipientName"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Đang chờ quét..."
-                        android:textColor="#FFFFFF"
+                        android:textColor="@color/app_text_primary"
                         android:textSize="16sp"
                         android:textStyle="bold"/>
 
@@ -127,7 +127,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Thông tin giao dịch chi tiêu"
-                android:textColor="#8A8A9E"
+                android:textColor="@color/app_text_secondary"
                 android:textSize="13sp"
                 android:textStyle="bold"
                 android:layout_marginTop="24dp" />
@@ -139,7 +139,7 @@
                 android:background="@drawable/bg_edit_text"
                 android:hint="Số tiền (đ)"
                 android:textColorHint="#606075"
-                android:textColor="#00FF66"
+                android:textColor="@color/app_accent_income"
                 android:textStyle="bold"
                 android:textSize="18sp"
                 android:paddingLeft="16dp"
@@ -154,7 +154,7 @@
                 android:background="@drawable/bg_edit_text"
                 android:hint="Ghi chú / Nội dung"
                 android:textColorHint="#606075"
-                android:textColor="#FFFFFF"
+                android:textColor="@color/app_text_primary"
                 android:paddingLeft="16dp"
                 android:paddingRight="16dp"
                 android:inputType="text"
@@ -164,7 +164,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Danh mục chi tiêu"
-                android:textColor="#8A8A9E"
+                android:textColor="@color/app_text_secondary"
                 android:textSize="12sp"
                 android:layout_marginTop="16dp"
                 android:layout_marginLeft="4dp"/>
@@ -180,7 +180,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Ví / Tài khoản thanh toán"
-                android:textColor="#8A8A9E"
+                android:textColor="@color/app_text_secondary"
                 android:textSize="12sp"
                 android:layout_marginTop="16dp"
                 android:layout_marginLeft="4dp"/>
@@ -197,7 +197,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="54dp"
                 android:text="Lưu giao dịch chi tiêu"
-                android:textColor="#1E1E2C"
+                android:textColor="@color/app_background"
                 android:background="@drawable/bg_button_primary"
                 app:backgroundTint="@null"
                 android:textSize="16sp"
@@ -213,7 +213,7 @@
         android:layout_width="60dp"
         android:layout_height="60dp"
         android:visibility="gone"
-        android:indeterminateTint="#00FF66"
+        android:indeterminateTint="@color/app_accent_income"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

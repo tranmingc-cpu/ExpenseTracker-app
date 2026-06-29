@@ -2,7 +2,7 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#1E1E2C"
+    android:background="@color/app_background"
     android:fillViewport="true">
 
     <LinearLayout
@@ -19,7 +19,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Thông tin cá nhân"
-            android:textColor="#FFFFFF"
+            android:textColor="@color/app_text_primary"
             android:textSize="24sp"
             android:textStyle="bold" />
 
@@ -29,7 +29,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
             android:text="Email: "
-            android:textColor="#A0A0B0"
+            android:textColor="@color/app_text_secondary"
             android:textSize="13sp" />
 
         <LinearLayout
@@ -37,7 +37,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="18dp"
-            android:background="#25253A"
+            android:background="@color/app_surface"
             android:orientation="vertical"
             android:padding="14dp">
 
@@ -45,7 +45,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Họ và tên"
-                android:textColor="#A0A0B0"
+                android:textColor="@color/app_text_secondary"
                 android:textSize="12sp" />
 
             <EditText
@@ -53,20 +53,20 @@
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:layout_marginTop="6dp"
-                android:background="#2A2A3E"
+                android:background="@color/app_input_background"
                 android:hint="Nhập họ tên"
                 android:inputType="textPersonName"
                 android:paddingStart="14dp"
                 android:paddingEnd="14dp"
-                android:textColor="#FFFFFF"
-                android:textColorHint="#808090" />
+                android:textColor="@color/app_text_primary"
+                android:textColorHint="@color/app_input_hint" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"
                 android:text="Số điện thoại"
-                android:textColor="#A0A0B0"
+                android:textColor="@color/app_text_secondary"
                 android:textSize="12sp" />
 
             <EditText
@@ -74,22 +74,22 @@
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:layout_marginTop="6dp"
-                android:background="#2A2A3E"
+                android:background="@color/app_input_background"
                 android:hint="Nhập số điện thoại"
                 android:inputType="phone"
                 android:paddingStart="14dp"
                 android:paddingEnd="14dp"
-                android:textColor="#FFFFFF"
-                android:textColorHint="#808090" />
+                android:textColor="@color/app_text_primary"
+                android:textColorHint="@color/app_input_hint" />
 
             <Button
                 android:id="@+id/btnUpdateProfile"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:layout_marginTop="16dp"
-                android:backgroundTint="#00E676"
+                android:backgroundTint="@color/app_accent_income"
                 android:text="Lưu thông tin"
-                android:textColor="#102018"
+                android:textColor="@color/app_button_text_dark"
                 android:textStyle="bold" />
         </LinearLayout>
 
@@ -99,7 +99,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:text="Bảo mật tài khoản"
-            android:textColor="#FFFFFF"
+            android:textColor="@color/app_text_primary"
             android:textSize="18sp"
             android:textStyle="bold" />
 
@@ -108,7 +108,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:background="#25253A"
+            android:background="@color/app_surface"
             android:orientation="vertical"
             android:padding="14dp">
 
@@ -116,30 +116,30 @@
                 android:id="@+id/btnChangePassword"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
-                android:backgroundTint="#36365C"
+                android:backgroundTint="@color/app_button_secondary"
                 android:text="Đổi mật khẩu tài khoản"
                 android:textAllCaps="false"
-                android:textColor="#FFFFFF" />
+                android:textColor="@color/app_text_primary" />
 
             <Button
                 android:id="@+id/btnSetupPin"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:layout_marginTop="10dp"
-                android:backgroundTint="#36365C"
+                android:backgroundTint="@color/app_button_secondary"
                 android:text="Thiết lập mã PIN mở khóa"
                 android:textAllCaps="false"
-                android:textColor="#FFFFFF" />
+                android:textColor="@color/app_text_primary" />
 
             <Button
                 android:id="@+id/btnRemovePin"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:layout_marginTop="10dp"
-                android:backgroundTint="#D32F2F"
+                android:backgroundTint="@color/app_danger"
                 android:text="Xóa mã PIN"
                 android:textAllCaps="false"
-                android:textColor="#FFFFFF" />
+                android:textColor="@color/app_text_primary" />
         </LinearLayout>
 
         <TextView
@@ -148,7 +148,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:text="Nhắc nhở ghi chép"
-            android:textColor="#FFFFFF"
+            android:textColor="@color/app_text_primary"
             android:textSize="18sp"
             android:textStyle="bold" />
 
@@ -157,7 +157,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:background="#25253A"
+            android:background="@color/app_surface"
             android:orientation="vertical"
             android:padding="14dp">
 
@@ -166,7 +166,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Chưa bật nhắc nhở ghi chép"
-                android:textColor="#A0A0B0"
+                android:textColor="@color/app_text_secondary"
                 android:textSize="14sp" />
 
             <Button
@@ -174,20 +174,20 @@
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:layout_marginTop="12dp"
-                android:backgroundTint="#36365C"
+                android:backgroundTint="@color/app_button_secondary"
                 android:text="Đặt giờ nhắc nhở"
                 android:textAllCaps="false"
-                android:textColor="#FFFFFF" />
+                android:textColor="@color/app_text_primary" />
 
             <Button
                 android:id="@+id/btnCancelReminder"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:layout_marginTop="10dp"
-                android:backgroundTint="#4A4A5E"
+                android:backgroundTint="@color/app_surface_soft"
                 android:text="Tắt nhắc nhở"
                 android:textAllCaps="false"
-                android:textColor="#FFFFFF" />
+                android:textColor="@color/app_text_primary" />
         </LinearLayout>
 
         <Button
@@ -195,9 +195,9 @@
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:layout_marginTop="26dp"
-            android:backgroundTint="#D32F2F"
+            android:backgroundTint="@color/app_danger"
             android:text="Đăng xuất"
-            android:textColor="#FFFFFF"
+            android:textColor="@color/app_text_primary"
             android:textStyle="bold" />
 
     </LinearLayout>

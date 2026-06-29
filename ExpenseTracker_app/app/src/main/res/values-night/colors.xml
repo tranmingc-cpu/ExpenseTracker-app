@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- App theme colors - Dark -->
+    <color name="app_background">#12121E</color>
+    <color name="app_surface">#1F1F35</color>
+    <color name="app_surface_alt">#2A2A3E</color>
+    <color name="app_surface_soft">#2A2A4E</color>
+    <color name="app_surface_warning">#2A1B2E</color>
+    <color name="app_surface_info">#1A1F38</color>
+    <color name="app_bottom_nav">#1F1F35</color>
+
+    <color name="app_text_primary">#FFFFFFFF</color>
+    <color name="app_text_secondary">#A0A0B0</color>
+    <color name="app_text_muted">#8A8A9E</color>
+    <color name="app_divider">#2E2E4A</color>
+
+    <color name="app_input_background">#2A2A3E</color>
+    <color name="app_input_hint">#808090</color>
+
+    <color name="app_primary">#6B50B6</color>
+    <color name="app_primary_dark">#2D2D56</color>
+    <color name="app_accent_income">#00FF66</color>
+    <color name="app_accent_expense">#FF3366</color>
+    <color name="app_accent_warning">#FFBB00</color>
+    <color name="app_accent_cyan">#00FFCC</color>
+    <color name="app_danger">#D32F2F</color>
+    <color name="app_button_secondary">#36365C</color>
+    <color name="app_button_text">#FFFFFFFF</color>
+    <color name="app_button_text_dark">#102018</color>
+
+    <color name="app_risk_low_surface">#3318A957</color>
+    <color name="app_risk_medium_surface">#33FFBB00</color>
+    <color name="app_risk_high_surface">#33FF3366</color>
+
+    <!-- Settings aliases -->
+    <color name="settings_background">@color/app_background</color>
+    <color name="settings_surface">@color/app_surface</color>
+    <color name="settings_text_primary">@color/app_text_primary</color>
+    <color name="settings_text_secondary">@color/app_text_secondary</color>
+    <color name="settings_divider">#33334A</color>
+    <color name="settings_accent">@color/app_accent_income</color>
+    <color name="settings_button_primary">@color/app_primary</color>
+    <color name="settings_button_danger">@color/app_danger</color>
+    <color name="settings_button_text">@color/app_button_text</color>
+    <color name="settings_footer">#777789</color>
+</resources>
