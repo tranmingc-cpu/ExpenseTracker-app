@@ -15,12 +15,14 @@ import com.expensetracker.expensetracker_api.repository.CategoryRepository;
 import com.expensetracker.expensetracker_api.repository.WalletRepository;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
+import com.google.firebase.auth.UserRecord;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.UUID;
+import java.util.Map;
 
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -40,7 +42,6 @@ public class AuthService {
 
 
     public AuthResponse register(RegisterRequest request) {
-        validateStrongPassword(request.getPassword());
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already exists");
         }
@@ -116,6 +117,26 @@ public class AuthService {
                 throw new RuntimeException("Email not provided by Firebase token");
             }
 
+            // Determine Provider from token claims
+            Map<String, Object> claims = decodedToken.getClaims();
+            String signInProvider = "password";
+            if (claims.containsKey("firebase")) {
+                Map<String, Object> firebaseClaim = (Map<String, Object>) claims.get("firebase");
+                if (firebaseClaim != null && firebaseClaim.containsKey("sign_in_provider")) {
+                    signInProvider = (String) firebaseClaim.get("sign_in_provider");
+                }
+            }
+            AuthProvider provider = "google.com".equals(signInProvider) ? AuthProvider.GOOGLE : AuthProvider.LOCAL;
+
+            // Retrieve phone number from Firebase if available
+            String phoneNumber = null;
+            try {
+                UserRecord userRecord = FirebaseAuth.getInstance().getUser(firebaseUid);
+                phoneNumber = userRecord.getPhoneNumber();
+            } catch (Exception e) {
+                // Ignore if not found or failed to fetch
+            }
+
             UserEntity user;
 
             // b. Tìm User theo firebaseUid
@@ -133,6 +154,10 @@ public class AuthService {
                     user.setAvatarUrl(picture);
                     updated = true;
                 }
+                if (phoneNumber != null && !phoneNumber.equals(user.getPhoneNumber())) {
+                    user.setPhoneNumber(phoneNumber);
+                    updated = true;
+                }
                 if (updated) {
                     user = userRepository.save(user);
                 }
@@ -144,22 +169,28 @@ public class AuthService {
                     // e. Nếu email tồn tại thì liên kết firebaseUid với tài khoản đó
                     user = userByEmailOpt.get();
                     user.setFirebaseUid(firebaseUid);
-                    user.setProvider(AuthProvider.GOOGLE);
+                    user.setProvider(provider);
                     if (picture != null) {
                         user.setAvatarUrl(picture);
+                    }
+                    if (phoneNumber != null) {
+                        user.setPhoneNumber(phoneNumber);
                     }
                     user = userRepository.save(user);
                 } else {
                     // f. Nếu không tồn tại thì tạo User mới
                     user = new UserEntity();
-                    user.setFullName(name != null ? name : "Google User");
+                    user.setFullName(name != null ? name : (provider == AuthProvider.GOOGLE ? "Google User" : "Firebase User"));
                     user.setEmail(email);
-                    // Sinh password ngẫu nhiên được mã hóa
+                    // Sinh password ngẫu nhiên được mã hóa (không dùng đến nữa nhưng giữ lại nullable/empty)
                     user.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
                     user.setFirebaseUid(firebaseUid);
-                    user.setProvider(AuthProvider.GOOGLE);
+                    user.setProvider(provider);
                     user.setAvatarUrl(picture);
                     user.setEmailVerified(true);
+                    if (phoneNumber != null) {
+                        user.setPhoneNumber(phoneNumber);
+                    }
                     user = userRepository.save(user);
                 }
             }
@@ -247,7 +278,6 @@ public class AuthService {
         if (!passwordEncoder.matches(token, user.getResetToken())) {
             throw new RuntimeException("Invalid reset code");
         }
-        validateStrongPassword(newPassword);
 
         user.setPassword(passwordEncoder.encode(newPassword));
         user.setResetToken(null);
@@ -296,42 +326,7 @@ public class AuthService {
             walletRepository.save(wallet);
         }
     }
-    private void validateStrongPassword(String password) {
-        if (password == null || password.isBlank()) {
-            throw new RuntimeException("Mật khẩu không được để trống");
-        }
 
-        if (password.length() < 8) {
-            throw new RuntimeException("Mật khẩu phải có ít nhất 8 ký tự");
-        }
-
-        if (!password.matches(".*[a-z].*")) {
-            throw new RuntimeException("Mật khẩu phải có ít nhất 1 chữ thường");
-        }
-
-        if (!password.matches(".*[A-Z].*")) {
-            throw new RuntimeException("Mật khẩu phải có ít nhất 1 chữ hoa");
-        }
-
-        if (!password.matches(".*\\d.*")) {
-            throw new RuntimeException("Mật khẩu phải có ít nhất 1 số");
-        }
-
-        if (!password.matches(".*[^a-zA-Z0-9].*")) {
-            throw new RuntimeException("Mật khẩu phải có ít nhất 1 ký tự đặc biệt");
-        }
-
-        String lower = password.toLowerCase();
-
-        if (lower.equals("12345678")
-                || lower.equals("123456789")
-                || lower.equals("password")
-                || lower.equals("password123")
-                || lower.equals("admin123")
-                || lower.equals("qwerty123")) {
-            throw new RuntimeException("Mật khẩu quá phổ biến, vui lòng chọn mật khẩu khác");
-        }
-    }
 
 
 }

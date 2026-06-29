@@ -30,6 +30,7 @@ public class TransactionHistoryActivity extends BaseActivity {
 
     private int selectedYear;
     private int selectedMonth;
+    private int selectedDay;
 
     private List<TransactionResponse> allTransactions = new ArrayList<>();
 
@@ -48,6 +49,7 @@ public class TransactionHistoryActivity extends BaseActivity {
         Calendar now = Calendar.getInstance();
         selectedYear = getIntent().getIntExtra("selectedYear", now.get(Calendar.YEAR));
         selectedMonth = getIntent().getIntExtra("selectedMonth", now.get(Calendar.MONTH) + 1);
+        selectedDay = 0;
 
         btnBackHistory.setOnClickListener(v -> finish());
         btnHistoryMonthFilter.setOnClickListener(v -> showMonthFilterDialog());
@@ -61,13 +63,21 @@ public class TransactionHistoryActivity extends BaseActivity {
         int currentYear = now.get(Calendar.YEAR);
         int currentMonth = now.get(Calendar.MONTH) + 1;
 
-        if (selectedYear == currentYear && selectedMonth == currentMonth) {
-            btnHistoryMonthFilter.setText("Tháng hiện tại");
+        if (selectedDay > 0) {
+            if (selectedYear == currentYear && selectedMonth == currentMonth && selectedDay == now.get(Calendar.DAY_OF_MONTH)) {
+                btnHistoryMonthFilter.setText("Hôm nay");
+            } else {
+                btnHistoryMonthFilter.setText(String.format(Locale.US, "Ngày %02d/%02d/%d", selectedDay, selectedMonth, selectedYear));
+            }
+            tvHistoryTitle.setText(String.format(Locale.US, "Giao dịch %02d/%02d/%d", selectedDay, selectedMonth, selectedYear));
         } else {
-            btnHistoryMonthFilter.setText(String.format(Locale.US, "Tháng %02d/%d", selectedMonth, selectedYear));
+            if (selectedYear == currentYear && selectedMonth == currentMonth) {
+                btnHistoryMonthFilter.setText("Tháng hiện tại");
+            } else {
+                btnHistoryMonthFilter.setText(String.format(Locale.US, "Tháng %02d/%d", selectedMonth, selectedYear));
+            }
+            tvHistoryTitle.setText(String.format(Locale.US, "Giao dịch %02d/%d", selectedMonth, selectedYear));
         }
-
-        tvHistoryTitle.setText(String.format(Locale.US, "Giao dịch %02d/%d", selectedMonth, selectedYear));
     }
 
     private void showMonthFilterDialog() {
@@ -75,7 +85,10 @@ public class TransactionHistoryActivity extends BaseActivity {
         layout.setOrientation(LinearLayout.HORIZONTAL);
         layout.setPadding(40, 20, 40, 20);
 
+        NumberPicker dayPicker = new NumberPicker(this);
         NumberPicker monthPicker = new NumberPicker(this);
+        NumberPicker yearPicker = new NumberPicker(this);
+
         monthPicker.setMinValue(1);
         monthPicker.setMaxValue(12);
         monthPicker.setValue(selectedMonth);
@@ -85,19 +98,50 @@ public class TransactionHistoryActivity extends BaseActivity {
                 "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"
         });
 
-        NumberPicker yearPicker = new NumberPicker(this);
         int currentYear = Calendar.getInstance().get(Calendar.YEAR);
         yearPicker.setMinValue(2020);
         yearPicker.setMaxValue(currentYear + 1);
         yearPicker.setValue(selectedYear);
 
+        dayPicker.setMinValue(0);
+
+        NumberPicker.OnValueChangeListener dateChangeListener = (picker, oldVal, newVal) -> {
+            int m = monthPicker.getValue();
+            int y = yearPicker.getValue();
+            Calendar calc = Calendar.getInstance();
+            calc.set(Calendar.YEAR, y);
+            calc.set(Calendar.MONTH, m - 1);
+            int maxDays = calc.getActualMaximum(Calendar.DAY_OF_MONTH);
+
+            if (dayPicker.getValue() > maxDays) {
+                dayPicker.setValue(maxDays);
+            }
+            dayPicker.setDisplayedValues(null);
+            dayPicker.setMaxValue(maxDays);
+
+            String[] dayDisplays = new String[maxDays + 1];
+            dayDisplays[0] = "Tất cả";
+            for (int i = 1; i <= maxDays; i++) {
+                dayDisplays[i] = "Ngày " + i;
+            }
+            dayPicker.setDisplayedValues(dayDisplays);
+        };
+
+        monthPicker.setOnValueChangedListener(dateChangeListener);
+        yearPicker.setOnValueChangedListener(dateChangeListener);
+
+        dateChangeListener.onValueChange(null, 0, 0);
+        dayPicker.setValue(selectedDay);
+
+        layout.addView(dayPicker, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
         layout.addView(monthPicker, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
         layout.addView(yearPicker, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
 
         new androidx.appcompat.app.AlertDialog.Builder(this)
-                .setTitle("Chọn tháng")
+                .setTitle("Chọn thời gian")
                 .setView(layout)
                 .setPositiveButton("Áp dụng", (dialog, which) -> {
+                    selectedDay = dayPicker.getValue();
                     selectedMonth = monthPicker.getValue();
                     selectedYear = yearPicker.getValue();
                     updateMonthText();
@@ -205,16 +249,92 @@ public class TransactionHistoryActivity extends BaseActivity {
             tvValue.setTypeface(null, android.graphics.Typeface.BOLD);
             item.addView(tvValue);
 
+            // Thêm trình lắng nghe Nhấn giữ để Xóa
+            item.setOnLongClickListener(v -> {
+                new androidx.appcompat.app.AlertDialog.Builder(TransactionHistoryActivity.this)
+                    .setTitle("Xóa giao dịch")
+                    .setMessage("Bạn có chắc chắn muốn xóa giao dịch này?")
+                    .setPositiveButton("Xóa", (dialog, which) -> {
+                        deleteTransaction(tr);
+                    })
+                    .setNegativeButton("Hủy", null)
+                    .show();
+                return true;
+            });
+
             layoutHistoryContainer.addView(item);
         }
     }
 
+    private void deleteTransaction(TransactionResponse tr) {
+        if (!com.expensetracker_manager.utils.NetworkUtils.isNetworkAvailable(this)) {
+            // Xóa cục bộ/ngoại tuyến
+            com.expensetracker_manager.utils.OfflineCacheManager cache = com.expensetracker_manager.utils.OfflineCacheManager.getInstance(this);
+            List<TransactionResponse> txs = cache.getCachedTransactions();
+            for (int i = 0; i < txs.size(); i++) {
+                if (txs.get(i).getId() == tr.getId()) {
+                    txs.remove(i);
+                    break;
+                }
+            }
+            cache.cacheTransactions(txs);
+            com.expensetracker_manager.service.FinancialAnalysisEngine.analyze(this);
+            
+            // Điều chỉnh tóm tắt báo cáo ngoại tuyến
+            com.expensetracker_manager.model.response.ReportSummaryResponse summary = cache.getCachedReportSummary();
+            boolean isIncome = "INCOME".equalsIgnoreCase(tr.getType());
+            if (isIncome) {
+                summary.setTotalIncome(Math.max(0, summary.getTotalIncome() - tr.getAmount()));
+                summary.setCurrentBalance(summary.getCurrentBalance() - tr.getAmount());
+            } else {
+                summary.setTotalExpense(Math.max(0, summary.getTotalExpense() - tr.getAmount()));
+                summary.setCurrentBalance(summary.getCurrentBalance() + tr.getAmount());
+            }
+            cache.cacheReportSummary(summary);
+
+            allTransactions = txs;
+            renderTransactions();
+            Toast.makeText(this, "Đã xóa giao dịch (Offline)", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        RetrofitClient.getInstance().getTransactionApi().delete(tr.getId())
+            .enqueue(new Callback<Void>() {
+                @Override
+                public void onResponse(Call<Void> call, Response<Void> response) {
+                    if (response.isSuccessful()) {
+                        Toast.makeText(TransactionHistoryActivity.this, "Đã xóa giao dịch thành công!", Toast.LENGTH_SHORT).show();
+                        // Xóa khỏi danh sách hiện tại
+                        allTransactions.remove(tr);
+                        // Cập nhật bộ nhớ đệm ngoại tuyến
+                        com.expensetracker_manager.utils.OfflineCacheManager.getInstance(TransactionHistoryActivity.this)
+                            .cacheTransactions(allTransactions);
+                        // Kích hoạt tính toán lại
+                        com.expensetracker_manager.service.FinancialAnalysisEngine.analyze(TransactionHistoryActivity.this);
+                        renderTransactions();
+                    } else {
+                        Toast.makeText(TransactionHistoryActivity.this, "Không thể xóa giao dịch", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<Void> call, Throwable t) {
+                    Toast.makeText(TransactionHistoryActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+    }
+
     private List<TransactionResponse> filterBySelectedMonth(List<TransactionResponse> source) {
         List<TransactionResponse> result = new ArrayList<>();
-        String monthPrefix = String.format(Locale.US, "%04d-%02d", selectedYear, selectedMonth);
+        String datePrefix;
+        if (selectedDay > 0) {
+            datePrefix = String.format(Locale.US, "%04d-%02d-%02d", selectedYear, selectedMonth, selectedDay);
+        } else {
+            datePrefix = String.format(Locale.US, "%04d-%02d", selectedYear, selectedMonth);
+        }
 
         for (TransactionResponse tr : source) {
-            if (tr.getTransactionDate() != null && tr.getTransactionDate().startsWith(monthPrefix)) {
+            if (tr.getTransactionDate() != null && tr.getTransactionDate().startsWith(datePrefix)) {
                 result.add(tr);
             }
         }

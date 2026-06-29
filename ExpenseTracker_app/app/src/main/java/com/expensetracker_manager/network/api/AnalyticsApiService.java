@@ -21,4 +21,9 @@ public interface AnalyticsApiService {
             @Query("userId") Long userId,
             @Query("type") String type
     );
+
+    @GET("/api/ai/budget-analysis")
+    Call<com.expensetracker_manager.model.response.AiAnalysisResponse> getBudgetAnalysis(
+            @Query("userId") Long userId
+    );
 }

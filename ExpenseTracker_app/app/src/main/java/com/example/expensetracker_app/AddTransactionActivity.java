@@ -78,6 +78,9 @@ public class AddTransactionActivity extends BaseActivity {
         btnSaveTransaction = findViewById(R.id.btnSaveTransaction);
         btnOcrScan = findViewById(R.id.btnOcrScan);
         ocrProgressBar = findViewById(R.id.ocrProgressBar);
+        
+        etAmount.addTextChangedListener(new com.expensetracker_manager.utils.NumberTextWatcher(etAmount));
+        
         setupSpinners();
         loadCategories();
         loadWallets();
@@ -109,13 +112,13 @@ public class AddTransactionActivity extends BaseActivity {
 
     private void loadCategories() {
         if (!com.expensetracker_manager.utils.NetworkUtils.isNetworkAvailable(this)) {
-            // Offline fallback for categories
             List<String> names = new ArrayList<>();
             names.add("Ăn uống");
             names.add("Đi lại");
             names.add("Quần áo");
             names.add("Đi chơi");
             names.add("Y tế");
+            names.add("Chuyển khoản");
             names.add("Khác");
             ArrayAdapter<String> catAdapter = new ArrayAdapter<>(AddTransactionActivity.this,
                     android.R.layout.simple_spinner_dropdown_item, names);
@@ -132,7 +135,12 @@ public class AddTransactionActivity extends BaseActivity {
                             categories = response.body();
                             List<String> names = new ArrayList<>();
                             for (CategoryResponse cat : categories) {
-                                names.add(cat.getName());
+                                if (!names.contains(cat.getName())) {
+                                    names.add(cat.getName());
+                                }
+                            }
+                            if (!names.contains("Chuyển khoản")) {
+                                names.add("Chuyển khoản");
                             }
                             if (names.isEmpty()) {
                                 names.add("Ăn uống");
@@ -214,7 +222,7 @@ public class AddTransactionActivity extends BaseActivity {
     }
 
     private void saveTransaction() {
-        String amountStr = etAmount.getText().toString().trim();
+        String amountStr = etAmount.getText().toString().trim().replace(".", "");
         String desc = etDescription.getText().toString().trim();
 
         if (amountStr.isEmpty()) {
@@ -253,6 +261,7 @@ public class AddTransactionActivity extends BaseActivity {
             cache.cacheTransactions(txs);
 
             Toast.makeText(this, "Đã ghi chép giao dịch (Offline) thành công!", Toast.LENGTH_SHORT).show();
+            com.expensetracker_manager.service.FinancialAnalysisEngine.analyze(this);
             finish();
             return;
         }
@@ -279,6 +288,7 @@ public class AddTransactionActivity extends BaseActivity {
                         if (response.isSuccessful()) {
                             Toast.makeText(AddTransactionActivity.this, "Ghi chép giao dịch thành công!",
                                     Toast.LENGTH_SHORT).show();
+                            com.expensetracker_manager.service.FinancialAnalysisEngine.analyze(AddTransactionActivity.this);
                             finish();
                         } else {
                             Toast.makeText(AddTransactionActivity.this, "Không thể lưu giao dịch.", Toast.LENGTH_SHORT)

@@ -23,13 +23,13 @@ public class UserEntity {
     private String email;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String password;
 
     @Column(unique = true, length = 15)
     private String phoneNumber;
 
-    @Column(name = "firebaseuid", unique = true)
+    @Column(name = "firebase_uid", unique = true)
     private String firebaseUid;
 
     @Column(length = 500)
