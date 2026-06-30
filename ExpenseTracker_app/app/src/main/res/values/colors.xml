@@ -2,4 +2,48 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- App theme colors - Light -->
+    <color name="app_background">#F6F7FB</color>
+    <color name="app_surface">#FFFFFF</color>
+    <color name="app_surface_alt">#EEF0F7</color>
+    <color name="app_surface_soft">#F3F4FA</color>
+    <color name="app_surface_warning">#FFF7E0</color>
+    <color name="app_surface_info">#EEF5FF</color>
+    <color name="app_bottom_nav">#FFFFFF</color>
+
+    <color name="app_text_primary">#171725</color>
+    <color name="app_text_secondary">#6F7085</color>
+    <color name="app_text_muted">#8B8C9D</color>
+    <color name="app_divider">#E4E6F0</color>
+
+    <color name="app_input_background">#FFFFFF</color>
+    <color name="app_input_hint">#8B8C9D</color>
+
+    <color name="app_primary">#6B50B6</color>
+    <color name="app_primary_dark">#5A45A0</color>
+    <color name="app_accent_income">#18A957</color>
+    <color name="app_accent_expense">#D83A56</color>
+    <color name="app_accent_warning">#B87B00</color>
+    <color name="app_accent_cyan">#138A8A</color>
+    <color name="app_danger">#D32F2F</color>
+    <color name="app_button_secondary">#E8E4F8</color>
+    <color name="app_button_text">#FFFFFFFF</color>
+    <color name="app_button_text_dark">#102018</color>
+
+    <color name="app_risk_low_surface">#E7F7EE</color>
+    <color name="app_risk_medium_surface">#FFF4D7</color>
+    <color name="app_risk_high_surface">#FDE8EC</color>
+
+    <!-- Settings aliases -->
+    <color name="settings_background">@color/app_background</color>
+    <color name="settings_surface">@color/app_surface</color>
+    <color name="settings_text_primary">@color/app_text_primary</color>
+    <color name="settings_text_secondary">@color/app_text_secondary</color>
+    <color name="settings_divider">@color/app_divider</color>
+    <color name="settings_accent">@color/app_accent_income</color>
+    <color name="settings_button_primary">@color/app_primary</color>
+    <color name="settings_button_danger">@color/app_danger</color>
+    <color name="settings_button_text">@color/app_button_text</color>
+    <color name="settings_footer">@color/app_text_muted</color>
 </resources>

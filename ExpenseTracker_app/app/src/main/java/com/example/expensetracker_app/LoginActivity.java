@@ -54,6 +54,7 @@ public class LoginActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        ThemeHelper.applySavedTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
@@ -271,7 +272,7 @@ public class LoginActivity extends AppCompatActivity {
                     }
                 });
     }
-private void sendTokenToBackend(String firebaseIdToken) {
+    private void sendTokenToBackend(String firebaseIdToken) {
         FirebaseLoginRequest request = new FirebaseLoginRequest(firebaseIdToken);
 
         RetrofitClient.getInstance().getAuthApi().firebaseLogin(request)

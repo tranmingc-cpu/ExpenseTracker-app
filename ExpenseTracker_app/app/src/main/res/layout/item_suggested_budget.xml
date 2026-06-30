@@ -5,7 +5,7 @@
     android:layout_height="wrap_content"
     android:layout_marginBottom="12dp"
     app:cardCornerRadius="12dp"
-    app:cardBackgroundColor="#2A2A3E">
+    app:cardBackgroundColor="@color/app_surface">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -18,7 +18,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Danh mục"
-            android:textColor="#FFFFFF"
+            android:textColor="@color/app_text_primary"
             android:textSize="16sp"
             android:textStyle="bold"/>
 
@@ -28,7 +28,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:text="Hiện tại: 0đ ➜ Đề xuất: 0đ"
-            android:textColor="#808090"
+            android:textColor="@color/app_text_secondary"
             android:textSize="13sp"/>
 
         <LinearLayout
@@ -42,7 +42,7 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:background="#3D3D5C"
+                android:background="@color/app_divider"
                 android:layout_marginBottom="8dp"/>
 
             <TextView
@@ -50,7 +50,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Giải thích lý do..."
-                android:textColor="#808090"
+                android:textColor="@color/app_text_secondary"
                 android:textSize="12sp"/>
 
             <LinearLayout
@@ -66,7 +66,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="36dp"
                     android:text="Tự chỉnh"
-                    android:textColor="#00E5FF"
+                    android:textColor="@color/app_accent_cyan"
                     android:textSize="12sp"/>
 
                 <Button
@@ -75,8 +75,8 @@
                     android:layout_height="36dp"
                     android:layout_marginStart="8dp"
                     android:text="Áp dụng"
-                    android:textColor="#FFFFFF"
-                    android:backgroundTint="#00FF66"
+                    android:textColor="@color/app_text_primary"
+                    android:backgroundTint="@color/app_accent_income"
                     android:textSize="12sp"/>
 
             </LinearLayout>
