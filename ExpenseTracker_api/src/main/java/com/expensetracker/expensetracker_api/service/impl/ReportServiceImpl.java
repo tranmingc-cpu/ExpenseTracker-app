@@ -64,6 +64,17 @@ public class ReportServiceImpl implements ReportService {
         }
         response.setCurrentBalance(allIncome.subtract(allExpense));
 
+        if (income.compareTo(BigDecimal.ZERO) > 0) {
+            double ratio = expense.doubleValue() / income.doubleValue() * 100;
+            if (ratio > 80) {
+                response.setBudgetWarningMessage(String.format(Locale.US, "Cảnh báo: Bạn đã chi tiêu %.1f%% thu nhập tháng này.", ratio));
+            } else {
+                response.setBudgetWarningMessage(String.format(Locale.US, "Tốt: Chi tiêu của bạn đang ở mức an toàn (%.1f%% thu nhập).", ratio));
+            }
+        } else {
+            response.setBudgetWarningMessage("Chưa đủ dữ liệu để đánh giá ngân sách.");
+        }
+
         return response;
     }
 

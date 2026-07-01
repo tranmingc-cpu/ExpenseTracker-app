@@ -16,6 +16,7 @@ import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Part;
 import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 public interface TransactionApiService {
 
@@ -25,8 +26,12 @@ public interface TransactionApiService {
     @GET("api/transactions/{id}")
     Call<TransactionResponse> getById(@Path("id") long id);
 
-    @GET("api/transactions/user/{userId}")
-    Call<List<TransactionResponse>> getByUser(@Path("userId") long userId);
+    @GET("/api/transactions/user/{userId}")
+    Call<List<TransactionResponse>> getByUser(
+            @Path("userId") Long userId,
+            @Query("month") Integer month,
+            @Query("year") Integer year
+    );
 
     @PUT("api/transactions/{id}")
     Call<TransactionResponse> update(@Path("id") long id, @Body TransactionRequest request);
@@ -38,4 +43,6 @@ public interface TransactionApiService {
     @POST("api/transactions/analyze-bill")
     Call<OcrResponse> analyzeBill(@Part MultipartBody.Part file);
 
+    @POST("/api/sync/momo")
+    Call<List<TransactionResponse>> syncMomo(@Body com.expensetracker_manager.model.request.SyncRequest request);
 }

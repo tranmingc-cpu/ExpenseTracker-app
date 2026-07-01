@@ -47,6 +47,8 @@ public class AnalyticsFragment extends Fragment {
 
     private Long userId;
     private String currentCategoryType = "EXPENSE";
+    private Integer selectedMonth;
+    private Integer selectedYear;
 
     @Nullable
     @Override
@@ -67,9 +69,18 @@ public class AnalyticsFragment extends Fragment {
         viewModel = new ViewModelProvider(this).get(AnalyticsViewModel.class);
         observeViewModel();
 
+        if (getArguments() != null) {
+            int month = getArguments().getInt("selectedMonth", -1);
+            int year = getArguments().getInt("selectedYear", -1);
+            if (month != -1 && year != -1) {
+                selectedMonth = month;
+                selectedYear = year;
+            }
+        }
+
         if (userId != -1) {
             viewModel.fetchOverview(userId);
-            viewModel.fetchCategories(userId, currentCategoryType);
+            viewModel.fetchCategories(userId, currentCategoryType, selectedMonth, selectedYear);
         } else {
             Toast.makeText(requireContext(), "Không tìm thấy thông tin người dùng!", Toast.LENGTH_SHORT).show();
         }
@@ -130,7 +141,7 @@ public class AnalyticsFragment extends Fragment {
             currentCategoryType = "EXPENSE";
             refreshTypeButtons();
             if (userId != -1) {
-                viewModel.fetchCategories(userId, currentCategoryType);
+                viewModel.fetchCategories(userId, currentCategoryType, selectedMonth, selectedYear);
             }
         });
 
@@ -138,7 +149,7 @@ public class AnalyticsFragment extends Fragment {
             currentCategoryType = "INCOME";
             refreshTypeButtons();
             if (userId != -1) {
-                viewModel.fetchCategories(userId, currentCategoryType);
+                viewModel.fetchCategories(userId, currentCategoryType, selectedMonth, selectedYear);
             }
         });
     }

@@ -38,29 +38,23 @@ public class AiBudgetPlannerActivity extends BaseActivity {
     private ProgressBar pbHealth;
     private TextView tvRiskStatus;
     private TextView tvCurrentSpent, tvPredictedSpent, tvRemainingBudget;
-    
     private TextView tvGoalName, tvGoalProgress, tvGoalPercent;
     private ProgressBar pbGoal;
     private TextView tvRemainingDays, tvCompletionDate;
-
     private LinearLayout layoutRecommendations;
     private LinearLayout layoutSuggestedBudgets;
     private Button btnApplyAll;
-
     private FinancialAnalysisEngine.AnalysisResult analysis;
     private List<AIInsightGenerator.Recommendation> recommendations;
-    
     private Long selectedGoalId = null;
-    
     private List<CategoryResponse> categories = new ArrayList<>();
     private List<BudgetResponse> backendBudgets = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_ai_budget_planner);
 
-        // Bind Views
+        setContentView(R.layout.activity_ai_budget_planner);
         tvHealthScore = findViewById(R.id.tvHealthScore);
         tvHealthStatus = findViewById(R.id.tvHealthStatus);
         pbHealth = findViewById(R.id.pbHealth);
@@ -100,7 +94,6 @@ public class AiBudgetPlannerActivity extends BaseActivity {
         if (!com.expensetracker_manager.utils.NetworkUtils.isNetworkAvailable(this)) {
             return;
         }
-
         RetrofitClient.getInstance().getCategoryApi().getAll()
                 .enqueue(new Callback<List<CategoryResponse>>() {
                     @Override
@@ -109,14 +102,11 @@ public class AiBudgetPlannerActivity extends BaseActivity {
                             categories = response.body();
                         }
                     }
-
                     @Override
                     public void onFailure(Call<List<CategoryResponse>> call, Throwable t) {}
                 });
-
         long userId = TokenManager.getInstance(this).getUserId();
-        RetrofitClient.getInstance().getBudgetApi().getByUser(userId)
-                .enqueue(new Callback<List<BudgetResponse>>() {
+        RetrofitClient.getInstance().getBudgetApi().getByUser(userId, null, null).enqueue(new Callback<List<BudgetResponse>>() {
                     @Override
                     public void onResponse(Call<List<BudgetResponse>> call, Response<List<BudgetResponse>> response) {
                         if (response.isSuccessful() && response.body() != null) {
@@ -128,7 +118,6 @@ public class AiBudgetPlannerActivity extends BaseActivity {
                     public void onFailure(Call<List<BudgetResponse>> call, Throwable t) {}
                 });
     }
-
     private void refreshData() {
         analysis = FinancialAnalysisEngine.analyze(this, selectedGoalId);
         recommendations = AIInsightGenerator.generateInsights(analysis);
@@ -254,16 +243,13 @@ public class AiBudgetPlannerActivity extends BaseActivity {
             } else {
                 btnAction.setVisibility(View.GONE);
             }
-
             btnIgnore.setOnClickListener(v -> {
                 layoutRecommendations.removeView(recView);
                 Toast.makeText(this, "Đã bỏ qua khuyến nghị", Toast.LENGTH_SHORT).show();
             });
-
             layoutRecommendations.addView(recView);
         }
     }
-
     private void showAllRecommendationsDialog() {
         if (analysis == null) return;
         List<AIInsightGenerator.Recommendation> allRecs = AIInsightGenerator.generateAllInsights(analysis);
@@ -343,8 +329,7 @@ public class AiBudgetPlannerActivity extends BaseActivity {
             Button btnAdjust = bView.findViewById(R.id.btnAdjustRec);
 
             tvCategory.setText(cat);
-            tvLimits.setText("Hiện tại: " + (currentLimit > 0 ? formatVND(currentLimit) : "Chưa thiết lập") + 
-                             " ➜ Đề xuất: " + formatVND(recLimit));
+            tvLimits.setText("Hiện tại: " + (currentLimit > 0 ? formatVND(currentLimit) : "Chưa thiết lập") + " ➜ Đề xuất: " + formatVND(recLimit));
             
             double spent = analysis.categorySpending.getOrDefault(cat, 0.0);
             String expText = String.format(Locale.US, "Chi tiêu hiện tại: %s.\n\nHệ thống khuyến nghị mức ngân sách %s nhằm tối ưu thói quen chi tiêu của bạn.", 

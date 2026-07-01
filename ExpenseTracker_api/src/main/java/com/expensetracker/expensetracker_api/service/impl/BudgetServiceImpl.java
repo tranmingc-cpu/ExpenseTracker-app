@@ -62,8 +62,10 @@ public class BudgetServiceImpl implements BudgetService {
     }
 
     @Override
-    public List<BudgetResponse> getByUser(Long userId) {
-
+    public List<BudgetResponse> getByUser(Long userId, Integer month, Integer year) {
+        if (month != null && year != null) {
+            return budgetRepository.findByUserIdAndMonthAndYear(userId, month, year).stream().map(this::mapToResponse).toList();
+        }
         return budgetRepository.findByUserId(userId).stream().map(this::mapToResponse).toList();
     }
 

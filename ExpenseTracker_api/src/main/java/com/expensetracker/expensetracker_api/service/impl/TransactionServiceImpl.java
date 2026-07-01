@@ -55,9 +55,14 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public List<TransactionResponse> getByUser(
-            Long userId) {
-
+    public List<TransactionResponse> getByUser(Long userId, Integer month, Integer year) {
+        if (month != null && year != null) {
+            java.time.YearMonth yearMonth = java.time.YearMonth.of(year, month);
+            java.time.LocalDateTime start = yearMonth.atDay(1).atStartOfDay();
+            java.time.LocalDateTime end = yearMonth.atEndOfMonth().atTime(23, 59, 59);
+            return transactionRepository.findByUserIdAndTransactionDateBetween(userId, start, end)
+                    .stream().map(this::mapToResponse).toList();
+        }
         return transactionRepository.findByUserId(userId).stream().map(this::mapToResponse).toList();
     }
 
@@ -92,11 +97,41 @@ public class TransactionServiceImpl implements TransactionService {
         response.setDescription(transaction.getDescription());
         response.setTransactionDate(transaction.getTransactionDate());
         response.setType(transaction.getType());
-
         if (transaction.getCategory() != null) {
             response.setCategoryName(transaction.getCategory().getName());
         }
 
         return response;
+    }
+
+    @Override
+    public List<TransactionResponse> syncMomo(com.expensetracker.expensetracker_api.dto.request.SyncRequest request) {
+        UserEntity user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + request.getUserId()));
+
+        List<CategoryEntity> categories = categoryRepository.findAll();
+        CategoryEntity incomeCat = categories.stream().filter(c -> "Thu nhập".equalsIgnoreCase(c.getName())).findFirst().orElse(categories.get(0));
+        CategoryEntity expenseCat = categories.stream().filter(c -> "Khác".equalsIgnoreCase(c.getName())).findFirst().orElse(categories.get(0));
+
+        TransactionEntity t1 = new TransactionEntity();
+        t1.setAmount(new java.math.BigDecimal("500000"));
+        t1.setDescription("Hoàn tiền từ MoMo");
+        t1.setTransactionDate(java.time.LocalDateTime.now());
+        t1.setType("INCOME");
+        t1.setUser(user);
+        t1.setCategory(incomeCat);
+
+        TransactionEntity t2 = new TransactionEntity();
+        t2.setAmount(new java.math.BigDecimal("120000"));
+        t2.setDescription("Thanh toán hóa đơn qua MoMo");
+        t2.setTransactionDate(java.time.LocalDateTime.now());
+        t2.setType("EXPENSE");
+        t2.setUser(user);
+        t2.setCategory(expenseCat);
+
+        transactionRepository.save(t1);
+        transactionRepository.save(t2);
+
+        return java.util.Arrays.asList(mapToResponse(t1), mapToResponse(t2));
     }
 }

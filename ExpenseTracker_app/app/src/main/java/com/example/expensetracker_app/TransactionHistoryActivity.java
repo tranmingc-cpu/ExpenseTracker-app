@@ -159,7 +159,7 @@ public class TransactionHistoryActivity extends BaseActivity {
             return;
         }
 
-        RetrofitClient.getInstance().getTransactionApi().getByUser(userId)
+        RetrofitClient.getInstance().getTransactionApi().getByUser(userId, null, null)
                 .enqueue(new Callback<List<TransactionResponse>>() {
                     @Override
                     public void onResponse(Call<List<TransactionResponse>> call, Response<List<TransactionResponse>> response) {
@@ -279,7 +279,7 @@ public class TransactionHistoryActivity extends BaseActivity {
             }
             cache.cacheTransactions(txs);
             com.expensetracker_manager.service.FinancialAnalysisEngine.analyze(this);
-
+            
             // Điều chỉnh tóm tắt báo cáo ngoại tuyến
             com.expensetracker_manager.model.response.ReportSummaryResponse summary = cache.getCachedReportSummary();
             boolean isIncome = "INCOME".equalsIgnoreCase(tr.getType());
