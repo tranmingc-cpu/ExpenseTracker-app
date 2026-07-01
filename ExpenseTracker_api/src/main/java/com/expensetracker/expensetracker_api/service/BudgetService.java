@@ -11,10 +11,9 @@ public interface BudgetService {
 
     BudgetResponse getById(Long id);
 
-    List<BudgetResponse> getByUser(Long userId);
+    List<BudgetResponse> getByUser(Long userId, Integer month, Integer year);
 
-    BudgetResponse update(Long id,
-                          BudgetRequest request);
+    BudgetResponse update(Long id, BudgetRequest request);
 
     void delete(Long id);
 }

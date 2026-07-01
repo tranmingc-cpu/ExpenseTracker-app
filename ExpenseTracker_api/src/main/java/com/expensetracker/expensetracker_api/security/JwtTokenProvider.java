@@ -14,7 +14,7 @@ public class JwtTokenProvider {
 
     // A secure key of 256 bits (32 bytes) for HMAC-SHA
     private static final String JWT_SECRET = "ExpenseTrackerSecretKey_MustBeAtLeast32BytesLongForHS256Algorithm";
-    private static final long JWT_EXPIRATION = 604800000L; // 7 days in milliseconds
+    private static final long JWT_EXPIRATION = 604800000L;
 
     private final SecretKey key = Keys.hmacShaKeyFor(JWT_SECRET.getBytes(StandardCharsets.UTF_8));
 

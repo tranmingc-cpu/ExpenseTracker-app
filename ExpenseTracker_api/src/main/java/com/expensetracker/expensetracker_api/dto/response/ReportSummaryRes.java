@@ -14,4 +14,6 @@ public class ReportSummaryRes {
     private BigDecimal balance;
 
     private BigDecimal currentBalance;
+    
+    private String budgetWarningMessage;
 }

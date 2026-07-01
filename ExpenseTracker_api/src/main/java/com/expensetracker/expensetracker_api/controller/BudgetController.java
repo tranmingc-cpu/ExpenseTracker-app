@@ -31,9 +31,11 @@ public class BudgetController {
 
     @GetMapping("/user/{userId}")
     public List<BudgetResponse> getByUser(
-            @PathVariable Long userId) {
+            @PathVariable Long userId,
+            @RequestParam(required = false) Integer month,
+            @RequestParam(required = false) Integer year) {
 
-        return budgetService.getByUser(userId);
+        return budgetService.getByUser(userId, month, year);
     }
 
     @PutMapping("/{id}")

@@ -39,16 +39,39 @@ public class GeminiServiceImpl implements GeminiService {
     private String apiKey;
 
     @Override
-    public AiBudgetAnalysisDTO analyzeBudget(Long userId) {
+    public AiBudgetAnalysisDTO analyzeBudget(Long userId, Integer month, Integer year) {
         LocalDate today = LocalDate.now();
-        int currentMonth = today.getMonthValue();
-        int currentYear = today.getYear();
+        int currentMonth = (month != null) ? month : today.getMonthValue();
+        int currentYear = (year != null) ? year : today.getYear();
 
-        // Calculate days metrics
-        int daysInMonth = today.lengthOfMonth();
-        int daysPassed = today.getDayOfMonth();
-        int daysRemaining = daysInMonth - daysPassed;
-        double monthProgressPercentage = ((double) daysPassed / daysInMonth) * 100;
+        // If analyzing a past month, we consider it "completed" (100% progress)
+        // If analyzing a future month, 0% progress.
+        // If current month, calculate based on today.
+        int daysInMonth;
+        int daysPassed;
+        int daysRemaining;
+        double monthProgressPercentage;
+
+        if (currentYear == today.getYear() && currentMonth == today.getMonthValue()) {
+            daysInMonth = today.lengthOfMonth();
+            daysPassed = today.getDayOfMonth();
+            daysRemaining = daysInMonth - daysPassed;
+            monthProgressPercentage = ((double) daysPassed / daysInMonth) * 100;
+        } else {
+            LocalDate targetDate = LocalDate.of(currentYear, currentMonth, 1);
+            daysInMonth = targetDate.lengthOfMonth();
+            if (targetDate.isBefore(today)) {
+                daysPassed = daysInMonth;
+                daysRemaining = 0;
+                monthProgressPercentage = 100.0;
+            } else {
+                daysPassed = 1; // Avoid division by zero
+                daysRemaining = daysInMonth;
+                monthProgressPercentage = 0.0;
+            }
+        }
+
+        // Variables computed above
 
         // Fetch User's Budgets for the current month
         List<BudgetEntity> budgets = budgetRepository.findByUserId(userId).stream()
@@ -56,8 +79,9 @@ public class GeminiServiceImpl implements GeminiService {
                 .collect(Collectors.toList());
 
         //  Fetch current month's transactions
-        LocalDateTime startOfMonth = today.withDayOfMonth(1).atStartOfDay();
-        LocalDateTime endOfMonth = today.withDayOfMonth(daysInMonth).atTime(23, 59, 59);
+        LocalDate targetStart = LocalDate.of(currentYear, currentMonth, 1);
+        LocalDateTime startOfMonth = targetStart.atStartOfDay();
+        LocalDateTime endOfMonth = targetStart.withDayOfMonth(daysInMonth).atTime(23, 59, 59);
         List<TransactionEntity> currentMonthTxs = transactionRepository.findByUserIdAndTransactionDateBetween(
                 userId, startOfMonth, endOfMonth);
 
@@ -71,7 +95,7 @@ public class GeminiServiceImpl implements GeminiService {
         }
 
         //  Fetch past 3 months' transaction history for computing averages
-        LocalDateTime startOfHistory = today.minusMonths(3).withDayOfMonth(1).atStartOfDay();
+        LocalDateTime startOfHistory = startOfMonth.minusMonths(3);
         LocalDateTime endOfHistory = startOfMonth.minusNanos(1); // right before this month
         List<TransactionEntity> historyTxs = transactionRepository.findByUserIdAndTransactionDateBetween(
                 userId, startOfHistory, endOfHistory);
@@ -249,8 +273,7 @@ public class GeminiServiceImpl implements GeminiService {
         }
 
         StringBuilder response = new StringBuilder();
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(
-                conn.getResponseCode() >= 400 ? conn.getErrorStream() : conn.getInputStream(), StandardCharsets.UTF_8))) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getResponseCode() >= 400 ? conn.getErrorStream() : conn.getInputStream(), StandardCharsets.UTF_8))) {
             String line;
             while ((line = br.readLine()) != null) {
                 response.append(line);

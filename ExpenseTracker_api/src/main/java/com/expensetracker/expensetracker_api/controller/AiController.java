@@ -16,7 +16,7 @@ public class AiController {
     private final GeminiService geminiService;
 
     @GetMapping("/budget-analysis")
-    public AiBudgetAnalysisDTO getBudgetAnalysis(@RequestParam Long userId) {
-        return geminiService.analyzeBudget(userId);
+    public AiBudgetAnalysisDTO getBudgetAnalysis(@RequestParam Long userId, @RequestParam(required = false) Integer month, @RequestParam(required = false) Integer year) {
+        return geminiService.analyzeBudget(userId, month, year);
     }
 }
