@@ -17,6 +17,10 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.graphics.drawable.Drawable;
+import android.text.method.HideReturnsTransformationMethod;
+import android.text.method.PasswordTransformationMethod;
+import android.view.MotionEvent;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
@@ -246,12 +250,16 @@ public class ProfileActivity extends BaseActivity {
 
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
-        int padding = dp(18);
-        layout.setPadding(padding, padding, padding, 0);
+        int padding = dp(16);
+        layout.setPadding(padding, dp(12), padding, dp(2));
 
         EditText etCurrentPassword = createPasswordInput("Mật khẩu hiện tại");
         EditText etNewPassword = createPasswordInput("Mật khẩu mới tối thiểu 8 ký tự");
         EditText etConfirmPassword = createPasswordInput("Nhập lại mật khẩu mới");
+
+        setupPasswordToggle(etCurrentPassword);
+        setupPasswordToggle(etNewPassword);
+        setupPasswordToggle(etConfirmPassword);
 
         layout.addView(etCurrentPassword);
         layout.addView(etNewPassword);
@@ -409,25 +417,86 @@ public class ProfileActivity extends BaseActivity {
         Toast.makeText(ProfileActivity.this, "Đăng xuất thành công!", Toast.LENGTH_SHORT).show();
     }
 
+    private void setupPasswordToggle(EditText editText) {
+        final boolean[] isVisible = {false};
+
+        editText.setMinHeight(0);
+        editText.setGravity(android.view.Gravity.CENTER_VERTICAL);
+        updatePasswordToggleIcon(editText, isVisible[0]);
+
+        editText.setOnTouchListener((view, event) -> {
+            if (event.getAction() == MotionEvent.ACTION_UP) {
+                Drawable drawableEnd = editText.getCompoundDrawables()[2];
+
+                if (drawableEnd != null) {
+                    int iconStart = editText.getWidth()
+                            - editText.getPaddingRight()
+                            - drawableEnd.getBounds().width()
+                            - dp(12);
+
+                    if (event.getX() >= iconStart) {
+                        isVisible[0] = !isVisible[0];
+
+                        int cursorPosition = editText.getSelectionStart();
+                        if (isVisible[0]) {
+                            editText.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
+                        } else {
+                            editText.setTransformationMethod(PasswordTransformationMethod.getInstance());
+                        }
+
+                        updatePasswordToggleIcon(editText, isVisible[0]);
+                        editText.setSelection(Math.max(0, Math.min(cursorPosition, editText.length())));
+                        event.setAction(MotionEvent.ACTION_CANCEL);
+                        return true;
+                    }
+                }
+            }
+            return false;
+        });
+    }
+
+
+
+    private void updatePasswordToggleIcon(EditText editText, boolean isVisible) {
+        int iconRes = isVisible ? R.drawable.ic_visibility_24 : R.drawable.ic_visibility_off_24;
+        Drawable icon = ContextCompat.getDrawable(this, iconRes);
+        if (icon != null) {
+            int iconSize = dp(20);
+            icon.setBounds(0, 0, iconSize, iconSize);
+        }
+
+        editText.setCompoundDrawables(null, null, icon, null);
+        editText.setCompoundDrawablePadding(dp(6));
+        editText.setPadding(dp(12), 0, dp(40), 0);
+    }
+
+
+
     private EditText createPasswordInput(String hint) {
         EditText editText = new EditText(this);
         editText.setHint(hint);
         editText.setTextColor(color(R.color.app_text_primary));
         editText.setHintTextColor(color(R.color.app_input_hint));
+        editText.setTextSize(14);
         editText.setSingleLine(true);
+        editText.setMinHeight(0);
+        editText.setIncludeFontPadding(false);
+        editText.setGravity(android.view.Gravity.CENTER_VERTICAL);
         editText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-        editText.setPadding(dp(14), 0, dp(14), 0);
+        editText.setPadding(dp(12), 0, dp(40), 0);
         editText.setBackgroundColor(color(R.color.app_input_background));
 
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                dp(50)
+                dp(44)
         );
-        params.setMargins(0, 0, 0, dp(12));
+        params.setMargins(0, 0, 0, dp(8));
         editText.setLayoutParams(params);
 
         return editText;
     }
+
+
 
     private boolean hasPasswordProvider(FirebaseUser user) {
         for (com.google.firebase.auth.UserInfo info : user.getProviderData()) {
