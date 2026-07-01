@@ -111,14 +111,18 @@ public class BudgetsActivity extends BaseActivity {
     }
 
     private void loadBudgets() {
+        int currentMonth = Calendar.getInstance().get(Calendar.MONTH) + 1;
+        int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+
+        // KIỂM TRA OFFLINE MÀNG
         if (!com.expensetracker_manager.utils.NetworkUtils.isNetworkAvailable(this)) {
-            budgets = com.expensetracker_manager.utils.OfflineCacheManager.getInstance(this).getCachedBudgets();
-            renderBudgetsList();
+            loadOfflineBudgets(currentMonth, currentYear);
             return;
         }
 
         Long userId = TokenManager.getInstance(this).getUserId();
-        RetrofitClient.getInstance().getBudgetApi().getByUser(userId)
+        // Truyền đủ 3 tham số (userId, month, year) lên API
+        RetrofitClient.getInstance().getBudgetApi().getByUser(userId, currentMonth, currentYear)
                 .enqueue(new Callback<List<BudgetResponse>>() {
                     @Override
                     public void onResponse(Call<List<BudgetResponse>> call, Response<List<BudgetResponse>> response) {
@@ -131,10 +135,24 @@ public class BudgetsActivity extends BaseActivity {
 
                     @Override
                     public void onFailure(Call<List<BudgetResponse>> call, Throwable t) {
-                        budgets = com.expensetracker_manager.utils.OfflineCacheManager.getInstance(BudgetsActivity.this).getCachedBudgets();
-                        renderBudgetsList();
+                        loadOfflineBudgets(currentMonth, currentYear);
                     }
                 });
+    }
+
+    // HÀM MỚI: Lọc cục bộ danh sách ngân sách ngoại tuyến theo tháng và năm hiện tại
+    private void loadOfflineBudgets(int month, int year) {
+        List<BudgetResponse> cachedList = com.expensetracker_manager.utils.OfflineCacheManager.getInstance(this).getCachedBudgets();
+        budgets.clear();
+        if (cachedList != null) {
+            for (BudgetResponse b : cachedList) {
+                // Chỉ hiển thị ngân sách thuộc tháng và năm hiện tại khi offline
+                if (b.getMonth() == month && b.getYear() == year) {
+                    budgets.add(b);
+                }
+            }
+        }
+        renderBudgetsList();
     }
 
     private void renderBudgetsList() {
@@ -191,45 +209,6 @@ public class BudgetsActivity extends BaseActivity {
         }
     }
 
-    private void renderOfflineMockBudgets() {
-        layoutBudgetsContainer.removeAllViews();
-        // Thêm một mục ngân sách mô phỏng
-        LinearLayout item = new LinearLayout(this);
-        item.setOrientation(LinearLayout.VERTICAL);
-        item.setPadding(16, 16, 16, 16);
-        item.setBackground(roundedBg(R.color.app_surface_alt));
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        params.setMargins(0, 0, 0, 16);
-        item.setLayoutParams(params);
-
-        TextView tvCategory = new TextView(this);
-        tvCategory.setText("Ăn uống (Offline Mode)");
-        tvCategory.setTextColor(themeColor(R.color.app_text_primary));
-        tvCategory.setTextSize(16);
-        item.addView(tvCategory);
-
-        ProgressBar pb = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
-        pb.setMax(100);
-        pb.setProgress(85);
-        pb.getProgressDrawable().setColorFilter(themeColor(R.color.app_accent_warning), android.graphics.PorterDuff.Mode.SRC_IN);
-        pb.setPadding(0, 8, 0, 8);
-        item.addView(pb);
-
-        TextView tvProgress = new TextView(this);
-        tvProgress.setText("Đã tiêu: " + formatVND(4250000) + " / Giới hạn: " + formatVND(5000000) + " (85%)");
-        tvProgress.setTextColor(themeColor(R.color.app_text_secondary));
-        item.addView(tvProgress);
-
-        TextView tvWarning = new TextView(this);
-        tvWarning.setText("⚠️ Cảnh báo: Đã dùng hơn 80% ngân sách!");
-        tvWarning.setTextColor(themeColor(R.color.app_accent_warning));
-        tvWarning.setTextSize(11);
-        item.addView(tvWarning);
-
-        layoutBudgetsContainer.addView(item);
-    }
-
     private void saveBudget() {
         String amountStr = etBudgetAmount.getText().toString().trim().replace(".", "");
         if (amountStr.isEmpty()) {
@@ -238,33 +217,41 @@ public class BudgetsActivity extends BaseActivity {
         }
 
         double amount = Double.parseDouble(amountStr);
+        int currentMonth = Calendar.getInstance().get(Calendar.MONTH) + 1;
+        int currentYear = Calendar.getInstance().get(Calendar.YEAR);
 
         if (!com.expensetracker_manager.utils.NetworkUtils.isNetworkAvailable(this)) {
-            // Lưu cục bộ vào bộ nhớ đệm ngoại tuyến
+            // Thiết lập thủ công dữ liệu Mock cho Offline Cache khớp cấu trúc tháng/năm
             BudgetResponse mockBudget = new BudgetResponse();
             mockBudget.setId(System.currentTimeMillis());
             mockBudget.setAmount(amount);
-            mockBudget.setMonth(Calendar.getInstance().get(Calendar.MONTH) + 1);
-            mockBudget.setYear(Calendar.getInstance().get(Calendar.YEAR));
+            mockBudget.setMonth(currentMonth); // Đã đồng bộ biến chung
+            mockBudget.setYear(currentYear);   // Đã đồng bộ biến chung
             if (spinnerBudgetCategory.getSelectedItem() != null) {
                 mockBudget.setCategoryName(spinnerBudgetCategory.getSelectedItem().toString());
             } else {
                 mockBudget.setCategoryName("Khác");
             }
-            mockBudget.setSpent(0); // mức chi tiêu mô phỏng ban đầu khi ngoại tuyến
-            budgets.add(mockBudget);
-            com.expensetracker_manager.utils.OfflineCacheManager.getInstance(this).cacheBudgets(budgets);
+            mockBudget.setSpent(0);
+
+            // Đọc lại cache cũ, thêm phần tử mới và lưu đè
+            List<BudgetResponse> currentCached = com.expensetracker_manager.utils.OfflineCacheManager.getInstance(this).getCachedBudgets();
+            if (currentCached == null) currentCached = new ArrayList<>();
+            currentCached.add(mockBudget);
+            com.expensetracker_manager.utils.OfflineCacheManager.getInstance(this).cacheBudgets(currentCached);
 
             Toast.makeText(this, "Thiết lập ngân sách thành công (Offline)!", Toast.LENGTH_SHORT).show();
             etBudgetAmount.setText("");
-            renderBudgetsList();
+
+            // Gọi lại hàm lọc theo tháng năm để cập nhật giao diện ngay lập tức
+            loadOfflineBudgets(currentMonth, currentYear);
             return;
         }
 
         BudgetRequest request = new BudgetRequest();
         request.setAmount(amount);
-        request.setMonth(Calendar.getInstance().get(Calendar.MONTH) + 1);
-        request.setYear(Calendar.getInstance().get(Calendar.YEAR));
+        request.setMonth(currentMonth);
+        request.setYear(currentYear);
         request.setUserId(TokenManager.getInstance(this).getUserId());
 
         if (!categories.isEmpty()) {
@@ -319,7 +306,6 @@ public class BudgetsActivity extends BaseActivity {
         return adapter;
     }
 
-
     private int themeColor(int colorResId) {
         return androidx.core.content.ContextCompat.getColor(this, colorResId);
     }
@@ -334,5 +320,4 @@ public class BudgetsActivity extends BaseActivity {
     private int dp(int value) {
         return Math.round(value * getResources().getDisplayMetrics().density);
     }
-
 }

@@ -372,7 +372,7 @@ public class SettingsActivity extends AppCompatActivity {
         btnSync.setEnabled(false);
         Toast.makeText(this, "Đang đồng bộ dữ liệu...", Toast.LENGTH_SHORT).show();
 
-        RetrofitClient.getInstance().getTransactionApi().getByUser(userId)
+        RetrofitClient.getInstance().getTransactionApi().getByUser(userId, null, null)
                 .enqueue(new Callback<List<TransactionResponse>>() {
                     @Override
                     public void onResponse(Call<List<TransactionResponse>> call, Response<List<TransactionResponse>> response) {
@@ -394,7 +394,7 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void syncBudgets(Long userId) {
-        RetrofitClient.getInstance().getBudgetApi().getByUser(userId)
+        RetrofitClient.getInstance().getBudgetApi().getByUser(userId,null,null)
                 .enqueue(new Callback<List<com.expensetracker_manager.model.response.BudgetResponse>>() {
                     @Override
                     public void onResponse(Call<List<com.expensetracker_manager.model.response.BudgetResponse>> call,
@@ -424,7 +424,7 @@ public class SettingsActivity extends AppCompatActivity {
         btnExport.setEnabled(false);
         Toast.makeText(this, "Đang xuất dữ liệu CSV...", Toast.LENGTH_SHORT).show();
 
-        RetrofitClient.getInstance().getTransactionApi().getByUser(userId)
+        RetrofitClient.getInstance().getTransactionApi().getByUser(userId, null, null)
                 .enqueue(new Callback<List<TransactionResponse>>() {
                     @Override
                     public void onResponse(Call<List<TransactionResponse>> call, Response<List<TransactionResponse>> response) {
