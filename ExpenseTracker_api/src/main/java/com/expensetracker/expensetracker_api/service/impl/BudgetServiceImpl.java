@@ -62,8 +62,10 @@ public class BudgetServiceImpl implements BudgetService {
     }
 
     @Override
-    public List<BudgetResponse> getByUser(Long userId) {
-
+    public List<BudgetResponse> getByUser(Long userId, Integer month, Integer year) {
+        if (month != null && year != null) {
+            return budgetRepository.findByUserIdAndMonthAndYear(userId, month, year).stream().map(this::mapToResponse).toList();
+        }
         return budgetRepository.findByUserId(userId).stream().map(this::mapToResponse).toList();
     }
 
@@ -100,7 +102,7 @@ public class BudgetServiceImpl implements BudgetService {
             response.setCategoryName(
                     budget.getCategory().getName());
 
-            // Calculate monthly category spending
+            // Tính toán chi tiêu hàng tháng theo danh mục
             try {
                 java.time.LocalDate startLocalDate = java.time.LocalDate.of(budget.getYear(), budget.getMonth(), 1);
                 java.time.LocalDate endLocalDate = startLocalDate.plusMonths(1).minusDays(1);

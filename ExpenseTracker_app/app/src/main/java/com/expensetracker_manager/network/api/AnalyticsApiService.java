@@ -19,6 +19,15 @@ public interface AnalyticsApiService {
     @GET("/api/analytics/categories")
     Call<List<CategoryReportResponse>> getCategories(
             @Query("userId") Long userId,
-            @Query("type") String type
+            @Query("type") String type,
+            @Query("month") Integer month,
+            @Query("year") Integer year
+    );
+
+    @GET("/api/ai/budget-analysis")
+    Call<com.expensetracker_manager.model.response.AiAnalysisResponse> getBudgetAnalysis(
+            @Query("userId") Long userId,
+            @Query("month") Integer month,
+            @Query("year") Integer year
     );
 }

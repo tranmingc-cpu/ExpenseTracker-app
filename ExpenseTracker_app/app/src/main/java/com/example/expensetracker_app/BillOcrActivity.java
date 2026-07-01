@@ -68,6 +68,8 @@ public class BillOcrActivity extends BaseActivity {
         spinnerQrWallet = findViewById(R.id.spinnerQrWallet);
         btnSaveQrTransaction = findViewById(R.id.btnSaveQrTransaction);
         ocrProgressBar = findViewById(R.id.ocrProgressBar);
+        
+        etQrAmount.addTextChangedListener(new com.expensetracker_manager.utils.NumberTextWatcher(etQrAmount));
 
         loadCategories();
         loadWallets();
@@ -233,7 +235,12 @@ public class BillOcrActivity extends BaseActivity {
                             categories = response.body();
                             List<String> names = new ArrayList<>();
                             for (CategoryResponse cat : categories) {
-                                names.add(cat.getName());
+                                if (!names.contains(cat.getName())) {
+                                    names.add(cat.getName());
+                                }
+                            }
+                            if (!names.contains("Chuyển khoản")) {
+                                names.add("Chuyển khoản");
                             }
                             if (names.isEmpty()) {
                                 loadLocalCategoriesFallback();
@@ -262,6 +269,7 @@ public class BillOcrActivity extends BaseActivity {
         names.add("Quần áo");
         names.add("Đi chơi");
         names.add("Y tế");
+        names.add("Chuyển khoản");
         names.add("Khác");
         ArrayAdapter<String> catAdapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_spinner_dropdown_item, names);
@@ -329,7 +337,7 @@ public class BillOcrActivity extends BaseActivity {
 
         double amt = 0;
         try {
-            String cleanAmount = amountStr.replaceAll("[^0-9]", "");
+            String cleanAmount = amountStr.replace(".", "");
             amt = Double.parseDouble(cleanAmount);
         } catch (NumberFormatException e) {
             Toast.makeText(this, "Số tiền không hợp lệ, vui lòng kiểm tra lại", Toast.LENGTH_SHORT).show();

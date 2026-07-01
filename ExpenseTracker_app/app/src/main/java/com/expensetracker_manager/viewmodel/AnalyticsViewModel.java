@@ -59,9 +59,9 @@ public class AnalyticsViewModel extends ViewModel {
                 });
     }
 
-    public void fetchCategories(Long userId, String type) {
+    public void fetchCategories(Long userId, String type, Integer month, Integer year) {
         isLoading.setValue(true);
-        RetrofitClient.getInstance().getAnalyticsApi().getCategories(userId, type)
+        RetrofitClient.getInstance().getAnalyticsApi().getCategories(userId, type, month, year)
                 .enqueue(new Callback<List<CategoryReportResponse>>() {
                     @Override
                     public void onResponse(Call<List<CategoryReportResponse>> call, Response<List<CategoryReportResponse>> response) {

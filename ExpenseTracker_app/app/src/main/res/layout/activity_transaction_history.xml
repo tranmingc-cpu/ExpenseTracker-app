@@ -4,17 +4,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#12121E"
+    android:background="@color/app_background"
     android:padding="16dp">
 
     <Button
         android:id="@+id/btnBackHistory"
-        android:layout_width="88dp"
-        android:layout_height="32dp"
-        android:layout_marginTop="12dp"
-        android:backgroundTint="#2D2D56"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
         android:text="←"
-        android:textColor="#FFFFFF"
+        android:backgroundTint="@color/app_button_secondary"
+        android:textColor="@color/app_button_text"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -24,27 +23,25 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:text="Lịch sử giao dịch"
-        android:textColor="#FFFFFF"
-        android:textSize="20sp"
+        android:textColor="@color/app_text_primary"
+        android:textSize="22sp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="@id/btnBackHistory"
+        app:layout_constraintBottom_toBottomOf="@+id/btnBackHistory"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toEndOf="@id/btnBackHistory"
-        app:layout_constraintTop_toTopOf="@id/btnBackHistory"
-        app:layout_constraintVertical_bias="1.0" />
+        app:layout_constraintStart_toEndOf="@+id/btnBackHistory"
+        app:layout_constraintTop_toTopOf="@+id/btnBackHistory" />
 
     <Button
         android:id="@+id/btnHistoryMonthFilter"
         android:layout_width="wrap_content"
         android:layout_height="40dp"
+        android:layout_marginTop="16dp"
+        android:backgroundTint="@color/app_button_secondary"
         android:text="Tháng hiện tại"
         android:textAllCaps="false"
-        android:textColor="#FFFFFF"
-        android:backgroundTint="#2D2D56"
-        android:layout_marginTop="16dp"
+        android:textColor="@color/app_button_text"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btnBackHistory" />
+        app:layout_constraintTop_toBottomOf="@+id/btnBackHistory" />
 
     <androidx.cardview.widget.CardView
         android:id="@+id/cardHistorySummary"
@@ -52,7 +49,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         app:cardCornerRadius="14dp"
-        app:cardBackgroundColor="#1F1F35"
+        app:cardBackgroundColor="@color/app_surface"
         app:layout_constraintTop_toBottomOf="@id/btnHistoryMonthFilter">
 
         <LinearLayout
@@ -71,7 +68,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Tổng thu"
-                    android:textColor="#8A8A9E"
+                    android:textColor="@color/app_text_secondary"
                     android:textSize="12sp" />
 
                 <TextView
@@ -79,7 +76,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="0 đ"
-                    android:textColor="#00FF66"
+                    android:textColor="@color/app_accent_income"
                     android:textSize="16sp"
                     android:textStyle="bold" />
             </LinearLayout>
@@ -94,7 +91,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Tổng chi"
-                    android:textColor="#8A8A9E"
+                    android:textColor="@color/app_text_secondary"
                     android:textSize="12sp" />
 
                 <TextView
@@ -102,7 +99,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="0 đ"
-                    android:textColor="#FF3366"
+                    android:textColor="@color/app_accent_expense"
                     android:textSize="16sp"
                     android:textStyle="bold" />
             </LinearLayout>

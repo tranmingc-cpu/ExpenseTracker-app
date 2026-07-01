@@ -22,7 +22,11 @@ public interface BudgetApiService {
     Call<BudgetResponse> getById(@Path("id") long id);
 
     @GET("api/budgets/user/{userId}")
-    Call<List<BudgetResponse>> getByUser(@Path("userId") long userId);
+    Call<List<BudgetResponse>> getByUser(
+            @Path("userId") long userId,
+            @retrofit2.http.Query("month") Integer month,
+            @retrofit2.http.Query("year") Integer year
+    );
 
     @PUT("api/budgets/{id}")
     Call<BudgetResponse> update(@Path("id") long id, @Body BudgetRequest request);

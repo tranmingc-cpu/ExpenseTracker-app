@@ -7,6 +7,12 @@ import com.expensetracker_manager.utils.TokenManager;
 import com.example.expensetracker_app.PinLockActivity;
 
 public class BaseActivity extends AppCompatActivity {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        ThemeHelper.applySavedTheme(this);
+        super.onCreate(savedInstanceState);
+    }
+
     private static long lastBackgroundTime = 0;
     private static final long TIMEOUT_MS = 30000; // 30 seconds
 

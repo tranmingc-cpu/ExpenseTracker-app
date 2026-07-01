@@ -4,40 +4,48 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.expensetracker_manager.network.RetrofitClient;
 import com.expensetracker_manager.utils.TokenManager;
 
+import java.util.concurrent.Executors;
+
 public class SplashActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        ThemeHelper.applySavedTheme(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
-        RetrofitClient.init(getApplicationContext());
+        Executors.newSingleThreadExecutor().execute(() -> {
 
-        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            RetrofitClient.init(getApplicationContext());
+
+            //  Đọc dữ liệu Token ngầm
             TokenManager tokenManager = TokenManager.getInstance(SplashActivity.this);
             String token = tokenManager.getToken();
+            String savedPin = tokenManager.getPasscode();
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                if (isFinishing() || isDestroyed()) return;
 
-            if (token != null && !token.isEmpty()) {
-                String savedPin = tokenManager.getPasscode();
-
-                if (savedPin != null && !savedPin.trim().isEmpty()) {
-                    Intent intent = new Intent(SplashActivity.this, PinLockActivity.class);
-                    intent.putExtra("check_lock", true);
-                    startActivity(intent);
+                Intent intent;
+                if (token != null && !token.isEmpty()) {
+                    if (savedPin != null && !savedPin.trim().isEmpty()) {
+                        intent = new Intent(SplashActivity.this, PinLockActivity.class);
+                        intent.putExtra("check_lock", true);
+                    } else {
+                        intent = new Intent(SplashActivity.this, HomeActivity.class);
+                    }
                 } else {
-                    startActivity(new Intent(SplashActivity.this, HomeActivity.class));
+                    intent = new Intent(SplashActivity.this, LoginActivity.class);
                 }
-            } else {
-                startActivity(new Intent(SplashActivity.this, LoginActivity.class));
-            }
 
-            finish();
-        }, 1500);
+                startActivity(intent);
+                finish();
+            }, 1500);
+
+        });
     }
 }

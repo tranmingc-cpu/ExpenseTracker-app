@@ -2,6 +2,7 @@ package com.example.expensetracker_app;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -12,6 +13,9 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.core.content.ContextCompat;
 
 import com.expensetracker_manager.model.response.ReportSummaryResponse;
 import com.expensetracker_manager.model.response.TransactionResponse;
@@ -44,6 +48,10 @@ import com.google.mlkit.vision.barcode.common.Barcode;
 
 public class HomeActivity extends BaseActivity {
 
+    private static final String SETTINGS_PREFS = "settings";
+    private static final String KEY_BUDGET_ALERT = "budget_alert";
+    private static final String KEY_THEME_MODE = "theme_mode";
+
     private TextView tvDashboardUserName, tvNetBalance, tvTotalIncome, tvTotalExpense, tvHabitsWarning, btnViewAllTransactions;
     private ImageView btnProfile,btnAnalytics;
     private Button btnNavRecurring, btnNavSync, btnNavExport, btnSignOut, btnMonthFilter;
@@ -53,7 +61,7 @@ public class HomeActivity extends BaseActivity {
     private LinearLayout btnBottomNavAdd, btnBottomNavGoals, btnBottomNavQr, btnBottomNavBudgets, btnBottomNavProfile;
 
     private androidx.cardview.widget.CardView cardBudgetWarning;
-    private TextView tvBudgetWarningMessage;
+    private TextView tvBudgetWarningMessage, btnDismissBudgetWarning;
 
     private android.widget.EditText etQuickIncomeAmount;
     private Button btnSaveQuickIncome;
@@ -61,9 +69,14 @@ public class HomeActivity extends BaseActivity {
     private List<TransactionResponse> transactionsList = new ArrayList<>();
     private List<com.expensetracker_manager.model.response.BudgetResponse> budgetList = new ArrayList<>();
 
+    private androidx.cardview.widget.CardView cardAiInsights;
+    private TextView tvAiOverallStatus;
+    private LinearLayout layoutAiInsightsContainer;
+
     @SuppressLint("WrongViewCast")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        applySavedTheme();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
@@ -73,6 +86,7 @@ public class HomeActivity extends BaseActivity {
         tvTotalExpense = findViewById(R.id.tvTotalExpense);
         tvHabitsWarning = findViewById(R.id.tvHabitsWarning);
         btnProfile = findViewById(R.id.btnProfile);
+        btnProfile.setImageResource(R.drawable.ic_settings_24);
         btnAnalytics = findViewById(R.id.btnAnalytics);
 
         btnNavRecurring = findViewById(R.id.btnNavRecurring);
@@ -90,6 +104,9 @@ public class HomeActivity extends BaseActivity {
         btnSaveQuickIncome = findViewById(R.id.btnSaveQuickIncome);
         cardBudgetWarning = findViewById(R.id.cardBudgetWarning);
         tvBudgetWarningMessage = findViewById(R.id.tvBudgetWarningMessage);
+        btnDismissBudgetWarning = findViewById(R.id.btnDismissBudgetWarning);
+
+        etQuickIncomeAmount.addTextChangedListener(new com.expensetracker_manager.utils.NumberTextWatcher(etQuickIncomeAmount));
 
         btnViewAllTransactions = findViewById(R.id.btnViewAllTransactions);
         btnBottomNavAdd = findViewById(R.id.btnBottomNavAdd);
@@ -100,6 +117,10 @@ public class HomeActivity extends BaseActivity {
 
         TokenManager tokenManager = TokenManager.getInstance(this);
         tvDashboardUserName.setText(tokenManager.getUserName().isEmpty() ? "Người dùng" : tokenManager.getUserName());
+
+        cardAiInsights = findViewById(R.id.cardAiInsights);
+        tvAiOverallStatus = findViewById(R.id.tvAiOverallStatus);
+        layoutAiInsightsContainer = findViewById(R.id.layoutAiInsightsContainer);
 
         setupListeners();
     }
@@ -112,7 +133,15 @@ public class HomeActivity extends BaseActivity {
 
     private void setupListeners() {
         btnProfile.setOnClickListener(v -> startActivity(new Intent(HomeActivity.this, SettingsActivity.class)));
-        btnAnalytics.setOnClickListener(v -> startActivity(new Intent(HomeActivity.this, AnalyticsActivity.class)));
+        btnAnalytics.setOnClickListener(v -> {
+            Intent intent = new Intent(HomeActivity.this, AnalyticsActivity.class);
+            intent.putExtra("selectedMonth", selectedMonth);
+            intent.putExtra("selectedYear", selectedYear);
+            startActivity(intent);
+        });
+        if (btnDismissBudgetWarning != null) {
+            btnDismissBudgetWarning.setOnClickListener(v -> cardBudgetWarning.setVisibility(View.GONE));
+        }
 
 
         btnNavRecurring.setOnClickListener(v -> startActivity(new Intent(HomeActivity.this, RecurringActivity.class)));
@@ -134,6 +163,12 @@ public class HomeActivity extends BaseActivity {
         btnBottomNavBudgets.setOnClickListener(v -> startActivity(new Intent(HomeActivity.this, BudgetsActivity.class)));
         btnBottomNavProfile.setOnClickListener(v -> startActivity(new Intent(HomeActivity.this, ProfileActivity.class)));
         btnBottomNavQr.setOnClickListener(v -> startQRScanner());
+    }
+
+    private void applySavedTheme() {
+        SharedPreferences prefs = getSharedPreferences(SETTINGS_PREFS, MODE_PRIVATE);
+        int mode = prefs.getInt(KEY_THEME_MODE, AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+        AppCompatDelegate.setDefaultNightMode(mode);
     }
 
     private void startQRScanner() {
@@ -172,7 +207,7 @@ public class HomeActivity extends BaseActivity {
     }
 
     private void saveQuickIncome() {
-        String amountStr = etQuickIncomeAmount.getText().toString().trim();
+        String amountStr = etQuickIncomeAmount.getText().toString().trim().replace(".", "");
         if (amountStr.isEmpty()) {
             Toast.makeText(this, "Vui lòng nhập số tiền", Toast.LENGTH_SHORT).show();
             return;
@@ -191,12 +226,12 @@ public class HomeActivity extends BaseActivity {
 
         btnSaveQuickIncome.setEnabled(false);
 
-        // Fetch categories to find the "Thu nhập" category
+        // Lấy danh mục để tìm danh mục "Thu nhập"
         RetrofitClient.getInstance().getCategoryApi().getAll()
                 .enqueue(new Callback<List<com.expensetracker_manager.model.response.CategoryResponse>>() {
                     @Override
                     public void onResponse(Call<List<com.expensetracker_manager.model.response.CategoryResponse>> call,
-                            Response<List<com.expensetracker_manager.model.response.CategoryResponse>> response) {
+                                           Response<List<com.expensetracker_manager.model.response.CategoryResponse>> response) {
                         long categoryId = -1;
                         if (response.isSuccessful() && response.body() != null) {
                             for (com.expensetracker_manager.model.response.CategoryResponse cat : response.body()) {
@@ -207,7 +242,7 @@ public class HomeActivity extends BaseActivity {
                             }
                         }
 
-                        // If not found online, fallback to 1
+                        // Nếu không tìm thấy trực tuyến, mặc định là 1
                         if (categoryId == -1) {
                             categoryId = 1;
                         }
@@ -224,7 +259,7 @@ public class HomeActivity extends BaseActivity {
                                 .enqueue(new Callback<com.expensetracker_manager.model.response.TransactionResponse>() {
                                     @Override
                                     public void onResponse(Call<com.expensetracker_manager.model.response.TransactionResponse> call,
-                                            Response<com.expensetracker_manager.model.response.TransactionResponse> response) {
+                                                           Response<com.expensetracker_manager.model.response.TransactionResponse> response) {
                                         btnSaveQuickIncome.setEnabled(true);
                                         if (response.isSuccessful()) {
                                             Toast.makeText(HomeActivity.this, "Đã bổ sung thu nhập thành công!", Toast.LENGTH_SHORT).show();
@@ -317,24 +352,33 @@ public class HomeActivity extends BaseActivity {
         if (userId == -1L) return;
 
         if (!com.expensetracker_manager.utils.NetworkUtils.isNetworkAvailable(this)) {
-            // Load from offline cache
+            // Tải từ bộ nhớ đệm cục bộ
             com.expensetracker_manager.utils.OfflineCacheManager cache = com.expensetracker_manager.utils.OfflineCacheManager.getInstance(this);
             ReportSummaryResponse summary = cache.getCachedReportSummary();
             double net = summary.getCurrentBalance() != 0 ? summary.getCurrentBalance() : (summary.getTotalIncome() - summary.getTotalExpense());
             tvNetBalance.setText(formatVND(net));
             tvTotalIncome.setText(formatVND(summary.getTotalIncome()));
             tvTotalExpense.setText(formatVND(summary.getTotalExpense()));
-            tvHabitsWarning.setText("Offline Mode: Đang hiển thị dữ liệu lưu tạm.");
+            updateOfflineWarningText();
 
-            transactionsList = filterTransactionsBySelectedMonth(cache.getCachedTransactions());
+            transactionsList = new java.util.ArrayList<>();
+            String monthPrefix = String.format(Locale.US, "%04d-%02d", selectedYear, selectedMonth);
+            for (TransactionResponse tr : cache.getCachedTransactions()) {
+                if (tr.getTransactionDate() != null && tr.getTransactionDate().startsWith(monthPrefix)) {
+                    transactionsList.add(tr);
+                }
+            }
             renderTransactions();
 
             budgetList = cache.getCachedBudgets();
             evaluateBudgetStatus();
+
+            // Kích hoạt tính toán lại phân tích tài chính
+            com.expensetracker_manager.service.FinancialAnalysisEngine.analyze(this);
             return;
         }
 
-        // Fetch balance report
+        // Lấy báo cáo số dư
         Calendar cal = Calendar.getInstance();
         cal.set(Calendar.YEAR, selectedYear);
         cal.set(Calendar.MONTH, selectedMonth - 1);
@@ -359,14 +403,7 @@ public class HomeActivity extends BaseActivity {
 
                             com.expensetracker_manager.utils.OfflineCacheManager.getInstance(HomeActivity.this).cacheReportSummary(summary);
 
-                            if (summary.getTotalIncome() > 0) {
-                                double ratio = (summary.getTotalExpense() / summary.getTotalIncome()) * 100;
-                                if (ratio > 80) {
-                                    tvHabitsWarning.setText(String.format("Cảnh báo: Bạn đã tiêu xài đến %.1f%% thu nhập của tháng này!", ratio));
-                                } else {
-                                    tvHabitsWarning.setText(String.format("Tốt: Chi tiêu của bạn đang ở mức an toàn (%.1f%% thu nhập).", ratio));
-                                }
-                            }
+                            updateSpendingWarning(summary);
                         }
                     }
 
@@ -378,38 +415,42 @@ public class HomeActivity extends BaseActivity {
                         tvNetBalance.setText(formatVND(net));
                         tvTotalIncome.setText(formatVND(summary.getTotalIncome()));
                         tvTotalExpense.setText(formatVND(summary.getTotalExpense()));
-                        tvHabitsWarning.setText("Offline Mode: Đang hiển thị dữ liệu lưu tạm.");
+                        updateOfflineWarningText();
                     }
                 });
 
-        RetrofitClient.getInstance().getTransactionApi().getByUser(userId)
+        RetrofitClient.getInstance().getTransactionApi().getByUser(userId, selectedMonth, selectedYear)
                 .enqueue(new Callback<List<TransactionResponse>>() {
                     @Override
                     public void onResponse(Call<List<TransactionResponse>> call, Response<List<TransactionResponse>> response) {
                         if (response.isSuccessful() && response.body() != null) {
-                            List<TransactionResponse> allTransactions = response.body();
-                            com.expensetracker_manager.utils.OfflineCacheManager.getInstance(HomeActivity.this).cacheTransactions(allTransactions);
-                            transactionsList = filterTransactionsBySelectedMonth(allTransactions);
+                            transactionsList = response.body();
+                            com.expensetracker_manager.utils.OfflineCacheManager.getInstance(HomeActivity.this).cacheTransactions(transactionsList);
 
                             renderTransactions();
                             checkBudgets();
+                            loadAiInsights();
                         }
                     }
 
                     @Override
                     public void onFailure(Call<List<TransactionResponse>> call, Throwable t) {
-                        transactionsList = filterTransactionsBySelectedMonth(
-                                com.expensetracker_manager.utils.OfflineCacheManager.getInstance(HomeActivity.this).getCachedTransactions()
-                        );
+                        transactionsList = com.expensetracker_manager.utils.OfflineCacheManager.getInstance(HomeActivity.this).getCachedTransactions();
                         renderTransactions();
                         checkBudgets();
+                        loadAiInsights();
                     }
                 });
     }
 
     private void checkBudgets() {
         if (!com.expensetracker_manager.utils.NetworkUtils.isNetworkAvailable(this)) {
-            budgetList = com.expensetracker_manager.utils.OfflineCacheManager.getInstance(this).getCachedBudgets();
+            budgetList = new java.util.ArrayList<>();
+            for (com.expensetracker_manager.model.response.BudgetResponse b : com.expensetracker_manager.utils.OfflineCacheManager.getInstance(this).getCachedBudgets()) {
+                if (b.getMonth() == selectedMonth && b.getYear() == selectedYear) {
+                    budgetList.add(b);
+                }
+            }
             evaluateBudgetStatus();
             return;
         }
@@ -417,11 +458,11 @@ public class HomeActivity extends BaseActivity {
         Long userId = TokenManager.getInstance(this).getUserId();
         if (userId == -1L) return;
 
-        RetrofitClient.getInstance().getBudgetApi().getByUser(userId)
+        RetrofitClient.getInstance().getBudgetApi().getByUser(userId, selectedMonth, selectedYear)
                 .enqueue(new Callback<List<com.expensetracker_manager.model.response.BudgetResponse>>() {
                     @Override
                     public void onResponse(Call<List<com.expensetracker_manager.model.response.BudgetResponse>> call,
-                            Response<List<com.expensetracker_manager.model.response.BudgetResponse>> response) {
+                                           Response<List<com.expensetracker_manager.model.response.BudgetResponse>> response) {
                         if (response.isSuccessful() && response.body() != null) {
                             budgetList = response.body();
                             com.expensetracker_manager.utils.OfflineCacheManager.getInstance(HomeActivity.this).cacheBudgets(budgetList);
@@ -431,92 +472,87 @@ public class HomeActivity extends BaseActivity {
 
                     @Override
                     public void onFailure(Call<List<com.expensetracker_manager.model.response.BudgetResponse>> call, Throwable t) {
-                        budgetList = com.expensetracker_manager.utils.OfflineCacheManager.getInstance(HomeActivity.this).getCachedBudgets();
+                        budgetList = new java.util.ArrayList<>();
+                        for (com.expensetracker_manager.model.response.BudgetResponse b : com.expensetracker_manager.utils.OfflineCacheManager.getInstance(HomeActivity.this).getCachedBudgets()) {
+                            if (b.getMonth() == selectedMonth && b.getYear() == selectedYear) {
+                                budgetList.add(b);
+                            }
+                        }
                         evaluateBudgetStatus();
                     }
                 });
     }
 
     private void evaluateBudgetStatus() {
-        if (budgetList.isEmpty() || transactionsList.isEmpty()) {
+        if (!isBudgetAlertEnabled() && cardBudgetWarning != null) {
             cardBudgetWarning.setVisibility(View.GONE);
+        }
+    }
+
+    private boolean isBudgetAlertEnabled() {
+        SharedPreferences prefs = getSharedPreferences(SETTINGS_PREFS, MODE_PRIVATE);
+        return prefs.getBoolean(KEY_BUDGET_ALERT, true);
+    }
+
+    private void updateOfflineWarningText() {
+        if (!isBudgetAlertEnabled()) {
+            tvHabitsWarning.setText("Cảnh báo ngân sách đang tắt trong Cài đặt.");
+            if (cardBudgetWarning != null) {
+                cardBudgetWarning.setVisibility(View.GONE);
+            }
+        } else {
+            tvHabitsWarning.setText("Offline Mode: Đang hiển thị dữ liệu lưu tạm.");
+        }
+    }
+
+    private void updateSpendingWarning(ReportSummaryResponse summary) {
+        if (!isBudgetAlertEnabled()) {
+            tvHabitsWarning.setText("Cảnh báo ngân sách đang tắt trong Cài đặt.");
+            if (cardBudgetWarning != null) {
+                cardBudgetWarning.setVisibility(View.GONE);
+            }
             return;
         }
 
-        // Filter for current month's expenses only
-        String curYearMonthPrefix = String.format(Locale.US, "%04d-%02d", selectedYear, selectedMonth);
-
-        java.util.Map<String, Double> expensesByCategory = new java.util.HashMap<>();
-        for (TransactionResponse tr : transactionsList) {
-            if ("EXPENSE".equalsIgnoreCase(tr.getType()) && tr.getTransactionDate() != null && tr.getTransactionDate().startsWith(curYearMonthPrefix)) {
-                String catName = tr.getCategoryName();
-                if (catName == null || catName.isEmpty()) {
-                    catName = "Khác";
-                }
-                double amt = tr.getAmount();
-                expensesByCategory.put(catName, expensesByCategory.getOrDefault(catName, 0.0) + amt);
+        if (summary == null || summary.getBudgetWarningMessage() == null) {
+            tvHabitsWarning.setText("Chưa đủ dữ liệu để đánh giá ngân sách.");
+            if (cardBudgetWarning != null) {
+                cardBudgetWarning.setVisibility(View.GONE);
             }
+            return;
         }
 
-        StringBuilder warningBuilder = new StringBuilder();
-        for (com.expensetracker_manager.model.response.BudgetResponse b : budgetList) {
-            String catName = b.getCategoryName();
-            if (catName == null) continue;
-            double spent = expensesByCategory.getOrDefault(catName, 0.0);
-            double limit = b.getAmount();
-            if (spent > limit) {
-                double exceeded = spent - limit;
-                if (warningBuilder.length() > 0) {
-                    warningBuilder.append("\n");
-                }
-                warningBuilder.append("Cảnh báo: Danh mục ")
-                        .append(catName)
-                        .append(" vượt hạn mức ")
-                        .append(formatVND(exceeded))
-                        .append(" (Đã tiêu: ")
-                        .append(formatVND(spent))
-                        .append(" / Hạn mức: ")
-                        .append(formatVND(limit))
-                        .append(")");
-            }
-        }
+        String message = summary.getBudgetWarningMessage();
+        tvHabitsWarning.setText(message);
 
-        if (warningBuilder.length() > 0) {
-            tvBudgetWarningMessage.setText(warningBuilder.toString());
-            cardBudgetWarning.setVisibility(View.VISIBLE);
+        if (message.startsWith("Cảnh báo")) {
+            if (cardBudgetWarning != null && tvBudgetWarningMessage != null) {
+                tvBudgetWarningMessage.setText(message + " Hãy kiểm tra lại ngân sách.");
+                cardBudgetWarning.setVisibility(View.VISIBLE);
+            }
         } else {
-            cardBudgetWarning.setVisibility(View.GONE);
-        }
-    }
-    private List<TransactionResponse> filterTransactionsBySelectedMonth(List<TransactionResponse> source) {
-        List<TransactionResponse> result = new ArrayList<>();
-
-        if (source == null) {
-            return result;
-        }
-
-        String monthPrefix = String.format(Locale.US, "%04d-%02d", selectedYear, selectedMonth);
-
-        for (TransactionResponse tr : source) {
-            if (tr.getTransactionDate() != null && tr.getTransactionDate().startsWith(monthPrefix)) {
-                result.add(tr);
+            if (cardBudgetWarning != null) {
+                cardBudgetWarning.setVisibility(View.GONE);
             }
         }
-
-        return result;
     }
+
 
     private void renderTransactions() {
         layoutTransactionsContainer.removeAllViews();
 
-        int maxItems = Math.min(transactionsList.size(), 3);
+        List<TransactionResponse> sortedList = new ArrayList<>(transactionsList);
+        // Sắp xếp theo ID giảm dần để hiển thị các giao dịch được lưu gần đây nhất lên đầu
+        sortedList.sort((t1, t2) -> Long.compare(t2.getId(), t1.getId()));
+
+        int maxItems = Math.min(sortedList.size(), 3);
 
         for (int i = 0; i < maxItems; i++) {
-            TransactionResponse tr = transactionsList.get(i);
+            TransactionResponse tr = sortedList.get(i);
             LinearLayout item = new LinearLayout(this);
             item.setOrientation(LinearLayout.HORIZONTAL);
             item.setPadding(12, 12, 12, 12);
-            item.setBackgroundColor(0xFF1F1F35);
+            item.setBackgroundColor(color(R.color.app_surface));
 
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT,
@@ -535,13 +571,13 @@ public class HomeActivity extends BaseActivity {
 
             TextView tvDesc = new TextView(this);
             tvDesc.setText(tr.getDescription());
-            tvDesc.setTextColor(0xFFFFFFFF);
+            tvDesc.setTextColor(color(R.color.app_text_primary));
             tvDesc.setTextSize(14);
             leftBox.addView(tvDesc);
 
             TextView tvDate = new TextView(this);
             tvDate.setText(formatTransactionDate(tr.getTransactionDate()));
-            tvDate.setTextColor(0xFFAAAAAA);
+            tvDate.setTextColor(color(R.color.app_text_secondary));
             tvDate.setTextSize(12);
             leftBox.addView(tvDate);
 
@@ -550,7 +586,7 @@ public class HomeActivity extends BaseActivity {
             TextView tvValue = new TextView(this);
             boolean isIncome = "INCOME".equalsIgnoreCase(tr.getType());
             tvValue.setText((isIncome ? "+" : "-") + formatVND(tr.getAmount()));
-            tvValue.setTextColor(isIncome ? 0xFF00FF66 : 0xFFFF3366);
+            tvValue.setTextColor(isIncome ? color(R.color.app_accent_income) : color(R.color.app_accent_expense));
             tvValue.setTypeface(null, android.graphics.Typeface.BOLD);
             item.addView(tvValue);
 
@@ -584,7 +620,7 @@ public class HomeActivity extends BaseActivity {
             LinearLayout item = new LinearLayout(this);
             item.setOrientation(LinearLayout.HORIZONTAL);
             item.setPadding(12, 12, 12, 12);
-            item.setBackgroundColor(0xFF1F1F35);
+            item.setBackgroundColor(color(R.color.app_surface));
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
             );
@@ -593,13 +629,13 @@ public class HomeActivity extends BaseActivity {
 
             TextView tvDesc = new TextView(this);
             tvDesc.setText(mock[0] + " (Offline)");
-            tvDesc.setTextColor(0xFFFFFFFF);
+            tvDesc.setTextColor(color(R.color.app_text_primary));
             tvDesc.setLayoutParams(new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
             item.addView(tvDesc);
 
             TextView tvValue = new TextView(this);
             tvValue.setText(mock[1]);
-            tvValue.setTextColor("INCOME".equals(mock[2]) ? 0xFF00FF66 : 0xFFFF3366);
+            tvValue.setTextColor("INCOME".equals(mock[2]) ? color(R.color.app_accent_income) : color(R.color.app_accent_expense));
             item.addView(tvValue);
 
             layoutTransactionsContainer.addView(item);
@@ -690,61 +726,23 @@ public class HomeActivity extends BaseActivity {
             loadDashboardData();
             return;
         }
-
-        RetrofitClient.getInstance().getCategoryApi().getAll()
-                .enqueue(new Callback<List<com.expensetracker_manager.model.response.CategoryResponse>>() {
+        com.expensetracker_manager.model.request.SyncRequest request = new com.expensetracker_manager.model.request.SyncRequest(userId, "0123456789", "123456");
+        RetrofitClient.getInstance().getTransactionApi().syncMomo(request)
+                .enqueue(new Callback<List<TransactionResponse>>() {
                     @Override
-                    public void onResponse(Call<List<com.expensetracker_manager.model.response.CategoryResponse>> call,
-                            Response<List<com.expensetracker_manager.model.response.CategoryResponse>> response) {
-                        long incomeCatId = 1;
-                        long expenseCatId = 1;
-                        if (response.isSuccessful() && response.body() != null) {
-                            for (com.expensetracker_manager.model.response.CategoryResponse cat : response.body()) {
-                                if ("Thu nhập".equalsIgnoreCase(cat.getName())) {
-                                    incomeCatId = cat.getId();
-                                } else if ("Khác".equalsIgnoreCase(cat.getName())) {
-                                    expenseCatId = cat.getId();
-                                }
-                            }
+                    public void onResponse(Call<List<TransactionResponse>> call, Response<List<TransactionResponse>> response) {
+                        if (response.isSuccessful()) {
+                            Toast.makeText(HomeActivity.this, "Đồng bộ Ví MoMo thành công! Đã thêm 2 giao dịch.", Toast.LENGTH_LONG).show();
+                        } else {
+                            Toast.makeText(HomeActivity.this, "Đồng bộ thất bại.", Toast.LENGTH_SHORT).show();
                         }
-
-                        com.expensetracker_manager.model.request.TransactionRequest req1 = new com.expensetracker_manager.model.request.TransactionRequest(
-                                500000, "Hoàn tiền từ MoMo", java.time.LocalDateTime.now().toString(), "INCOME", userId, incomeCatId
-                        );
-
-                        com.expensetracker_manager.model.request.TransactionRequest req2 = new com.expensetracker_manager.model.request.TransactionRequest(
-                                120000, "Thanh toán dịch vụ MoMo", java.time.LocalDateTime.now().toString(), "EXPENSE", userId, expenseCatId
-                        );
-
-                        RetrofitClient.getInstance().getTransactionApi().create(req1)
-                                .enqueue(new Callback<TransactionResponse>() {
-                                    @Override
-                                    public void onResponse(Call<TransactionResponse> call, Response<TransactionResponse> response) {
-                                        RetrofitClient.getInstance().getTransactionApi().create(req2)
-                                                .enqueue(new Callback<TransactionResponse>() {
-                                                    @Override
-                                                    public void onResponse(Call<TransactionResponse> call, Response<TransactionResponse> response) {
-                                                        Toast.makeText(HomeActivity.this, "Đồng bộ Ví MoMo thành công! Đã thêm 2 giao dịch.", Toast.LENGTH_LONG).show();
-                                                        loadDashboardData();
-                                                    }
-
-                                                    @Override
-                                                    public void onFailure(Call<TransactionResponse> call, Throwable t) {
-                                                        loadDashboardData();
-                                                    }
-                                                });
-                                    }
-
-                                    @Override
-                                    public void onFailure(Call<TransactionResponse> call, Throwable t) {
-                                        loadDashboardData();
-                                    }
-                                });
+                        loadDashboardData();
                     }
 
                     @Override
-                    public void onFailure(Call<List<com.expensetracker_manager.model.response.CategoryResponse>> call, Throwable t) {
-                        Toast.makeText(HomeActivity.this, "Không thể lấy danh mục để lưu giao dịch MoMo.", Toast.LENGTH_SHORT).show();
+                    public void onFailure(Call<List<TransactionResponse>> call, Throwable t) {
+                        Toast.makeText(HomeActivity.this, "Lỗi kết nối.", Toast.LENGTH_SHORT).show();
+                        loadDashboardData();
                     }
                 });
     }
@@ -802,4 +800,112 @@ public class HomeActivity extends BaseActivity {
             Toast.makeText(this, "Lỗi xuất file: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
+
+    private void loadAiInsights() {
+        Long userId = TokenManager.getInstance(this).getUserId();
+        if (userId == -1L) return;
+
+        if (!com.expensetracker_manager.utils.NetworkUtils.isNetworkAvailable(this)) {
+            tvAiOverallStatus.setText("OFFLINE");
+            tvAiOverallStatus.setTextColor(color(R.color.app_text_secondary));
+            layoutAiInsightsContainer.removeAllViews();
+            TextView tvOffline = new TextView(this);
+            tvOffline.setText("Vui lòng kết nối mạng để tải AI Insights.");
+            tvOffline.setTextColor(color(R.color.app_text_secondary));
+            tvOffline.setTextSize(12);
+            layoutAiInsightsContainer.addView(tvOffline);
+            return;
+        }
+
+        tvAiOverallStatus.setText("ANALYZING...");
+        tvAiOverallStatus.setTextColor(color(R.color.app_accent_cyan));
+
+        RetrofitClient.getInstance().getAnalyticsApi().getBudgetAnalysis(userId, selectedMonth, selectedYear)
+                .enqueue(new Callback<com.expensetracker_manager.model.response.AiAnalysisResponse>() {
+                    @Override
+                    public void onResponse(Call<com.expensetracker_manager.model.response.AiAnalysisResponse> call,
+                                           Response<com.expensetracker_manager.model.response.AiAnalysisResponse> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            com.expensetracker_manager.model.response.AiAnalysisResponse analysis = response.body();
+                            renderAiInsights(analysis);
+                        } else {
+                            tvAiOverallStatus.setText("ERROR");
+                            tvAiOverallStatus.setTextColor(color(R.color.app_accent_expense));
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<com.expensetracker_manager.model.response.AiAnalysisResponse> call, Throwable t) {
+                        tvAiOverallStatus.setText("FAILED");
+                        tvAiOverallStatus.setTextColor(color(R.color.app_accent_expense));
+                    }
+                });
+    }
+
+    private void renderAiInsights(com.expensetracker_manager.model.response.AiAnalysisResponse analysis) {
+        String status = analysis.getOverallStatus();
+        if (status == null) status = "LOW_RISK";
+
+        switch (status) {
+            case "HIGH_RISK":
+                tvAiOverallStatus.setText("HIGH RISK ⚠️");
+                tvAiOverallStatus.setTextColor(color(R.color.app_accent_expense));
+                break;
+            case "MEDIUM_RISK":
+                tvAiOverallStatus.setText("MEDIUM RISK ⚠️");
+                tvAiOverallStatus.setTextColor(color(R.color.app_accent_warning));
+                break;
+            default:
+                tvAiOverallStatus.setText("LOW RISK");
+                tvAiOverallStatus.setTextColor(color(R.color.app_accent_income));
+                break;
+        }
+
+        layoutAiInsightsContainer.removeAllViews();
+        List<com.expensetracker_manager.model.response.AiAnalysisResponse.Insight> insights = analysis.getInsights();
+        if (insights == null || insights.isEmpty()) {
+            TextView tvNoInsights = new TextView(this);
+            tvNoInsights.setText("Ngân sách của bạn hoạt động rất tốt, chưa cần phân tích thêm!");
+            tvNoInsights.setTextColor(color(R.color.app_text_primary));
+            tvNoInsights.setTextSize(13);
+            layoutAiInsightsContainer.addView(tvNoInsights);
+            return;
+        }
+
+        for (com.expensetracker_manager.model.response.AiAnalysisResponse.Insight insight : insights) {
+            LinearLayout item = new LinearLayout(this);
+            item.setOrientation(LinearLayout.VERTICAL);
+            item.setPadding(8, 8, 8, 8);
+
+            // Nền dựa trên mức độ rủi ro
+            int bg = color(R.color.app_risk_low_surface); // rủi ro thấp
+            if ("HIGH".equalsIgnoreCase(insight.getRisk())) {
+                bg = color(R.color.app_risk_high_surface); // rủi ro cao
+            } else if ("MEDIUM".equalsIgnoreCase(insight.getRisk())) {
+                bg = color(R.color.app_risk_medium_surface); // rủi ro trung bình
+            }
+
+            item.setBackgroundColor(bg);
+
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+            );
+            params.setMargins(0, 0, 0, 8);
+            item.setLayoutParams(params);
+
+            TextView tvMessage = new TextView(this);
+            tvMessage.setText(insight.getMessage());
+            tvMessage.setTextColor(color(R.color.app_text_primary));
+            tvMessage.setTextSize(12);
+            item.addView(tvMessage);
+
+            layoutAiInsightsContainer.addView(item);
+        }
+    }
+
+    private int color(int colorResId) {
+        return ContextCompat.getColor(this, colorResId);
+    }
+
 }

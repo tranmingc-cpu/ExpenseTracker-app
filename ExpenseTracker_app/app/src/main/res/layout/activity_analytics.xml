@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#12121E">
+    android:background="@color/app_background">
 
     <!-- Custom Top Action Bar -->
 
@@ -13,7 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:layout_marginTop="24dp"
-        android:background="#1F1F35"
+        android:background="@color/app_surface"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:paddingStart="16dp"
@@ -21,24 +21,13 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:layout_editor_absoluteX="0dp">
 
-        <ImageView
-            android:id="@+id/btnBack"
-            android:layout_width="24dp"
-            android:layout_height="27dp"
-            android:background="?android:attr/selectableItemBackgroundBorderless"
-            android:clickable="true"
-            android:focusable="true"
-            android:padding="4dp"
-            android:src="@android:drawable/ic_media_previous"
-            app:tint="#FFFFFF" />
-
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:text="Báo Cáo Phân Tích"
-            android:textColor="#FFFFFF"
-            android:textSize="18sp"
+            android:textColor="@color/app_text_primary"
+            android:textSize="23sp"
             android:textStyle="bold" />
 
     </LinearLayout>

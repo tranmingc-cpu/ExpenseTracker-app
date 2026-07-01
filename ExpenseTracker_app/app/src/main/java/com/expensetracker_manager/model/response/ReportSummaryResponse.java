@@ -16,6 +16,9 @@ public class ReportSummaryResponse {
     @SerializedName("currentBalance")
     private double currentBalance;
 
+    @SerializedName("budgetWarningMessage")
+    private String budgetWarningMessage;
+
     public ReportSummaryResponse() {}
 
     public double getTotalIncome() { return totalIncome; }
@@ -29,4 +32,7 @@ public class ReportSummaryResponse {
 
     public double getCurrentBalance() { return currentBalance; }
     public void setCurrentBalance(double currentBalance) { this.currentBalance = currentBalance; }
+
+    public String getBudgetWarningMessage() { return budgetWarningMessage; }
+    public void setBudgetWarningMessage(String budgetWarningMessage) { this.budgetWarningMessage = budgetWarningMessage; }
 }

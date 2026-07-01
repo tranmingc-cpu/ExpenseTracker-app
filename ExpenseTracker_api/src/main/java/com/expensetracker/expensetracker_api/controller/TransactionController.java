@@ -32,9 +32,11 @@ public class TransactionController {
 
     @GetMapping("/user/{userId}")
     public List<TransactionResponse> getByUser(
-            @PathVariable Long userId) {
+            @PathVariable Long userId,
+            @RequestParam(required = false) Integer month,
+            @RequestParam(required = false) Integer year) {
 
-        return transactionService.getByUser(userId);
+        return transactionService.getByUser(userId, month, year);
     }
 
     @PutMapping("/{id}")
