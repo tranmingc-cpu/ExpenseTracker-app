@@ -1,15 +1,18 @@
 package com.example.expensetracker_app;
 
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
 
@@ -19,6 +22,7 @@ import com.expensetracker_manager.utils.NetworkUtils;
 import com.expensetracker_manager.utils.TokenManager;
 
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
@@ -31,6 +35,7 @@ public class NotificationsActivity extends BaseActivity {
     private TextView tvNotificationSummary;
     private TextView tvEmptyNotifications;
     private ProgressBar progressBarNotifications;
+    private List<RecurringTransactionResponse> currentRecurringItems = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,15 +95,26 @@ public class NotificationsActivity extends BaseActivity {
     }
 
     private void renderNotifications(List<RecurringTransactionResponse> recurringItems) {
+        currentRecurringItems = recurringItems == null
+                ? new ArrayList<>()
+                : new ArrayList<>(recurringItems);
+
         List<RecurringNotificationManager.AlertItem> alerts =
-                RecurringNotificationManager.getActiveAlerts(recurringItems);
+                RecurringNotificationManager.getVisibleAlerts(this, currentRecurringItems);
+        int unreadCount = RecurringNotificationManager.getUnreadAlertCount(this, currentRecurringItems);
 
         layoutNotificationContainer.removeAllViews();
         boolean empty = alerts.isEmpty();
         tvEmptyNotifications.setVisibility(empty ? View.VISIBLE : View.GONE);
-        tvNotificationSummary.setText(empty
-                ? "Hiện chưa có khoản nào đến hạn trong 3 ngày tới."
-                : "Bạn có " + alerts.size() + " khoản cần chú ý.");
+
+        if (empty) {
+            tvNotificationSummary.setText("Hiện chưa có khoản nào đến hạn trong 3 ngày tới.");
+        } else if (unreadCount == 0) {
+            tvNotificationSummary.setText("Bạn đã đọc tất cả " + alerts.size() + " thông báo.");
+        } else {
+            tvNotificationSummary.setText(unreadCount + " chưa đọc • "
+                    + alerts.size() + " thông báo đang hiển thị");
+        }
 
         for (RecurringNotificationManager.AlertItem alert : alerts) {
             layoutNotificationContainer.addView(createNotificationCard(alert));
@@ -106,10 +122,12 @@ public class NotificationsActivity extends BaseActivity {
     }
 
     private View createNotificationCard(RecurringNotificationManager.AlertItem alert) {
+        boolean isRead = RecurringNotificationManager.isRead(this, alert);
+
         CardView card = new CardView(this);
         card.setRadius(dp(14));
-        card.setCardElevation(dp(2));
-        card.setCardBackgroundColor(color(R.color.app_surface));
+        card.setCardElevation(isRead ? dp(1) : dp(2));
+        card.setCardBackgroundColor(color(isRead ? R.color.app_surface_alt : R.color.app_surface));
         card.setUseCompatPadding(false);
         card.setClickable(true);
         card.setFocusable(true);
@@ -124,7 +142,7 @@ public class NotificationsActivity extends BaseActivity {
 
         LinearLayout body = new LinearLayout(this);
         body.setOrientation(LinearLayout.VERTICAL);
-        body.setPadding(dp(14), dp(12), dp(14), dp(12));
+        body.setPadding(dp(14), dp(12), dp(14), dp(10));
 
         LinearLayout titleRow = new LinearLayout(this);
         titleRow.setOrientation(LinearLayout.HORIZONTAL);
@@ -135,6 +153,7 @@ public class NotificationsActivity extends BaseActivity {
         title.setTextColor(color(R.color.app_text_primary));
         title.setTextSize(15);
         title.setTypeface(null, android.graphics.Typeface.BOLD);
+        title.setAlpha(isRead ? 0.72f : 1f);
         title.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
         titleRow.addView(title);
 
@@ -162,19 +181,75 @@ public class NotificationsActivity extends BaseActivity {
         date.setPadding(0, dp(3), 0, 0);
 
         TextView action = new TextView(this);
-        action.setText("Nhấn để mở thanh toán định kỳ");
+        action.setText("Nhấn vào thẻ để mở thanh toán định kỳ");
         action.setTextColor(color(R.color.app_accent_income));
         action.setTextSize(12);
         action.setTypeface(null, android.graphics.Typeface.BOLD);
         action.setPadding(0, dp(8), 0, 0);
 
+        LinearLayout buttonRow = new LinearLayout(this);
+        buttonRow.setOrientation(LinearLayout.HORIZONTAL);
+        buttonRow.setPadding(0, dp(10), 0, 0);
+
+        Button btnRead = createActionButton(
+                isRead ? "Đã đọc" : "Đánh dấu đã đọc",
+                R.color.app_accent_income
+        );
+        btnRead.setEnabled(!isRead);
+        btnRead.setAlpha(isRead ? 0.5f : 1f);
+        btnRead.setOnClickListener(v -> {
+            RecurringNotificationManager.markAsRead(this, alert);
+            renderNotifications(currentRecurringItems);
+        });
+
+        Button btnDelete = createActionButton("Xóa", R.color.app_accent_expense);
+        LinearLayout.LayoutParams deleteParams = (LinearLayout.LayoutParams) btnDelete.getLayoutParams();
+        deleteParams.setMargins(dp(10), 0, 0, 0);
+        btnDelete.setLayoutParams(deleteParams);
+        btnDelete.setOnClickListener(v -> confirmDeleteNotification(alert));
+
+        buttonRow.addView(btnRead);
+        buttonRow.addView(btnDelete);
+
         body.addView(titleRow);
         body.addView(amount);
         body.addView(date);
         body.addView(action);
+        body.addView(buttonRow);
         card.addView(body);
-        card.setOnClickListener(v -> openRecurringPayments());
+
+        card.setOnClickListener(v -> {
+            RecurringNotificationManager.markAsRead(this, alert);
+            openRecurringPayments();
+        });
         return card;
+    }
+
+    private Button createActionButton(String text, int backgroundColorRes) {
+        Button button = new Button(this);
+        button.setText(text);
+        button.setTextSize(11);
+        button.setAllCaps(false);
+        button.setTextColor(color(R.color.app_button_text));
+        button.setBackgroundTintList(ColorStateList.valueOf(color(backgroundColorRes)));
+        button.setMinWidth(0);
+        button.setMinHeight(0);
+        button.setPadding(dp(8), 0, dp(8), 0);
+        button.setLayoutParams(new LinearLayout.LayoutParams(0, dp(38), 1f));
+        return button;
+    }
+
+    private void confirmDeleteNotification(RecurringNotificationManager.AlertItem alert) {
+        new AlertDialog.Builder(this)
+                .setTitle("Xóa thông báo?")
+                .setMessage("Thông báo này sẽ được ẩn. Khoản thanh toán định kỳ vẫn được giữ nguyên.")
+                .setNegativeButton("Hủy", null)
+                .setPositiveButton("Xóa", (dialog, which) -> {
+                    RecurringNotificationManager.deleteAlert(this, alert);
+                    renderNotifications(currentRecurringItems);
+                    Toast.makeText(this, "Đã xóa thông báo.", Toast.LENGTH_SHORT).show();
+                })
+                .show();
     }
 
     private void openRecurringPayments() {

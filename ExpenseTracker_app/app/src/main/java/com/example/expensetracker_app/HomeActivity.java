@@ -955,7 +955,7 @@ public class HomeActivity extends BaseActivity {
     }
 
     private void updateNotificationBadge(List<RecurringTransactionResponse> items) {
-        int count = RecurringNotificationManager.getActiveAlertCount(items);
+        int count = RecurringNotificationManager.getUnreadAlertCount(this, items);
         if (count <= 0) {
             tvNotificationBadge.setVisibility(View.GONE);
             return;

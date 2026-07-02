@@ -205,7 +205,7 @@ public class ReminderReceiver extends BroadcastReceiver {
         List<RecurringTransactionResponse> cachedItems =
                 RecurringNotificationManager.getCachedItems(context);
         List<RecurringNotificationManager.AlertItem> alerts =
-                RecurringNotificationManager.getActiveAlerts(cachedItems);
+                RecurringNotificationManager.getUnreadAlerts(context, cachedItems);
 
         if (alerts.isEmpty()) {
             return;
