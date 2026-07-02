@@ -1,8 +1,10 @@
 package com.example.expensetracker_app;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -15,9 +17,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.expensetracker_manager.model.response.ReportSummaryResponse;
+import com.expensetracker_manager.model.response.RecurringTransactionResponse;
 import com.expensetracker_manager.model.response.TransactionResponse;
 import com.expensetracker_manager.network.RetrofitClient;
 import com.expensetracker_manager.utils.TokenManager;
@@ -51,9 +55,11 @@ public class HomeActivity extends BaseActivity {
     private static final String SETTINGS_PREFS = "settings";
     private static final String KEY_BUDGET_ALERT = "budget_alert";
     private static final String KEY_THEME_MODE = "theme_mode";
+    private static final int NOTIFICATION_PERMISSION_REQUEST = 602;
 
     private TextView tvDashboardUserName, tvNetBalance, tvTotalIncome, tvTotalExpense, tvHabitsWarning, btnViewAllTransactions;
-    private ImageView btnProfile,btnAnalytics;
+    private ImageView btnProfile, btnAnalytics, btnNotifications;
+    private TextView tvNotificationBadge;
     private Button btnNavRecurring, btnNavSync, btnNavExport, btnSignOut, btnMonthFilter;
     private int selectedYear;
     private int selectedMonth;
@@ -88,6 +94,8 @@ public class HomeActivity extends BaseActivity {
         btnProfile = findViewById(R.id.btnProfile);
         btnProfile.setImageResource(R.drawable.ic_settings_24);
         btnAnalytics = findViewById(R.id.btnAnalytics);
+        btnNotifications = findViewById(R.id.btnNotifications);
+        tvNotificationBadge = findViewById(R.id.tvNotificationBadge);
 
         btnNavRecurring = findViewById(R.id.btnNavRecurring);
         btnNavSync = findViewById(R.id.btnNavSync);
@@ -122,6 +130,8 @@ public class HomeActivity extends BaseActivity {
         tvAiOverallStatus = findViewById(R.id.tvAiOverallStatus);
         layoutAiInsightsContainer = findViewById(R.id.layoutAiInsightsContainer);
 
+        ReminderReceiver.scheduleRecurringPaymentCheck(getApplicationContext());
+        requestNotificationPermissionIfNeeded();
         setupListeners();
     }
 
@@ -129,10 +139,13 @@ public class HomeActivity extends BaseActivity {
     protected void onResume() {
         super.onResume();
         loadDashboardData();
+        refreshRecurringNotificationBadge();
     }
 
     private void setupListeners() {
         btnProfile.setOnClickListener(v -> startActivity(new Intent(HomeActivity.this, SettingsActivity.class)));
+        btnNotifications.setOnClickListener(v ->
+                startActivity(new Intent(HomeActivity.this, NotificationsActivity.class)));
         btnAnalytics.setOnClickListener(v -> {
             Intent intent = new Intent(HomeActivity.this, AnalyticsActivity.class);
             intent.putExtra("selectedMonth", selectedMonth);
@@ -901,6 +914,66 @@ public class HomeActivity extends BaseActivity {
             item.addView(tvMessage);
 
             layoutAiInsightsContainer.addView(item);
+        }
+    }
+
+
+    private void refreshRecurringNotificationBadge() {
+        Long userId = TokenManager.getInstance(this).getUserId();
+        if (userId == -1L) {
+            updateNotificationBadge(RecurringNotificationManager.getCachedItems(this));
+            return;
+        }
+
+        if (!com.expensetracker_manager.utils.NetworkUtils.isNetworkAvailable(this)) {
+            updateNotificationBadge(RecurringNotificationManager.getCachedItems(this));
+            return;
+        }
+
+        RetrofitClient.getInstance().getRecurringTransactionApi().getByUser(userId)
+                .enqueue(new Callback<List<RecurringTransactionResponse>>() {
+                    @Override
+                    public void onResponse(Call<List<RecurringTransactionResponse>> call,
+                                           Response<List<RecurringTransactionResponse>> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            RecurringNotificationManager.saveItems(HomeActivity.this, response.body());
+                            updateNotificationBadge(response.body());
+                        } else {
+                            updateNotificationBadge(
+                                    RecurringNotificationManager.getCachedItems(HomeActivity.this)
+                            );
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<List<RecurringTransactionResponse>> call, Throwable t) {
+                        updateNotificationBadge(
+                                RecurringNotificationManager.getCachedItems(HomeActivity.this)
+                        );
+                    }
+                });
+    }
+
+    private void updateNotificationBadge(List<RecurringTransactionResponse> items) {
+        int count = RecurringNotificationManager.getActiveAlertCount(items);
+        if (count <= 0) {
+            tvNotificationBadge.setVisibility(View.GONE);
+            return;
+        }
+
+        tvNotificationBadge.setText(count > 99 ? "99+" : String.valueOf(count));
+        tvNotificationBadge.setVisibility(View.VISIBLE);
+    }
+
+    private void requestNotificationPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                && ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(
+                    this,
+                    new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                    NOTIFICATION_PERMISSION_REQUEST
+            );
         }
     }
 
