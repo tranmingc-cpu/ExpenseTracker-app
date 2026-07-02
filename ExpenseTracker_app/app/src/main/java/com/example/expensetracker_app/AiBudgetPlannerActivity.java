@@ -19,6 +19,7 @@ import com.expensetracker_manager.service.AIInsightGenerator;
 import com.expensetracker_manager.service.FinancialAnalysisEngine;
 import com.expensetracker_manager.utils.OfflineCacheManager;
 import com.expensetracker_manager.utils.TokenManager;
+import com.expensetracker_manager.model.response.AiAnalysisResponse;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -47,8 +48,12 @@ public class AiBudgetPlannerActivity extends BaseActivity {
     private FinancialAnalysisEngine.AnalysisResult analysis;
     private List<AIInsightGenerator.Recommendation> recommendations;
     private Long selectedGoalId = null;
+    private int selectedMonth = Calendar.getInstance().get(Calendar.MONTH) + 1;
+    private int selectedYear = Calendar.getInstance().get(Calendar.YEAR);
     private List<CategoryResponse> categories = new ArrayList<>();
     private List<BudgetResponse> backendBudgets = new ArrayList<>();
+    private List<AiAnalysisResponse.Insight> aiInsights = new ArrayList<>();
+    private List<AiAnalysisResponse.BudgetSuggestion> aiBudgetSuggestions = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,7 +67,7 @@ public class AiBudgetPlannerActivity extends BaseActivity {
         tvCurrentSpent = findViewById(R.id.tvCurrentSpent);
         tvPredictedSpent = findViewById(R.id.tvPredictedSpent);
         tvRemainingBudget = findViewById(R.id.tvRemainingBudget);
-        
+
         tvGoalName = findViewById(R.id.tvGoalName);
         tvGoalProgress = findViewById(R.id.tvGoalProgress);
         tvGoalPercent = findViewById(R.id.tvGoalPercent);
@@ -97,16 +102,20 @@ public class AiBudgetPlannerActivity extends BaseActivity {
         RetrofitClient.getInstance().getCategoryApi().getAll()
                 .enqueue(new Callback<List<CategoryResponse>>() {
                     @Override
-                    public void onResponse(Call<List<CategoryResponse>> call, Response<List<CategoryResponse>> response) {
+                    public void onResponse(Call<List<CategoryResponse>> call,
+                            Response<List<CategoryResponse>> response) {
                         if (response.isSuccessful() && response.body() != null) {
                             categories = response.body();
                         }
                     }
+
                     @Override
-                    public void onFailure(Call<List<CategoryResponse>> call, Throwable t) {}
+                    public void onFailure(Call<List<CategoryResponse>> call, Throwable t) {
+                    }
                 });
         long userId = TokenManager.getInstance(this).getUserId();
-        RetrofitClient.getInstance().getBudgetApi().getByUser(userId, null, null).enqueue(new Callback<List<BudgetResponse>>() {
+        RetrofitClient.getInstance().getBudgetApi().getByUser(userId, null, null)
+                .enqueue(new Callback<List<BudgetResponse>>() {
                     @Override
                     public void onResponse(Call<List<BudgetResponse>> call, Response<List<BudgetResponse>> response) {
                         if (response.isSuccessful() && response.body() != null) {
@@ -115,22 +124,105 @@ public class AiBudgetPlannerActivity extends BaseActivity {
                     }
 
                     @Override
-                    public void onFailure(Call<List<BudgetResponse>> call, Throwable t) {}
+                    public void onFailure(Call<List<BudgetResponse>> call, Throwable t) {
+                    }
                 });
     }
+
+    /**
+     * Gọi Gemini backend để lấy AI analysis và chuyển thành danh sách khuyến nghị.
+     * Kết quả sẽ gán vào biến recommendations để UI render.
+     */
+    private void loadGeminiInsights(Long userId) {
+        if (userId == -1L) return;
+        if (!com.expensetracker_manager.utils.NetworkUtils.isNetworkAvailable(this)) {
+            return;
+        }
+        RetrofitClient.getInstance().getAnalyticsApi()
+                .getBudgetAnalysis(userId, selectedMonth, selectedYear)
+                .enqueue(new Callback<AiAnalysisResponse>() {
+                    @Override
+                    public void onResponse(Call<AiAnalysisResponse> call, Response<AiAnalysisResponse> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            AiAnalysisResponse ai = response.body();
+
+                            // Luồng 1: insights (cảnh báo – chỉ category có budget)
+                            List<AIInsightGenerator.Recommendation> geminiRecs = new ArrayList<>();
+                            List<AiAnalysisResponse.Insight> tempInsights = new ArrayList<>();
+                            if (ai.getInsights() != null) {
+                                for (AiAnalysisResponse.Insight ins : ai.getInsights()) {
+                                    double recLimit = (ins.getRecommendedLimit() != null) ? ins.getRecommendedLimit() : 0;
+
+                                    // Tiêu đề card hiển thị rõ mức độ và danh mục
+                                    String risk = ins.getRisk() != null ? ins.getRisk() : "LOW";
+                                    String titleEmoji;
+                                    String riskLabel;
+                                    switch (risk.toUpperCase()) {
+                                        case "HIGH":
+                                            titleEmoji = "🔴";
+                                            riskLabel  = "Cần giảm ngay";
+                                            break;
+                                        case "MEDIUM":
+                                            titleEmoji = "🟡";
+                                            riskLabel  = "Cần kiểm soát";
+                                            break;
+                                        default:
+                                            titleEmoji = "🟢";
+                                            riskLabel  = "Đang tốt";
+                                            break;
+                                    }
+                                    String cardTitle = titleEmoji + " " + ins.getCategory() + " — " + riskLabel;
+
+                                    AIInsightGenerator.Recommendation r = new AIInsightGenerator.Recommendation(
+                                            cardTitle,
+                                            ins.getMessage(),   // message = nội dung khuyến nghị hành động từ AI
+                                            ins.getCategory(),
+                                            0,
+                                            recLimit,
+                                            "Hạn mức đề xuất: " + (recLimit > 0 ? String.format("%,.0fđ", recLimit) : "Không đổi"),
+                                            "Phân tích bởi AI · Mức rủi ro: " + risk
+                                    );
+                                    geminiRecs.add(r);
+                                    tempInsights.add(ins);
+                                }
+                            }
+                            recommendations = geminiRecs;
+                            aiInsights = tempInsights;
+
+                            // Luồng 2: budgetSuggestions (gợi ý hạn mức – tất cả category có chi tiêu)
+                            aiBudgetSuggestions = (ai.getBudgetSuggestions() != null)
+                                    ? ai.getBudgetSuggestions()
+                                    : new ArrayList<>();
+
+                            runOnUiThread(() -> {
+                                renderRecommendations();
+                                renderSuggestedBudgets();
+                            });
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<AiAnalysisResponse> call, Throwable t) {
+                        // Khi lỗi, giữ nguyên danh sách hiện tại
+                    }
+                });
+    }
+
     private void refreshData() {
         analysis = FinancialAnalysisEngine.analyze(this, selectedGoalId);
-        recommendations = AIInsightGenerator.generateInsights(analysis);
+        // Gọi Gemini để lấy phân tích AI và đề xuất ngân sách
+        loadGeminiInsights(TokenManager.getInstance(this).getUserId());
 
         renderHealthScorecard();
         renderRiskAndForecast();
         renderSavingsGoal();
-        renderRecommendations();
+        // renderRecommendations() sẽ được gọi trong callback của Gemini
         renderSuggestedBudgets();
     }
 
     private void showGoalSelectionDialog() {
-        List<com.expensetracker_manager.model.response.SavingGoalResponse> goals = OfflineCacheManager.getInstance(this).getCachedSavingGoals();
+        List<com.expensetracker_manager.model.response.SavingGoalResponse> goals = OfflineCacheManager.getInstance(this)
+                .getCachedSavingGoals();
         if (goals == null || goals.isEmpty()) {
             Toast.makeText(this, "Không có mục tiêu nào.", Toast.LENGTH_SHORT).show();
             return;
@@ -145,7 +237,8 @@ public class AiBudgetPlannerActivity extends BaseActivity {
                 .setTitle("Chọn mục tiêu phân tích")
                 .setItems(goalNames, (dialog, which) -> {
                     selectedGoalId = goals.get(which).getId();
-                    Toast.makeText(this, "Đã đổi mục tiêu phân tích: " + goals.get(which).getName(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Đã đổi mục tiêu phân tích: " + goals.get(which).getName(), Toast.LENGTH_SHORT)
+                            .show();
                     refreshData();
                 })
                 .setNegativeButton("Hủy", null)
@@ -156,17 +249,17 @@ public class AiBudgetPlannerActivity extends BaseActivity {
         tvHealthScore.setText(String.valueOf(analysis.financialHealthScore));
         tvHealthStatus.setText(getHealthStatusString(analysis.financialHealth));
         pbHealth.setProgress(analysis.financialHealthScore);
-        
+
         // Dynamic colors
         int color;
         if (analysis.financialHealthScore >= 80) {
-            color = 0xFF00FF66; // Green
+            color = 0xFF00FF66;
         } else if (analysis.financialHealthScore >= 60) {
-            color = 0xFF00E5FF; // Teal
+            color = 0xFF00E5FF;
         } else if (analysis.financialHealthScore >= 40) {
-            color = 0xFFFFCC00; // Orange
+            color = 0xFFFFCC00;
         } else {
-            color = 0xFFFF3366; // Red
+            color = 0xFFFF3366;
         }
         tvHealthScore.setTextColor(color);
         pbHealth.setProgressTintList(android.content.res.ColorStateList.valueOf(color));
@@ -199,7 +292,7 @@ public class AiBudgetPlannerActivity extends BaseActivity {
         tvGoalProgress.setText(formatVND(analysis.goalCurrent) + " / " + formatVND(analysis.goalTarget));
         tvGoalPercent.setText(String.format(Locale.US, "%.1f%%", analysis.goalProgressPct));
         pbGoal.setProgress((int) Math.min(100, analysis.goalProgressPct));
-        
+
         if (analysis.remainingDays >= 0) {
             tvRemainingDays.setText(analysis.remainingDays + " ngày");
             tvCompletionDate.setText(analysis.estimatedCompletionDate);
@@ -211,18 +304,46 @@ public class AiBudgetPlannerActivity extends BaseActivity {
 
     private void renderRecommendations() {
         layoutRecommendations.removeAllViews();
-        if (recommendations.isEmpty()) {
+
+        // Nếu chưa có budget → dùng budgetSuggestions làm khuyến nghị
+        List<AIInsightGenerator.Recommendation> displayRecs = new ArrayList<>();
+        if (recommendations != null && !recommendations.isEmpty()) {
+            displayRecs.addAll(recommendations);
+        } else if (aiBudgetSuggestions != null && !aiBudgetSuggestions.isEmpty()) {
+            // Chuyển budgetSuggestions → Recommendation để hiển thị chung layout
+            for (AiAnalysisResponse.BudgetSuggestion sug : aiBudgetSuggestions) {
+                double recLimit = sug.getRecommendedLimit() != null ? sug.getRecommendedLimit() : 0;
+                if (recLimit <= 0) continue;
+                String reason = (sug.getReason() != null && !sug.getReason().isEmpty())
+                        ? sug.getReason()
+                        : "Dựa trên lịch sử chi tiêu của bạn.";
+                String msg = "💡 " + reason + "\n➡️ Đề xuất đặt hạn mức: " + String.format("%,.0fđ", recLimit);
+                displayRecs.add(new AIInsightGenerator.Recommendation(
+                        "💡 " + sug.getCategory() + " — Gợi ý hạn mức",
+                        msg,
+                        sug.getCategory(),
+                        0,
+                        recLimit,
+                        "Hạn mức đề xuất: " + String.format("%,.0fđ", recLimit),
+                        "Phân tích bởi AI · Chưa có hạn mức"
+                ));
+            }
+        }
+
+        if (displayRecs.isEmpty()) {
             TextView tvEmpty = new TextView(this);
-            tvEmpty.setText("Hiện tại không có khuyến nghị nào.");
+            tvEmpty.setText("Chưa có dữ liệu chi tiêu để phân tích.");
             tvEmpty.setTextColor(0xFF808090);
             tvEmpty.setPadding(16, 16, 16, 16);
             layoutRecommendations.addView(tvEmpty);
             return;
         }
 
-        for (AIInsightGenerator.Recommendation rec : recommendations) {
-            View recView = LayoutInflater.from(this).inflate(R.layout.item_ai_recommendation, layoutRecommendations, false);
-            
+
+        for (AIInsightGenerator.Recommendation rec : displayRecs) {
+            View recView = LayoutInflater.from(this).inflate(R.layout.item_ai_recommendation, layoutRecommendations,
+                    false);
+
             TextView tvTitle = recView.findViewById(R.id.tvRecTitle);
             TextView tvDesc = recView.findViewById(R.id.tvRecDesc);
             TextView tvDetails = recView.findViewById(R.id.tvRecDetails);
@@ -250,18 +371,20 @@ public class AiBudgetPlannerActivity extends BaseActivity {
             layoutRecommendations.addView(recView);
         }
     }
+
     private void showAllRecommendationsDialog() {
         if (analysis == null) return;
-        List<AIInsightGenerator.Recommendation> allRecs = AIInsightGenerator.generateAllInsights(analysis);
-        
+        // Sử dụng danh sách khuyến nghị đã được tải từ Gemini AI
+        List<AIInsightGenerator.Recommendation> allRecs = recommendations != null ? recommendations : new ArrayList<>();
+
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Tất cả Khuyến nghị");
-        
+
         android.widget.ScrollView scrollView = new android.widget.ScrollView(this);
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
         layout.setPadding(32, 32, 32, 32);
-        
+
         if (allRecs.isEmpty()) {
             TextView tvEmpty = new TextView(this);
             tvEmpty.setText("Hiện tại không có khuyến nghị nào.");
@@ -269,34 +392,35 @@ public class AiBudgetPlannerActivity extends BaseActivity {
         } else {
             for (AIInsightGenerator.Recommendation rec : allRecs) {
                 View recView = LayoutInflater.from(this).inflate(R.layout.item_ai_recommendation, layout, false);
-                
+
                 TextView tvTitle = recView.findViewById(R.id.tvRecTitle);
                 TextView tvDesc = recView.findViewById(R.id.tvRecDesc);
                 TextView tvDetails = recView.findViewById(R.id.tvRecDetails);
                 Button btnAction = recView.findViewById(R.id.btnAction);
                 Button btnIgnore = recView.findViewById(R.id.btnIgnore);
-                
+
                 tvTitle.setText(rec.title);
                 tvDesc.setText(rec.description);
                 tvDetails.setText(rec.explanation + "\n\nHiệu quả: " + rec.estimatedImprovement);
-                
+
                 if (rec.recommendedLimit > 0) {
                     btnAction.setVisibility(View.VISIBLE);
                     btnAction.setOnClickListener(v -> {
                         applyBudgetChange(rec.category, rec.recommendedLimit);
-                        Toast.makeText(this, "Đã áp dụng ngân sách đề xuất cho " + rec.category, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Đã áp dụng ngân sách đề xuất cho " + rec.category, Toast.LENGTH_SHORT)
+                                .show();
                         refreshData();
                     });
                 } else {
                     btnAction.setVisibility(View.GONE);
                 }
-                
-                btnIgnore.setVisibility(View.GONE); // Hide ignore in dialog to simplify UI
-                
+
+                btnIgnore.setVisibility(View.GONE); // Ẩn nút bỏ qua trong dialog để đơn giản hoá UI
+
                 layout.addView(recView);
             }
         }
-        
+
         scrollView.addView(layout);
         builder.setView(scrollView);
         builder.setPositiveButton("Đóng", (dialog, which) -> dialog.dismiss());
@@ -305,6 +429,63 @@ public class AiBudgetPlannerActivity extends BaseActivity {
 
     private void renderSuggestedBudgets() {
         layoutSuggestedBudgets.removeAllViews();
+
+        // Ưu tiên dùng budgetSuggestions từ Gemini (tất cả category có chi tiêu)
+        if (aiBudgetSuggestions != null && !aiBudgetSuggestions.isEmpty()) {
+            for (AiAnalysisResponse.BudgetSuggestion sug : aiBudgetSuggestions) {
+                double recLimit = (sug.getRecommendedLimit() != null) ? sug.getRecommendedLimit() : 0;
+                if (recLimit <= 0) continue;
+
+                String cat = sug.getCategory();
+                double currentLimit = analysis.categoryBudgets.getOrDefault(cat, 0.0);
+                // Dùng spentSoFar từ server (tránh mismatch tên với local cache)
+                double spent = (sug.getSpentSoFar() != null) ? sug.getSpentSoFar() : analysis.categorySpending.getOrDefault(cat, 0.0);
+
+                View bView = LayoutInflater.from(this).inflate(R.layout.item_suggested_budget, layoutSuggestedBudgets, false);
+                TextView tvCategory = bView.findViewById(R.id.tvCategoryName);
+                TextView tvLimits = bView.findViewById(R.id.tvBudgetLimits);
+                TextView tvExplanation = bView.findViewById(R.id.tvBudgetExplanation);
+                LinearLayout layoutExplanation = bView.findViewById(R.id.layoutExplanationContainer);
+                Button btnApply = bView.findViewById(R.id.btnApplyRec);
+                Button btnAdjust = bView.findViewById(R.id.btnAdjustRec);
+
+                tvCategory.setText(cat);
+                tvLimits.setText("Hiện tại: " + (currentLimit > 0 ? formatVND(currentLimit) : "Chưa thiết lập") + " ➜ AI đề xuất: " + formatVND(recLimit));
+
+                String reason = (sug.getReason() != null && !sug.getReason().isEmpty())
+                        ? sug.getReason()
+                        : "Dựa trên lịch sử chi tiêu của bạn.";
+                String expText = String.format(Locale.US,
+                        "Chi tiêu hiện tại: %s.\n\n%s",
+                        formatVND(spent), reason);
+                tvExplanation.setText(expText);
+
+                bView.setOnClickListener(v ->
+                        layoutExplanation.setVisibility(
+                                layoutExplanation.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE));
+
+                double finalRecLimit = recLimit;
+                btnApply.setOnClickListener(v -> {
+                    applyBudgetChange(cat, finalRecLimit);
+                    Toast.makeText(this, "Đã áp dụng hạn mức AI cho " + cat, Toast.LENGTH_SHORT).show();
+                    refreshData();
+                });
+                btnAdjust.setOnClickListener(v -> showAdjustDialog(cat, finalRecLimit));
+
+                layoutSuggestedBudgets.addView(bView);
+            }
+
+            if (layoutSuggestedBudgets.getChildCount() == 0) {
+                TextView tvEmpty = new TextView(this);
+                tvEmpty.setText("Gemini AI chưa có đề xuất hạn mức cụ thể.");
+                tvEmpty.setTextColor(0xFF808090);
+                tvEmpty.setPadding(16, 16, 16, 16);
+                layoutSuggestedBudgets.addView(tvEmpty);
+            }
+            return;
+        }
+
+        // Fallback: dùng heuristic nếu chưa có dữ liệu AI
         if (analysis.recommendedBudgets.isEmpty()) {
             TextView tvEmpty = new TextView(this);
             tvEmpty.setText("Không có danh mục nào cần đề xuất.");
@@ -324,15 +505,15 @@ public class AiBudgetPlannerActivity extends BaseActivity {
             TextView tvLimits = bView.findViewById(R.id.tvBudgetLimits);
             TextView tvExplanation = bView.findViewById(R.id.tvBudgetExplanation);
             LinearLayout layoutExplanation = bView.findViewById(R.id.layoutExplanationContainer);
-            
             Button btnApply = bView.findViewById(R.id.btnApplyRec);
             Button btnAdjust = bView.findViewById(R.id.btnAdjustRec);
 
             tvCategory.setText(cat);
             tvLimits.setText("Hiện tại: " + (currentLimit > 0 ? formatVND(currentLimit) : "Chưa thiết lập") + " ➜ Đề xuất: " + formatVND(recLimit));
-            
+
             double spent = analysis.categorySpending.getOrDefault(cat, 0.0);
-            String expText = String.format(Locale.US, "Chi tiêu hiện tại: %s.\n\nHệ thống khuyến nghị mức ngân sách %s nhằm tối ưu thói quen chi tiêu của bạn.", 
+            String expText = String.format(Locale.US,
+                    "Chi tiêu hiện tại: %s.\n\nHệ thống khuyến nghị mức ngân sách %s nhằm tối ưu thói quen chi tiêu của bạn.",
                     formatVND(spent), formatVND(recLimit));
             tvExplanation.setText(expText);
 
@@ -355,7 +536,7 @@ public class AiBudgetPlannerActivity extends BaseActivity {
     private void showAdjustDialog(String category, double defaultVal) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Tự điều chỉnh ngân sách: " + category);
-        
+
         EditText input = new EditText(this);
         input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
         input.setText(String.format(Locale.US, "%.0f", defaultVal));
@@ -433,13 +614,16 @@ public class AiBudgetPlannerActivity extends BaseActivity {
                             @Override
                             public void onResponse(Call<BudgetResponse> call, Response<BudgetResponse> response) {
                                 if (response.isSuccessful()) {
-                                    Toast.makeText(AiBudgetPlannerActivity.this, "Đã cập nhật ngân sách trực tuyến cho " + category, Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(AiBudgetPlannerActivity.this,
+                                            "Đã cập nhật ngân sách trực tuyến cho " + category, Toast.LENGTH_SHORT)
+                                            .show();
                                     loadCategoriesAndBudgets();
                                 }
                             }
 
                             @Override
-                            public void onFailure(Call<BudgetResponse> call, Throwable t) {}
+                            public void onFailure(Call<BudgetResponse> call, Throwable t) {
+                            }
                         });
             } else {
                 RetrofitClient.getInstance().getBudgetApi().create(request)
@@ -447,13 +631,16 @@ public class AiBudgetPlannerActivity extends BaseActivity {
                             @Override
                             public void onResponse(Call<BudgetResponse> call, Response<BudgetResponse> response) {
                                 if (response.isSuccessful()) {
-                                    Toast.makeText(AiBudgetPlannerActivity.this, "Đã thiết lập ngân sách trực tuyến cho " + category, Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(AiBudgetPlannerActivity.this,
+                                            "Đã thiết lập ngân sách trực tuyến cho " + category, Toast.LENGTH_SHORT)
+                                            .show();
                                     loadCategoriesAndBudgets();
                                 }
                             }
 
                             @Override
-                            public void onFailure(Call<BudgetResponse> call, Throwable t) {}
+                            public void onFailure(Call<BudgetResponse> call, Throwable t) {
+                            }
                         });
             }
         }
@@ -469,11 +656,15 @@ public class AiBudgetPlannerActivity extends BaseActivity {
 
     private String getHealthStatusString(String health) {
         switch (health) {
-            case "Excellent": return "Xuất sắc";
-            case "Good": return "Tốt";
-            case "Fair": return "Trung bình";
+            case "Excellent":
+                return "Xuất sắc";
+            case "Good":
+                return "Tốt";
+            case "Fair":
+                return "Trung bình";
             case "Poor":
-            default: return "Cần cải thiện";
+            default:
+                return "Cần cải thiện";
         }
     }
 }

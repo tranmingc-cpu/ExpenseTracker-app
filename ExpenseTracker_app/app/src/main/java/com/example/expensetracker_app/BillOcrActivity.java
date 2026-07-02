@@ -44,7 +44,6 @@ public class BillOcrActivity extends BaseActivity {
 
     private static final int REQUEST_IMAGE_CAPTURE = 101;
     private static final int REQUEST_IMAGE_PICK = 102;
-
     private TextView tvQrBank, tvQrAccountNumber, tvQrRecipientName;
     private EditText etQrAmount, etQrDescription;
     private Spinner spinnerQrCategory, spinnerQrWallet;
@@ -79,13 +78,13 @@ public class BillOcrActivity extends BaseActivity {
         // Mở hộp thoại chọn nguồn ảnh ngay khi vào activity
         showImageSourceDialog();
     }
-
     private void showImageSourceDialog() {
         String[] options = { "Chụp ảnh (Camera)", "Chọn ảnh từ thư viện (Gallery)" };
         new androidx.appcompat.app.AlertDialog.Builder(this)
-                .setTitle("Quét Hóa Đơn AI (OCR)")
+                .setTitle("Quét Hóa Đơn (OCR)")
                 .setItems(options, (dialog, which) -> {
                     if (which == 0) {
+                        //gọi cam từ android
                         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                         try {
                             startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
@@ -93,6 +92,7 @@ public class BillOcrActivity extends BaseActivity {
                             Toast.makeText(this, "Không thể mở ứng dụng Camera.", Toast.LENGTH_SHORT).show();
                         }
                     } else {
+                        // gọi thư viện ảnh
                         Intent pickPhotoIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                         startActivityForResult(pickPhotoIntent, REQUEST_IMAGE_PICK);
                     }
@@ -129,7 +129,6 @@ public class BillOcrActivity extends BaseActivity {
             Toast.makeText(this, "Không có hình ảnh nào được chọn.", Toast.LENGTH_SHORT).show();
         }
     }
-
     private void processBitmapOcr(Bitmap bitmap) {
         try {
             File cacheFile = new File(getCacheDir(), "bill_temp.jpg");
@@ -164,7 +163,7 @@ public class BillOcrActivity extends BaseActivity {
             Toast.makeText(this, "Lỗi khi đọc file ảnh: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
-
+    // tạo request và gửi xuống cho backend xử lý
     private void uploadImageFile(File file) {
         RequestBody requestFile = RequestBody.create(MediaType.parse("image/jpeg"), file);
         MultipartBody.Part body = MultipartBody.Part.createFormData("file", file.getName(), requestFile);
@@ -172,7 +171,6 @@ public class BillOcrActivity extends BaseActivity {
         if (ocrProgressBar != null) {
             ocrProgressBar.setVisibility(View.VISIBLE);
         }
-
         RetrofitClient.getInstance().getTransactionApi().analyzeBill(body)
                 .enqueue(new Callback<OcrResponse>() {
                     @Override

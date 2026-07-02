@@ -13,14 +13,10 @@ import retrofit2.http.POST;
 public class BankLookupService {
 
     private static final String BASE_URL = "https://api.vietqr.io/";
-
-    // Nhập x-client-id và x-api-key từ VietQR.io vào đây nếu có
     private static final String CLIENT_ID = "202f5a6b-c741-4770-96f3-f5847e30d7bb";
     private static final String API_KEY = "d085df76-df41-40c2-9a00-50d4f3a7495b";
-
     private static BankLookupService instance;
     private final VietQrApi api;
-
     private BankLookupService() {
         HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
         logging.setLevel(HttpLoggingInterceptor.Level.BODY);
@@ -49,7 +45,6 @@ public class BankLookupService {
         BankLookupRequest request = new BankLookupRequest(bin, accountNumber);
         api.lookupAccount(CLIENT_ID, API_KEY, request).enqueue(callback);
     }
-
     public interface VietQrApi {
         @POST("v2/lookup")
         Call<BankLookupResponse> lookupAccount(

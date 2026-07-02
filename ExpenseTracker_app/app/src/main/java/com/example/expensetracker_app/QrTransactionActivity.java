@@ -40,7 +40,6 @@ public class QrTransactionActivity extends BaseActivity {
     private EditText etQrAmount, etQrDescription;
     private Spinner spinnerQrCategory, spinnerQrWallet;
     private Button btnMomoPayment, btnVietQrPayment, btnSaveQrTransaction;
-
     private List<CategoryResponse> categories = new ArrayList<>();
     private List<WalletResponse> wallets = new ArrayList<>();
 
@@ -91,8 +90,7 @@ public class QrTransactionActivity extends BaseActivity {
         etQrAmount.addTextChangedListener(new com.expensetracker_manager.utils.NumberTextWatcher(etQrAmount));
 
         // Thiết lập danh sách Ngân hàng
-        ArrayAdapter<String> bankAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item,
-                bankNames);
+        ArrayAdapter<String> bankAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, bankNames);
         spinnerQrBank.setAdapter(bankAdapter);
 
         loadIntentData();
@@ -136,12 +134,10 @@ public class QrTransactionActivity extends BaseActivity {
         if (selectedPos < 0 || selectedPos >= bankBins.length) {
             return;
         }
-
         String accountNumber = etQrAccountNumber.getText().toString().trim();
         if (accountNumber.length() <= 5) {
             return;
         }
-
         String bin = bankBins[selectedPos];
 
         etQrRecipientName.setHint("Đang tra cứu...");
@@ -235,8 +231,7 @@ public class QrTransactionActivity extends BaseActivity {
         PaymentLinkRequest req = new PaymentLinkRequest(phoneNumber, "", phoneNumber, amount, note);
 
         Toast.makeText(this, "Đang tạo Deeplink MoMo...", Toast.LENGTH_SHORT).show();
-        RetrofitClient.getInstance().getPaymentApi().generateLinks(req)
-                .enqueue(new Callback<PaymentLinkResponse>() {
+        RetrofitClient.getInstance().getPaymentApi().generateLinks(req).enqueue(new Callback<PaymentLinkResponse>() {
                     @Override
                     public void onResponse(Call<PaymentLinkResponse> call, Response<PaymentLinkResponse> response) {
                         if (response.isSuccessful() && response.body() != null) {
@@ -262,7 +257,6 @@ public class QrTransactionActivity extends BaseActivity {
                     }
                 });
     }
-
     private void showMomoConfirmationDialog(double amount) {
         new AlertDialog.Builder(this)
                 .setTitle("Xác nhận thanh toán")
@@ -279,7 +273,6 @@ public class QrTransactionActivity extends BaseActivity {
             Toast.makeText(this, "Vui lòng chọn ngân hàng", Toast.LENGTH_SHORT).show();
             return;
         }
-
         String bankId = bankIds[selectedBankPos];
         String accountNumber = etQrAccountNumber.getText().toString().trim();
         String amountStr = etQrAmount.getText().toString().trim().replace(".", "");
@@ -289,17 +282,14 @@ public class QrTransactionActivity extends BaseActivity {
             Toast.makeText(this, "Vui lòng nhập số tài khoản", Toast.LENGTH_SHORT).show();
             return;
         }
-
         if (amountStr.isEmpty()) {
             Toast.makeText(this, "Vui lòng nhập số tiền thanh toán", Toast.LENGTH_SHORT).show();
             return;
         }
-
         double amount = Double.parseDouble(amountStr);
-
         PaymentLinkRequest req = new PaymentLinkRequest("", bankId, accountNumber, amount, note);
-
         Toast.makeText(this, "Đang tạo mã VietQR...", Toast.LENGTH_SHORT).show();
+
         RetrofitClient.getInstance().getPaymentApi().generateLinks(req)
                 .enqueue(new Callback<PaymentLinkResponse>() {
                     @Override
@@ -323,7 +313,6 @@ public class QrTransactionActivity extends BaseActivity {
 
     private void showVietQrDialog(String vietQrUrl) {
         View dialogView = getLayoutInflater().inflate(android.R.layout.activity_list_item, null);
-
         // Tạo view dialog tùy chỉnh bằng code để tránh thêm file XML
         // và giữ cho code sạch sẽ.
         android.widget.LinearLayout layout = new android.widget.LinearLayout(this);
@@ -368,13 +357,11 @@ public class QrTransactionActivity extends BaseActivity {
             }
         }).start();
     }
-
     private void loadCategories() {
         if (!com.expensetracker_manager.utils.NetworkUtils.isNetworkAvailable(this)) {
             loadLocalCategoriesFallback();
             return;
         }
-
         RetrofitClient.getInstance().getCategoryApi().getAll()
                 .enqueue(new Callback<List<CategoryResponse>>() {
                     @Override
@@ -409,7 +396,6 @@ public class QrTransactionActivity extends BaseActivity {
                     }
                 });
     }
-
     private void loadLocalCategoriesFallback() {
         categories.clear();
         List<String> names = new ArrayList<>();
