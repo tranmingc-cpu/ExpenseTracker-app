@@ -19,10 +19,9 @@ public class FinancialAnalysisEngine {
         public double predictedEndOfMonthSpending;
         public double remainingBudget;
         public String financialHealth;
-        public int financialHealthScore; // 0 - 100
+        public int financialHealthScore;
         public String overspendingRisk;
         
-        // Savings Goal
         public String primaryGoalName;
         public double goalTarget;
         public double goalCurrent;
@@ -30,7 +29,6 @@ public class FinancialAnalysisEngine {
         public int remainingDays;
         public String estimatedCompletionDate;
 
-        // Category analysis
         public Map<String, Double> categorySpending = new HashMap<>();
         public Map<String, Double> categoryBudgets = new HashMap<>();
         public Map<String, Double> categoryRatios = new HashMap<>();
@@ -54,7 +52,7 @@ public class FinancialAnalysisEngine {
 
         Calendar cal = Calendar.getInstance();
         int curYear = cal.get(Calendar.YEAR);
-        int curMonth = cal.get(Calendar.MONTH) + 1; // 1-12
+        int curMonth = cal.get(Calendar.MONTH) + 1;
         int curDay = cal.get(Calendar.DAY_OF_MONTH);
         int maxDays = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
         String curMonthPrefix = String.format(Locale.US, "%04d-%02d", curYear, curMonth);
@@ -77,7 +75,6 @@ public class FinancialAnalysisEngine {
                 result.recentTransactions.add(tr);
             }
         }
-
         // If no transactions in current month, fallback to report summary totals if they look valid
         if (monthIncome == 0 && summary.getTotalIncome() > 0) {
             monthIncome = summary.getTotalIncome();
@@ -85,7 +82,6 @@ public class FinancialAnalysisEngine {
         if (monthExpense == 0 && summary.getTotalExpense() > 0) {
             monthExpense = summary.getTotalExpense();
         }
-
         result.totalIncome = monthIncome;
         result.totalExpense = monthExpense;
         result.currentBalance = monthIncome - monthExpense;
@@ -113,7 +109,6 @@ public class FinancialAnalysisEngine {
         } else {
             result.predictedEndOfMonthSpending = rawPrediction;
         }
-        
         result.predictedEndOfMonthSpending = Math.round(result.predictedEndOfMonthSpending / 1000.0) * 1000.0;
 
         if (result.predictedEndOfMonthSpending > (totalBudgetsLimit > 0 ? totalBudgetsLimit : monthIncome)) {
@@ -214,7 +209,7 @@ public class FinancialAnalysisEngine {
             budgetScore = 100 - (overCount * 100 / result.categoryBudgets.size());
         }
 
-        // 3. Goal progress score
+        // Goal progress score
         int goalScore = (int) Math.min(100, result.goalProgressPct);
 
         // Weighted Health Score

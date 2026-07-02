@@ -170,7 +170,7 @@ public class HomeActivity extends BaseActivity {
         int mode = prefs.getInt(KEY_THEME_MODE, AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
         AppCompatDelegate.setDefaultNightMode(mode);
     }
-
+    // gọi Google Code Scanner API
     private void startQRScanner() {
         GmsBarcodeScannerOptions options = new GmsBarcodeScannerOptions.Builder()
                 .setBarcodeFormats(Barcode.FORMAT_QR_CODE)

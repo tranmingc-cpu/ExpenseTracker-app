@@ -22,7 +22,6 @@ public class RecurringTransactionResponse {
     @SerializedName("nextExecutionDate")
     private String nextExecutionDate;
 
-    // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public BigDecimal getAmount() { return amount; }

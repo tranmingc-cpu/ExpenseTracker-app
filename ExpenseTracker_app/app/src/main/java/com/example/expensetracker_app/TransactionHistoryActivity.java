@@ -27,7 +27,6 @@ public class TransactionHistoryActivity extends BaseActivity {
     private Button btnBackHistory, btnHistoryMonthFilter;
     private TextView tvHistoryTitle, tvHistoryIncome, tvHistoryExpense;
     private LinearLayout layoutHistoryContainer;
-
     private int selectedYear;
     private int selectedMonth;
     private int selectedDay;

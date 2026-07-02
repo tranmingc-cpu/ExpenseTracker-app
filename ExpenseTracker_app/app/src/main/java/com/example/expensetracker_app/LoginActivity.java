@@ -208,11 +208,11 @@ public class LoginActivity extends AppCompatActivity {
             ).show();
             return;
         }
-
-        Intent signInIntent = mGoogleSignInClient.getSignInIntent();
-        startActivityForResult(signInIntent, RC_SIGN_IN);
+        mGoogleSignInClient.signOut().addOnCompleteListener(this, task -> {
+            Intent signInIntent = mGoogleSignInClient.getSignInIntent();
+            startActivityForResult(signInIntent, RC_SIGN_IN);
+        });
     }
-
     private String getDefaultWebClientId() {
         int resId = getResources().getIdentifier("default_web_client_id", "string", getPackageName());
         if (resId == 0) {
