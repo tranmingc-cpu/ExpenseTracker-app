@@ -27,7 +27,7 @@ public class AIInsightGenerator {
     public static List<Recommendation> generateAllInsights(FinancialAnalysisEngine.AnalysisResult analysis) {
         List<Recommendation> allRecs = new ArrayList<>();
 
-        // 1. Budget recommended limit adjustments
+        //  Budget recommended limit adjustments
         for (Map.Entry<String, Double> entry : analysis.recommendedBudgets.entrySet()) {
             String cat = entry.getKey();
             double recommendedLimit = entry.getValue();
@@ -82,7 +82,7 @@ public class AIInsightGenerator {
             }
         }
 
-        // 2. High-impact alerts (e.g. overspending risk, goal progress)
+        //  High-impact alerts (e.g. overspending risk, goal progress)
         if ("High".equalsIgnoreCase(analysis.overspendingRisk)) {
             String explanation = "Dựa trên tốc độ chi tiêu hiện tại, dự kiến bạn sẽ vượt ngân sách tổng hoặc thu nhập tháng này.";
             allRecs.add(0, new Recommendation(

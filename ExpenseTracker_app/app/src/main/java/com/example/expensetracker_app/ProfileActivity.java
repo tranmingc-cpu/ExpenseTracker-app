@@ -29,6 +29,9 @@ import androidx.core.content.ContextCompat;
 import com.expensetracker_manager.model.response.UserModel;
 import com.expensetracker_manager.network.RetrofitClient;
 import com.expensetracker_manager.utils.TokenManager;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -407,14 +410,26 @@ public class ProfileActivity extends BaseActivity {
 
     private void signOut() {
         FirebaseAuth.getInstance().signOut();
+
         TokenManager.getInstance(ProfileActivity.this).clear();
+        int resId = getResources().getIdentifier("default_web_client_id", "string", getPackageName());
+        String webClientId = resId != 0 ? getString(resId) : "";
 
-        Intent intent = new Intent(ProfileActivity.this, LoginActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-        finish();
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(webClientId)
+                .requestEmail()
+                .build();
 
-        Toast.makeText(ProfileActivity.this, "Đăng xuất thành công!", Toast.LENGTH_SHORT).show();
+        GoogleSignInClient mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
+
+        mGoogleSignInClient.signOut().addOnCompleteListener(this, task -> {
+            Toast.makeText(ProfileActivity.this, "Đăng xuất thành công!", Toast.LENGTH_SHORT).show();
+
+            Intent intent = new Intent(ProfileActivity.this, LoginActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finish();
+        });
     }
 
     private void setupPasswordToggle(EditText editText) {
