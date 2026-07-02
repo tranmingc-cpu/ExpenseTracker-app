@@ -11,6 +11,7 @@ import com.expensetracker.expensetracker_api.repository.TransactionRepository;
 import com.expensetracker.expensetracker_api.repository.UserRepository;
 import com.expensetracker.expensetracker_api.service.TransactionService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,6 +25,7 @@ public class TransactionServiceImpl implements TransactionService {
     private final CategoryRepository categoryRepository;
 
     @Override
+    @CacheEvict(value = "budgetAnalysis", allEntries = true)
     public TransactionResponse create(TransactionRequest request) {
 
         UserEntity user = userRepository.findById(request.getUserId())
@@ -67,6 +69,7 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
+    @CacheEvict(value = "budgetAnalysis", allEntries = true)
     public TransactionResponse update(Long id, TransactionRequest request) {
 
         TransactionEntity transaction = transactionRepository.findById(id)
@@ -82,6 +85,7 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
+    @CacheEvict(value = "budgetAnalysis", allEntries = true)
     public void delete(Long id) {
 
         TransactionEntity transaction = transactionRepository.findById(id)

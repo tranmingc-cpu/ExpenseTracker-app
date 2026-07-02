@@ -24,7 +24,7 @@ public class RecurringTransactionEntity {
     private String type; // INCOME, EXPENSE
 
     @Column(nullable = false)
-    private String frequency; // WEEKLY, MONTHLY, YEARLY
+    private String frequency;
 
     @Column(nullable = false)
     private LocalDateTime nextExecutionDate;

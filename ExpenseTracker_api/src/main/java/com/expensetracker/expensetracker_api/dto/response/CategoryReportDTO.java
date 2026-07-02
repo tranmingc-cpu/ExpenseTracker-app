@@ -13,5 +13,5 @@ public class CategoryReportDTO {
     private String categoryName;
     private BigDecimal amount;
     private double percentage;
-    private String type; // INCOME or EXPENSE
+    private String type;
 }

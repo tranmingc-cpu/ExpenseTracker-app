@@ -89,15 +89,13 @@ public class OcrService {
             allLines.add(line.trim());
         }
 
-        // Cải tiến Regex để bắt Ngày/Tháng/Năm linh hoạt hơn (chấp nhận cả dấu gạch chéo /, gạch ngang -, dấu chấm .)
         String dateTimeRegex = ".*(\\d{2}[/\\-\\.]\\d{2}[/\\-\\.]\\d{4}|\\d{4}[/\\-\\.]\\d{2}[/\\-\\.]\\d{2}).*";
 
         for (int i = 0; i < allLines.size(); i++) {
             String lineText = allLines.get(i);
             String lowerText = lineText.toLowerCase();
 
-            // 1. Logic lấy Số tiền
-            // Đã xóa bỏ điều kiện lỗi "lowerText.contains(" ")"
+            //  Logic lấy Số tiền
             if (lowerText.contains("số tiền") || lowerText.contains("chuyển tiền") || lowerText.contains("giao dịch thành công") || lowerText.contains("amount")) {
                 String digits = lineText.replace(".", "").replace(",", "").replaceAll("[^0-9]", "");
                 if (!digits.isEmpty()) {
