@@ -1,11 +1,13 @@
 package com.expensetracker.expensetracker_api.controller;
 
 import com.expensetracker.expensetracker_api.dto.request.RecurringTransactionRequest;
+import com.expensetracker.expensetracker_api.dto.response.TransactionResponse;
 import com.expensetracker.expensetracker_api.entity.RecurringTransactionEntity;
 import com.expensetracker.expensetracker_api.service.RecurringTransactionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
@@ -31,8 +33,20 @@ public class RecurringTransactionController {
     }
 
     @PutMapping("/{id}")
-    public RecurringTransactionEntity update(@PathVariable Long id, @Valid @RequestBody RecurringTransactionRequest request) {
+    public RecurringTransactionEntity update(
+            @PathVariable Long id,
+            @Valid @RequestBody RecurringTransactionRequest request
+    ) {
         return recurringTransactionService.update(id, request);
+    }
+
+    @PostMapping("/{id}/pay")
+    public TransactionResponse pay(
+            @PathVariable Long id,
+            @RequestParam Long userId,
+            @RequestParam Long categoryId
+    ) {
+        return recurringTransactionService.pay(id, userId, categoryId);
     }
 
     @DeleteMapping("/{id}")
