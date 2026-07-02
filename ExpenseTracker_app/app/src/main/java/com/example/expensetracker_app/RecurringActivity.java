@@ -248,51 +248,80 @@ public class RecurringActivity extends BaseActivity {
 
             LinearLayout row = new LinearLayout(this);
             row.setOrientation(LinearLayout.VERTICAL);
-            row.setPadding(16, 16, 16, 16);
+            row.setPadding(dp(10), dp(9), dp(10), dp(9));
             row.setBackground(roundedBg(R.color.app_surface_alt));
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
             );
-            params.setMargins(0, 0, 0, 16);
+            params.setMargins(0, 0, 0, dp(8));
             row.setLayoutParams(params);
 
             TextView tvName = new TextView(this);
             tvName.setText(item.name);
             tvName.setTextColor(themeColor(R.color.app_text_primary));
-            tvName.setTextSize(16);
+            tvName.setTextSize(15);
             tvName.setTypeface(null, android.graphics.Typeface.BOLD);
             row.addView(tvName);
 
             TextView tvInfo = new TextView(this);
-            tvInfo.setText("Số tiền: " + formatVND(item.amount) + " | Ngày thanh toán: " + item.day + " hàng tháng");
+            tvInfo.setText(
+                    "Số tiền: " + formatVND(item.amount)
+                            + "\nNgày thanh toán: ngày " + item.day + " hằng tháng"
+            );
             tvInfo.setTextColor(themeColor(R.color.app_text_secondary));
-            tvInfo.setTextSize(12);
+            tvInfo.setTextSize(11);
+            tvInfo.setLineSpacing(0, 1.03f);
             row.addView(tvInfo);
 
             LinearLayout actionRow = new LinearLayout(this);
             actionRow.setOrientation(LinearLayout.HORIZONTAL);
-            actionRow.setPadding(0, 8, 0, 0);
+            actionRow.setGravity(android.view.Gravity.CENTER_VERTICAL);
+            actionRow.setPadding(0, dp(7), 0, 0);
+            actionRow.setLayoutParams(new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+            ));
 
             Button btnPay = new Button(this);
             btnPay.setText("Thanh toán ngay");
+            btnPay.setAllCaps(false);
+            btnPay.setSingleLine(true);
             btnPay.setTextSize(11);
+            btnPay.setGravity(android.view.Gravity.CENTER);
+            btnPay.setMinWidth(0);
+            btnPay.setMinimumWidth(0);
+            btnPay.setMinHeight(0);
+            btnPay.setMinimumHeight(0);
+            btnPay.setPadding(dp(8), 0, dp(8), 0);
             btnPay.setBackgroundTintList(android.content.res.ColorStateList.valueOf(themeColor(R.color.app_accent_income)));
             btnPay.setTextColor(themeColor(R.color.app_button_text));
             btnPay.setLayoutParams(new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT, 80
+                    0,
+                    dp(36),
+                    1.25f
             ));
             btnPay.setOnClickListener(v -> payRecurringItem(item));
             actionRow.addView(btnPay);
 
             Button btnDelete = new Button(this);
             btnDelete.setText("Xóa");
+            btnDelete.setAllCaps(false);
+            btnDelete.setSingleLine(true);
             btnDelete.setTextSize(11);
+            btnDelete.setGravity(android.view.Gravity.CENTER);
+            btnDelete.setMinWidth(0);
+            btnDelete.setMinimumWidth(0);
+            btnDelete.setMinHeight(0);
+            btnDelete.setMinimumHeight(0);
+            btnDelete.setPadding(dp(8), 0, dp(8), 0);
             btnDelete.setBackgroundTintList(android.content.res.ColorStateList.valueOf(themeColor(R.color.app_accent_expense)));
             btnDelete.setTextColor(themeColor(R.color.app_button_text));
             LinearLayout.LayoutParams delParams = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT, 80
+                    0,
+                    dp(36),
+                    0.75f
             );
-            delParams.setMargins(16, 0, 0, 0);
+            delParams.setMargins(dp(8), 0, 0, 0);
             btnDelete.setLayoutParams(delParams);
             btnDelete.setOnClickListener(v -> deleteRecurringItem(index));
             actionRow.addView(btnDelete);
