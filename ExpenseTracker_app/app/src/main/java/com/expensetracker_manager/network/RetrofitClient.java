@@ -13,8 +13,8 @@ import java.util.concurrent.TimeUnit;
 
 public class RetrofitClient {
 
-     private static final String BASE_URL = "http://192.168.1.9:8080";
-   // private static final String BASE_URL = "https://expensetracker-app-quec.onrender.com/";
+    private static final String BASE_URL = "http://192.168.1.9:8080";
+    private static final String BASE_URL1 = "https://expensetracker-app-quec.onrender.com/";
 
     private static Context appContext;
     private static RetrofitClient instance;

@@ -144,7 +144,6 @@ public class QrTransactionActivity extends BaseActivity {
 
         String bin = bankBins[selectedPos];
 
-        // Hiển thị trạng thái đang tra cứu
         etQrRecipientName.setHint("Đang tra cứu...");
 
         BankLookupService.getInstance().lookupAccount(bin, accountNumber,

@@ -71,7 +71,7 @@
             <EditText
                 android:id="@+id/etPassword"
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
+                android:layout_height="48dp"
                 android:background="@color/app_surface"
                 android:hint="Mật khẩu"
                 android:textColorHint="@color/app_input_hint"

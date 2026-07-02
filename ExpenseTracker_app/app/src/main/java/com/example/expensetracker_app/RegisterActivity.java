@@ -9,6 +9,10 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.graphics.drawable.Drawable;
+import android.text.method.HideReturnsTransformationMethod;
+import android.text.method.PasswordTransformationMethod;
+import android.view.MotionEvent;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -37,6 +41,7 @@ public class RegisterActivity extends AppCompatActivity {
         etFullName = findViewById(R.id.etFullName);
         etEmail = findViewById(R.id.etEmail);
         etPassword = findViewById(R.id.etPassword);
+        setupPasswordToggle(etPassword);
         etPhoneNumber = findViewById(R.id.etPhoneNumber);
         btnRegister = findViewById(R.id.btnRegister);
         tvLoginLink = findViewById(R.id.tvLoginLink);
@@ -234,6 +239,65 @@ public class RegisterActivity extends AppCompatActivity {
                 .setMessage(message)
                 .setPositiveButton("Đã hiểu", null)
                 .show();
+    }
+
+    private void setupPasswordToggle(EditText editText) {
+        final boolean[] isVisible = {false};
+
+        editText.setMinHeight(0);
+        editText.setGravity(android.view.Gravity.CENTER_VERTICAL);
+        updatePasswordToggleIcon(editText, isVisible[0]);
+
+        editText.setOnTouchListener((view, event) -> {
+            if (event.getAction() == MotionEvent.ACTION_UP) {
+                Drawable drawableEnd = editText.getCompoundDrawables()[2];
+
+                if (drawableEnd != null) {
+                    int iconStart = editText.getWidth()
+                            - editText.getPaddingRight()
+                            - drawableEnd.getBounds().width()
+                            - dp(12);
+
+                    if (event.getX() >= iconStart) {
+                        isVisible[0] = !isVisible[0];
+
+                        int cursorPosition = editText.getSelectionStart();
+                        if (isVisible[0]) {
+                            editText.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
+                        } else {
+                            editText.setTransformationMethod(PasswordTransformationMethod.getInstance());
+                        }
+
+                        updatePasswordToggleIcon(editText, isVisible[0]);
+                        editText.setSelection(Math.max(0, Math.min(cursorPosition, editText.length())));
+                        event.setAction(MotionEvent.ACTION_CANCEL);
+                        return true;
+                    }
+                }
+            }
+            return false;
+        });
+    }
+
+
+
+    private void updatePasswordToggleIcon(EditText editText, boolean isVisible) {
+        int iconRes = isVisible ? R.drawable.ic_visibility_24 : R.drawable.ic_visibility_off_24;
+        Drawable icon = androidx.core.content.ContextCompat.getDrawable(this, iconRes);
+        if (icon != null) {
+            int iconSize = dp(20);
+            icon.setBounds(0, 0, iconSize, iconSize);
+        }
+
+        editText.setCompoundDrawables(null, null, icon, null);
+        editText.setCompoundDrawablePadding(dp(6));
+        editText.setPadding(dp(14), 0, dp(42), 0);
+    }
+
+
+
+    private int dp(int value) {
+        return Math.round(value * getResources().getDisplayMetrics().density);
     }
 
     private void showLoading(boolean loading) {
