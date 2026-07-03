@@ -48,13 +48,49 @@
                     android:id="@+id/btnAnalytics"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
-                    android:layout_toStartOf="@id/btnProfile"
+                    android:layout_toStartOf="@id/btnNotificationsContainer"
                     android:layout_centerVertical="true"
                     android:layout_marginEnd="8dp"
                     android:background="@android:drawable/btn_default"
                     android:backgroundTint="@color/app_surface_alt"
+                    android:contentDescription="Thống kê"
                     android:padding="8dp"
-                    android:src="@android:drawable/ic_menu_compass" />
+                    android:src="@android:drawable/ic_menu_compass"
+                    app:tint="@color/app_text_secondary" />
+
+                <FrameLayout
+                    android:id="@+id/btnNotificationsContainer"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_toStartOf="@id/btnProfile"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="8dp">
+
+                    <ImageView
+                        android:id="@+id/btnNotifications"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@android:drawable/btn_default"
+                        android:backgroundTint="@color/app_surface_alt"
+                        android:contentDescription="Thông báo"
+                        android:padding="8dp"
+                        android:src="@drawable/ic_notifications_24"
+                        app:tint="@color/app_text_secondary" />
+
+                    <TextView
+                        android:id="@+id/tvNotificationBadge"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:layout_gravity="top|end"
+                        android:background="@drawable/bg_notification_badge"
+                        android:gravity="center"
+                        android:maxLines="1"
+                        android:text="1"
+                        android:textColor="@color/white"
+                        android:textSize="9sp"
+                        android:textStyle="bold"
+                        android:visibility="gone" />
+                </FrameLayout>
 
                 <ImageView
                     android:id="@+id/btnProfile"
@@ -64,8 +100,10 @@
                     android:layout_centerVertical="true"
                     android:background="@android:drawable/btn_default"
                     android:backgroundTint="@color/app_surface_alt"
+                    android:contentDescription="Cài đặt"
                     android:padding="8dp"
-                    android:src="@drawable/ic_settings_24" />
+                    android:src="@drawable/ic_settings_24"
+                    app:tint="@color/app_text_secondary" />
             </RelativeLayout>
 
             <Button
